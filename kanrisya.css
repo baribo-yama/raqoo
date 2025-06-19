@@ -1,0 +1,225 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  height: 100vh;
+  background-color: aliceblue;
+  display: flex;
+}
+
+/* サイドバー */
+.navigation {
+  position: relative;
+  height: 100vh;
+  width: 70px;
+  background-color: #4d4c86;
+  box-shadow: 10px 0 0 #5b2a82;
+  border-left: 10px solid #4d4c86;
+  overflow-x: hidden;
+  transition: all 0.5s;
+  display: flex;
+  flex-direction: column;
+}
+
+.navigation:hover {
+  width: 300px;
+}
+
+.main-menu {
+  flex-grow: 1;
+  padding-top: 10px;
+  padding-left: 10px;
+  overflow-y: auto;
+}
+
+.navigation ul li {
+  list-style: none;
+  display: block;
+  position: relative;
+  width: 100%;
+  border-radius: 15px;
+}
+
+.navigation ul li:hover {
+  background-color: #20272c5e;
+}
+
+.navigation ul li.active {
+  background-color: #5b2a82;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+}
+
+.navigation ul li a {
+  display: flex;
+  text-decoration: none;
+  color: white;
+  width: 100%;
+  align-items: center;
+}
+
+.navigation ul li.active a::before {
+  content: "";
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: -30px;
+  right: 0;
+  border-radius: 50%;
+  box-shadow: 15px 15px 0 #5b2a82;
+}
+
+.navigation ul li.active a::after {
+  content: "";
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: 60px;
+  right: 0;
+  border-radius: 50%;
+  box-shadow: 15px -15px 0 #5b2a82;
+}
+
+.navigation ul li a .icon {
+  display: block;
+  min-width: 45px;
+  height: 60px;
+  line-height: 70px;
+  text-align: center;
+}
+
+.navigation ul li a .icon ion-icon {
+  font-size: 1.5em;
+}
+
+.navigation ul li a .title {
+  padding-left: 10px;
+  height: 60px;
+  line-height: 60px;
+  white-space: nowrap;
+}
+
+.navigation ul li.search {
+  cursor: default;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  height: 60px;
+}
+
+.navigation ul li.search .icon {
+  pointer-events: none;
+  min-width: 45px;
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+  font-size: 1.5em;
+  color: white;
+}
+
+.navigation ul li.search input.search-input {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1em;
+  padding-left: 10px;
+  height: 60px;
+  line-height: 60px;
+  outline: none;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.main-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.main-menu::-webkit-scrollbar-thumb {
+  background-color: rgba(91, 42, 130, 0.7);
+  border-radius: 3px;
+}
+
+/* コンテンツ表示エリア */
+.content-area {
+  flex-grow: 1;
+  padding: 40px;
+  background-color: white;
+}
+
+/* タイトル */
+#main-title {
+  font-size: 3.5em;
+  color: #333;
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+/* 教室ボタンエリア */
+.room-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  align-items: center;
+}
+
+.room {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 20px;
+}
+
+.room button {
+  background-color: #5b2a82;
+  color: white;
+  border: none;
+  padding: 32px 64px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 26px;
+  transition: background-color 0.2s;
+}
+
+.room button:hover {
+  background-color: #7e3da9;
+}
+.floor-menu {
+  position: absolute;
+  top: 20px;
+  left: 90px;
+  z-index: 10;
+}
+
+#hamburger-btn {
+  font-size: 30px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+#floor-list {
+  margin-top: 10px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  list-style: none;
+  padding: 5px 0;
+  border-radius: 5px;
+  width: 100px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+#floor-list.hidden {
+  display: none;
+}
+
+.floor-option {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.floor-option:hover {
+  background-color: #f0f0f0;
+}  
