@@ -70,3 +70,19 @@
 [178] [Step Debug] ERR: Could not connect to debugging client. Tried: host.docker.internal:9012 (through xdebug.client_host/xdebug.client_port).
 [178] Log closed at 2025-06-13 05:03:46.592053
 
+[17] Log opened at 2025-06-13 07:07:42.633993
+[17] [Config] WARN: Not setting up control socket with default value due to unavailable 'tsc' clock
+[17] [Step Debug] INFO: Connecting to configured address/port: host.docker.internal:9012.
+[17] [Step Debug] WARN: Creating socket for 'host.docker.internal:9012', poll success, but error: Operation now in progress (29).
+[17] [Step Debug] WARN: Creating socket for 'host.docker.internal:9012', connect: Network is unreachable.
+[17] [Step Debug] ERR: Could not connect to debugging client. Tried: host.docker.internal:9012 (through xdebug.client_host/xdebug.client_port).
+[152] Log opened at 2025-06-13 07:15:45.671005
+[152] [Config] WARN: Not setting up control socket with default value due to unavailable 'tsc' clock
+[152] [Step Debug] INFO: Connecting to configured address/port: host.docker.internal:9012.
+[152] [Step Debug] WARN: Creating socket for 'host.docker.internal:9012', poll success, but error: Operation now in progress (29).
+[152] [Step Debug] WARN: Creating socket for 'host.docker.internal:9012', connect: Network is unreachable.
+[152] [Step Debug] ERR: Could not connect to debugging client. Tried: host.docker.internal:9012 (through xdebug.client_host/xdebug.client_port).
+[152] Log closed at 2025-06-13 07:15:57.277050
+
+[17] Log closed at 2025-06-13 07:15:57.508437
+
