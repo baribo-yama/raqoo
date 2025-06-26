@@ -1,171 +1,206 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Sidebar</title>
-    <link rel="stylesheet" href="user.css" />
-  </head>
-  <body>
-    <!-- サイドバー -->
-    <div class="navigation">
-      <ul class="main-menu">
-        <li class="list search">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Sidebar</title>
+  <link rel="stylesheet" href="kanrisya.css" />
+</head>
+<body>
+  <!-- サイドバー -->
+  <div class="navigation">
+    <ul class="main-menu">
+      <li class="list search">
+        <span class="icon">
+          <ion-icon name="search-outline"></ion-icon>
+        </span>
+        <input type="text" placeholder="検索..." class="search-input" />
+      </li>
+      <li class="list active">
+        <a href="#">
           <span class="icon">
-            <ion-icon name="search-outline"></ion-icon>
+            <ion-icon name="home-outline"></ion-icon>
           </span>
-          <input type="text" placeholder="検索..." class="search-input" />
-        </li>
-        <li class="list active">
-          <a href="#">
-            <span class="icon">
-              <ion-icon name="home-outline"></ion-icon>
-            </span>
-            <span class="title">トップ</span>
-          </a>
-        </li>
-       
-        <li class="list">
-          <a href="#">
-            <span class="icon">
-              <ion-icon name="chatbubbles-outline"></ion-icon>
-            </span>
-            <span class="title">連絡</span>
-          </a>
-        </li>
-        <li class="list">
-          <a href="#">
-            <span class="icon">
-              <ion-icon name="calendar-outline"></ion-icon>
-            </span>
-            <span class="title">日程情報管理</span>
-          </a>
-        </li>
-        <li class="list">
-          <a href="#">
-            <span class="icon">
-              <ion-icon name="settings-outline"></ion-icon>
-            </span>
-            <span class="title">設定</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-    <!-- ハンバーガーメニュー -->
-<div class="floor-menu">
-  <button id="hamburger-btn">&#9776;</button>
-  <ul id="floor-list" class="hidden">
-    <li ></li>
-    <li class="floor-option">8F</li>
-    <li class="floor-option">7F</li>
-    <li class="floor-option">6F</li>
-    <li class="floor-option">5F</li>
-    <li class="floor-option">4F</li>
-    <li class="floor-option">3F</li>
-    <li class="floor-option">2F</li>
-    <li class="floor-option">1F</li>
-    <li class="floor-option">B1</li>
-    <!-- 必要ならさらに追加 -->
-  </ul>
-</div>
+          <span class="title">トップ</span>
+        </a>
+      </li>
+      <li class="list">
+        <a href="#">
+          <span class="icon">
+            <ion-icon name="chatbubbles-outline"></ion-icon>
+          </span>
+          <span class="title">連絡</span>
+        </a>
+      </li>
+      <li class="list">
+        <a href="#">
+          <span class="icon">
+            <ion-icon name="calendar-outline"></ion-icon>
+          </span>
+          <span class="title">日程情報管理</span>
+        </a>
+      </li>
+      <li class="list">
+        <a href="#">
+          <span class="icon">
+            <ion-icon name="settings-outline"></ion-icon>
+          </span>
+          <span class="title">設定</span>
+        </a>
+      </li>
+    </ul>
+  </div>
 
+  <!-- ハンバーガーメニュー -->
+  <div class="floor-menu">
+    <button id="hamburger-btn">&#9776;</button>
+    <ul id="floor-list" class="hidden">
+      <li class="floor-option">8F</li>
+      <li class="floor-option">7F</li>
+      <li class="floor-option">6F</li>
+      <li class="floor-option">5F</li>
+      <li class="floor-option">4F</li>
+      <li class="floor-option">3F</li>
+      <li class="floor-option">2F</li>
+      <li class="floor-option">1F</li>
+      <li class="floor-option">B1</li>
+    </ul>
+  </div>
 
-    <!-- コンテンツ表示エリア -->
-    <div class="content-area" id="classroom-content">
-      
-
+  <!-- コンテンツ表示エリア -->
+  <div class="content-area" id="classroom-content">
+    <div id="floor-8F" class="floor-content">
       <div class="room-buttons">
-  <div class="room">
-    <button class="room-button">501</button>
-    <button>設備</button>
-    <button>予約一覧</button>
-  </div>
-  <div class="room">
-    <button class="room-button">502</button>
-    <button>設備</button>
-    <button>予約一覧</button>
-  </div>
-  <div class="room">
-    <button class="room-button">503</button>
-    <button>設備</button>
-    <button>予約一覧</button>
-  </div>
-  <div class="room">
-    <button class="room-button">504</button>
-    <button>設備</button>
-    <button>予約一覧</button>
-  </div>
-</div>
+        <div class="room-box">
+          <button class="room-button">digtal creative room</button>
+          <button>設備</button>
+          <button>予約一覧</button>
+        </div>
+      </div>
+    </div>
 
-    
-    <!-- Ionicons -->
-    <script
-      type="module"
-      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"
-    ></script>
-    <script
-      nomodule
-      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"
-    ></script>
+    <div id="floor-7F" class="floor-content">
+      <div class="room-buttons">
+        <div class="room-box"><button class="room-button">ls-1</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">xr studio</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">stage art workshop</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">dressing room</button><button>設備</button><button>予約一覧</button></div>
+      </div>
+    </div>
 
-    <!-- アクティブ切り替え & 表示制御 -->
-    <script>
-      const list = document.querySelectorAll(".main-menu .list:not(.search)");
-      const classroomContent = document.getElementById("classroom-content");
+    <div id="floor-6F" class="floor-content">
+      <div class="room-buttons">
+        <div class="room-box"><button class="room-button">pc room 1</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">pc room 2</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">pc room 3</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">602 A</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">602 B</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">604 creative design room</button><button>設備</button><button>予約一覧</button></div>
+      </div>
+    </div>
 
-      function activeLink() {
-        list.forEach((item) => item.classList.remove("active"));
-        this.classList.add("active");
+    <div id="floor-5F" class="floor-content active">
+      <div class="room-buttons">
+        <div class="room-box"><button class="room-button">501</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">502</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">503</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">504</button><button>設備</button><button>予約一覧</button></div>
+      </div>
+    </div>
 
-        const title = this.querySelector(".title").textContent;
-        if (title === "トップ") {
-          classroomContent.style.display = "block";
-        } else {
-          classroomContent.style.display = "none";
-        }
+    <div id="floor-4F" class="floor-content">
+      <div class="room-buttons">
+        <div class="room-box"><button class="room-button">dance studio A</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">dance studio B</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">dance studio C</button><button>設備</button><button>予約一覧</button></div>
+      </div>
+    </div>
+
+    <div id="floor-3F" class="floor-content">
+      <div class="room-buttons">
+        <div class="room-box"><button class="room-button">gaming room 1</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">gaming room 2</button><button>設備</button><button>予約一覧</button></div>
+      </div>
+    </div>
+
+    <div id="floor-2F" class="floor-content">
+      <div class="room-buttons">
+        <div class="room-box"><button class="room-button">counseling room 1</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">counseling room 2</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">counseling room 3</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">counseling room 4</button><button>設備</button><button>予約一覧</button></div>
+      </div>
+    </div>
+
+    <div id="floor-1F" class="floor-content">
+      <div class="room-buttons">
+        <div class="room-box"><button class="room-button">administration office</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">principal's office</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">conference room</button><button>設備</button><button>予約一覧</button></div>
+      </div>
+    </div>
+
+    <div id="floor-B1" class="floor-content">
+      <div class="room-buttons">
+        <div class="room-box"><button class="room-button">recording studio</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">after recording room</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">lesson room 1</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">lesson room 2</button><button>設備</button><button>予約一覧</button></div>
+        <div class="room-box"><button class="room-button">lesson room 3</button><button>設備</button><button>予約一覧</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ionicons -->
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+  <!-- アクティブ切り替え & 表示制御 -->
+  <script>
+    const list = document.querySelectorAll(".main-menu .list:not(.search)");
+    const classroomContent = document.getElementById("classroom-content");
+
+    function activeLink() {
+      list.forEach((item) => item.classList.remove("active"));
+      this.classList.add("active");
+
+      const title = this.querySelector(".title").textContent;
+      if (title === "トップ") {
+        classroomContent.style.display = "block";
+      } else {
+        classroomContent.style.display = "none";
       }
+    }
 
-      list.forEach((item) => {
-        item.addEventListener("click", activeLink);
-      });
+    list.forEach((item) => {
+      item.addEventListener("click", activeLink);
+    });
 
-      // 初期状態でトップがアクティブなので表示
-      classroomContent.style.display = "block";
-// ハンバーガーメニューの表示切替
+    classroomContent.style.display = "block";
+
     const hamburgerBtn = document.getElementById("hamburger-btn");
     const floorList = document.getElementById("floor-list");
     hamburgerBtn.addEventListener("click", () => {
       floorList.classList.toggle("hidden");
     });
 
-    // 階を切り替えるロジック
     const floorButtons = document.querySelectorAll(".floor-option");
-    const floor5F = document.getElementById("floor-5F");
-    const floor4F = document.getElementById("floor-4F");
+    const floorContents = document.querySelectorAll(".floor-content");
 
     floorButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
-        if (btn.textContent === "5F") {
-          floor5F.classList.remove("hidden");
-          floor4F.classList.add("hidden");
-        } else if (btn.textContent === "4F") {
-          floor4F.classList.remove("hidden");
-          floor5F.classList.add("hidden");
-        }
+        const selectedFloor = btn.textContent;
+        floorContents.forEach((content) => {
+          if (content.id === `floor-${selectedFloor}`) {
+            content.classList.add("active");
+          } else {
+            content.classList.remove("active");
+          }
+        });
         floorList.classList.add("hidden");
       });
     });
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-

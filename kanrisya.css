@@ -147,14 +147,7 @@ body {
   flex-grow: 1;
   padding: 40px;
   background-color: white;
-}
-
-/* タイトル */
-#main-title {
-  font-size: 3.5em;
-  color: #333;
-  text-align: center;
-  margin-bottom: 50px;
+  position: relative;
 }
 
 /* 教室ボタンエリア */
@@ -170,6 +163,7 @@ body {
   align-items: center;
   gap: 20px;
   font-size: 20px;
+  flex-wrap: wrap; /* ← 折り返しを許可 */
 }
 
 .room button {
@@ -186,10 +180,12 @@ body {
 .room button:hover {
   background-color: #7e3da9;
 }
+
 .floor-menu {
   position: absolute;
-  top: 20px;
-  left: 90px;
+  top: 40px;
+  right: 50px;
+  transform: translateX(-50%);
   z-index: 10;
 }
 
@@ -222,4 +218,95 @@ body {
 
 .floor-option:hover {
   background-color: #f0f0f0;
-}  
+}
+
+/* 階ごとの教室表示制御 */
+.floor-content {
+  display: none;
+}
+
+.floor-content.active {
+  display: block;
+}
+/* 8階専用の囲み枠スタイル */
+.room-box {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.room-box button {
+  flex: 1;
+  border: none;
+  padding: 20px;
+  font-size: 20px;
+  background-color: #5b2a82;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-right: 1px solid #ccc;
+}
+
+.room-box button:last-child {
+  border-right: none;
+}
+
+.room-box button:hover {
+  background-color: #7e3da9;
+}
+/* すべての階の .room-buttons を中央配置に */
+.room-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* すべての階の .room に横幅を持たせて中央寄せ */
+.room {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 20px;
+  flex-wrap: wrap;
+  max-width: 1200px; /* 横幅を調整したい場合ここを変える */
+  width: 100%;
+  justify-content: center;
+}
+
+/* .room-box も中央寄せ＋幅調整 */
+.room-box {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  max-width: 1200px; /* ここで横幅制限 */
+  width: 100%;
+  justify-content: center;
+}
+/* 8階専用の中央配置とサイズ調整 */
+
+#floor-8F .room-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 80px;
+}
+
+#floor-8F .room-box {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  justify-content: center;
+}
+
+#floor-8F .room-box button {
+  padding: 32px 64px;
+  font-size: 26px;
+}
