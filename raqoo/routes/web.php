@@ -6,6 +6,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+ // userフォルダのhomebladeに接続
 Route::get('/home', function () {
-    return view('home');
+    return view('user.home');  // userフォルダのhomebladeに接続
 });
