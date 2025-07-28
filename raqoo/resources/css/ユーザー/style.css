@@ -9,69 +9,85 @@ body {
   font-family: "Meiryo","Yu Gothic",Arial,sans-serif;
 }
 
+/* サイドバー全体の背景色やレイアウト */
 .navigation {
-  width: 60px;
+  width: 200px;
   height: 100vh;
-  background-color: #d3d3d3;
+  background-color: #1c2b4a;
+  color: white;
   position: fixed;
   top: 0;
   left: 0;
-  transition: width 0.3s ease;
   overflow: hidden;
+  padding-top: 10px;
+  z-index: 10;
 }
 
-.navigation:hover {
-  width: 200px;
+/* 上部タイトル「教室管理」 */
+.navigation::before {
+  content: "教室管理";
+  display: block;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  padding: 12px 14px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  margin-bottom: 6px;
 }
 
-.navigation ul {
-  list-style: none;
-  padding-top: 20px;
-}
-
+/* 各メニューアイテムの見た目 */
 .navigation ul li {
-  width: 100%;
-  height: 60px;
   display: flex;
   align-items: center;
+  height: 56px;
+  padding-left: 14px;
   transition: background-color 0.3s;
 }
 
+/* ホバー時の背景色 */
 .navigation ul li:hover {
-  background-color: #bbb;
+  background-color: #256fa1;
 }
 
+/* アクティブ状態（クリック中） */
 .navigation ul li.active {
-  background-color: #a0a0a0;
+  background-color: #1f4e78;
 }
 
+/* アクティブ時の文字色 */
+.navigation ul li.active a {
+  color: white;
+}
+
+/* アイコン＋テキストのレイアウト */
 .navigation ul li a {
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #333;
+  color: white;
+  font-weight: bold;
   width: 100%;
   height: 100%;
-  padding-left: 10px;
 }
 
+/* アイコン */
 .icon {
-  font-size: 24px;
-  width: 40px;
+  font-size: 20px;
+  width: 32px;
   text-align: center;
 }
 
+/* メニュー文字 */
 .title {
-  font-size: 16px;
-  margin-left: 10px;
-  opacity: 0;
+  font-size: 15px;
+  margin-left: 8px;
   white-space: nowrap;
-  transition: opacity 0.3s ease;
+  opacity: 1; /* ← これが重要：常時表示 */
+  transition: none;
 }
 
-.navigation:hover .title {
-  opacity: 1;
-}
+
+
 
 /* ヘッダーcss */
 .header {
