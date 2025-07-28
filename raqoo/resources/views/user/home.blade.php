@@ -169,6 +169,17 @@
       <div class="floor">5階</div>
       <div class="unavailable-label">― 利用不可</div>
     </div>
+      <div class="time-card available">
+    <div class="time-main">16:20</div>
+    <div class="time-sub">~17:50</div>
+    <div class="floor">5階</div>
+    <div class="available-label">◯ 利用可能</div>
+  </div>
+  <div class="time-card unavailable">
+    <div class="time-main">18:00</div>
+    <div class="time-sub">~19:30</div>
+    <div class="floor">5階</div>
+    <div class="unavailable-label">― 利用不可</div>
   </div>
 </div>
 
@@ -199,6 +210,18 @@
             <div class="time-sub">~16:10</div>
             <div class="floor">5階</div>
             <div class="unavailable-label">― 利用不可</div>
+            </div>
+            <div class="time-card available">
+            <div class="time-main">16:20</div>
+            <div class="time-sub">~17:50</div>
+            <div class="floor">5階</div>
+            <div class="available-label">◯ 利用可能</div>
+          </div>
+          <div class="time-card unavailable">
+            <div class="time-main">18:00</div>
+            <div class="time-sub">~19:30</div>
+            <div class="floor">5階</div>
+            <div class="unavailable-label">― 利用不可</div>
           </div>
         </div>
       </div>
@@ -218,21 +241,33 @@
             <div class="floor">5階</div>
             <div class="unavailable-label">― 利用不可</div>
           </div>
-        <div class="time-card available">
-       <div class="time-main">13:00</div>
-            <div class="time-sub">~14:30</div>
-      <div class="floor">5階</div>
-      <div class="available-label">◯ 利用可能</div>
-     </div>
           <div class="time-card available">
-        <div class="time-main">14:40</div>
+            <div class="time-main">13:00</div>
+            <div class="time-sub">~14:30</div>
+            <div class="floor">5階</div>
+            <div class="available-label">◯ 利用可能</div>
+          </div>
+          <div class="time-card available">
+            <div class="time-main">14:40</div>
             <div class="time-sub">~16:10</div>
-      <div class="floor">5階</div>
-      <div class="available-label">◯ 利用可能</div>
-        </div>
-      </div>
-    </div>
-  </div>
+            <div class="floor">5階</div>
+            <div class="available-label">◯ 利用可能</div>
+          </div>
+          <div class="time-card available">
+            <div class="time-main">16:20</div>
+            <div class="time-sub">~17:50</div>
+            <div class="floor">5階</div>
+            <div class="available-label">◯ 利用可能</div>
+          </div>
+            <div class="time-card unavailable">
+            <div class="time-main">18:00</div>
+            <div class="time-sub">~19:30</div>
+            <div class="floor">5階</div>
+            <div class="unavailable-label">― 利用不可</div>
+            </div>  
+              </div>
+            </div>
+          </div>
 
   <script>
     const list = document.querySelectorAll(".list");
