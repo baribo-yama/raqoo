@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Raqoo</title>
-  <link rel="stylesheet" href="{{ asset('user/style.css') }}"/>
+  <link rel="stylesheet" href="{{ asset('user/home.css') }}"/>
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
@@ -277,6 +277,6 @@
     }
     list.forEach(item => item.addEventListener("click", activeLink));
   </script>
-  <script src="script.js"></script>
+  <script src="home.js"></script>
 </body>
 </html>
