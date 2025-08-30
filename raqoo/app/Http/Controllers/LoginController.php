@@ -18,7 +18,7 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials)){
             // 認証成功
-            return redirect()->intended('/home');
+            return redirect()->intended('/home'); // 成功したらホームへ
         } else {
             // 認証失敗
             return back()->withErrors([
