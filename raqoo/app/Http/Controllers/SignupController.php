@@ -10,7 +10,7 @@ class SignupController extends Controller
 {
     public function up(Request $request)
     {
-        // dd($request->all()); // フォームから送信されたデータを確認するためのデバッグコード
+        // dd($request->all()); // ←フォームから送信されたデータを確認するためのデバッグコード
 
         $request->validate([
             'email' => 'required|string|max:255|unique:users',
