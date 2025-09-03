@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id(); // オートインクリメントの主キー
-            $table->char('student_id'); // 学籍番号
-            $table->char('pass');
+            $table->string('student_id'); // 学籍番号
+            $table->string('email');// メールアドレス
+            $table->string('password');// charのpassからstringのpasswordに変更
             $table->char('name');
             $table->timestamps();
         });
