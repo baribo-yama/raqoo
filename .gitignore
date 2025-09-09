@@ -29,4 +29,5 @@ Homestead.json
 .phpactor.json
 auth.json
 docker/db/data/
+/log/xdebug.log
 log/xdebug.log

@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="info.css">
   <!-- FontAwesome for main content icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ asset('user/info.css') }}"/>
 </head>
 <body>
   <div class="app-container">
