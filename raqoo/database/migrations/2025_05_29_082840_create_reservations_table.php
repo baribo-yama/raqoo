@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
-            $table->integer('room_id');
-            $table->timestamp('start_time');
-            $table->timestamp('end_time');
-            $table->enum('status', ['not_reserved', 'pending', 'reserved', 'cancelled', 'completed']); //予約のステータス
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('room_id')->constrained()->onDelete('cascade');
+            $table->date('date');
+            $table->tinyInteger('period'); //1～6限
+            $table->enum('status', ['pending', 'reserved', 'in_use', 'canceled', 'finished'])->default('pending');  // 予約申請中、予約済み、利用中、キャンセル、利用終了
+            $table->string('purpose', 100);
+            $table->text('members')->nullable(); // カンマ区切り or JSON
+            $table->timestamps();
         });
     }
 
