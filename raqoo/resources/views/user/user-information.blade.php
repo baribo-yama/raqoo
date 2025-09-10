@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ユーザー情報</title>
- <link rel="stylesheet" href="{{ asset('user/user-date.css') }}"/>
+ <link rel="stylesheet" href="{{ asset('user/user-information.css') }}"/>
   <!-- Ionicons（サイドバーアイコン） -->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
