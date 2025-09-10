@@ -98,10 +98,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-
-
-
-// csrf-tokenの確認のためのデバッグ
-let meta = document.querySelector('meta[name="csrf-token"]');
-console.log(meta);
-// <meta name="csrf-token" content="xxxxx">

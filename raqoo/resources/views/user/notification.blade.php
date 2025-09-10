@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>お知らせ</title>
-  <link rel="stylesheet" href="info.css">
+ <link rel="stylesheet" href="{{ asset('user/notification.css') }}">
   <!-- FontAwesome for main content icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="{{ asset('user/info.css') }}"/>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 <body>
   <div class="app-container">
@@ -82,6 +81,6 @@
   <!-- Ionicons for sidebar -->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-  <script src="info.js"></script>
+    <script src="{{ asset('user/notification.js') }}"></script>
 </body>
 </html>
