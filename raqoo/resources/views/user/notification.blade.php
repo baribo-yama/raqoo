@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>お知らせ</title>
- <link rel="stylesheet" href="{{ asset('user/osirase.css') }}">
+ <link rel="stylesheet" href="{{ asset('user/notification.css') }}">
   <!-- FontAwesome for main content icons -->
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
@@ -81,6 +81,6 @@
   <!-- Ionicons for sidebar -->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script src="{{ asset('user/osirase.js') }}"></script>
+    <script src="{{ asset('user/notification.js') }}"></script>
 </body>
 </html>
