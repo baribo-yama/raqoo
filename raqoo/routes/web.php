@@ -9,8 +9,8 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\SignupController;
 
 /*======= 管理者画面 ========*/
-// 管理者トップ画面への接続
-Route::get('/admin-top', [AdminRoomController::class, 'index'])->name('admin.top');
+// 管理者ダッシュボード画面への接続
+Route::get('/admin/dashboard', [AdminRoomController::class, 'index'])->name('admin.dashboard');
 
 // 教室ステータス（periodごと）の更新API
 Route::post('/admin/room-status', [RoomStatusController::class, 'updateStatus'])->name('admin.room-status.update');
