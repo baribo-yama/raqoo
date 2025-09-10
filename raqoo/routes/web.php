@@ -25,8 +25,3 @@ Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index
 Route::get('/info', function () {
     return view('user.info');
 });
-
-// テスト表示画面への接続
-Route::get('/test', function () {
-    return view('');
-});
