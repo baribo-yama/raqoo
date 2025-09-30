@@ -22,7 +22,7 @@ class ReservationController extends Controller
             ->orderBy('date')
             ->orderBy('period')
             ->paginate(10);
-        
+
         $rooms = Room::all();
 
         return view('admin.reservations-index', compact('reservations', 'rooms'));
