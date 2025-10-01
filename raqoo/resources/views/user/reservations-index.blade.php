@@ -117,7 +117,7 @@
                                             <div>
                                                 <span class="text-gray-600">利用目的:</span>
                                                 <span
-                                                    class="font-medium">{{ Str::limit($reservation->purpose, 20) }}</span>
+                                                    class="font-medium">{{ \Illuminate\Support\Str::limit($reservation->purpose, 20) }}</span>
                                             </div>
                                             <div>
                                                 <span class="text-gray-600">申請日:</span>

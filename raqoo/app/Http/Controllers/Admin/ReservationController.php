@@ -11,7 +11,7 @@ class ReservationController extends Controller
 {
     public function __construct()
     {
-        // 一時的にコメントアウト - テスト用
+        // 管理者認証ミドルウェアを有効化
         $this->middleware('auth:admin');
     }
 
