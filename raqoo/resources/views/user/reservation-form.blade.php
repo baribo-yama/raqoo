@@ -40,10 +40,13 @@
                     </a>
                 </li>
                 <li class="list">
-                    <a href="{{ route('logout') }}">
-                        <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                        <span class="title">ログアウト</span>
-                    </a>
+                    <form method="POST" action="{{ route('logout') }}" style="margin: 0; width: 100%;">
+                        @csrf
+                        <button type="submit" style="background: none; border: none; padding: 0; width: 100%; text-align: left; display: block; color: inherit; font: inherit; cursor: pointer;">
+                            <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
+                            <span class="title">ログアウト</span>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>
@@ -74,7 +77,7 @@
                 <div class="bg-white p-6 rounded-lg shadow-lg">
                     <form action="{{ route('user.reservations.confirm') }}" method="POST">
                         @csrf
-                        
+
                         <!-- 教室情報表示 -->
                         <div class="mb-6 p-4 bg-gray-100 rounded-lg">
                             <h3 class="text-lg font-semibold mb-2">予約詳細</h3>
@@ -112,10 +115,10 @@
                             <label for="purpose" class="block text-sm font-medium text-gray-700 mb-2">
                                 利用目的 <span class="text-red-500">*</span>
                             </label>
-                            <textarea 
-                                id="purpose" 
-                                name="purpose" 
-                                rows="3" 
+                            <textarea
+                                id="purpose"
+                                name="purpose"
+                                rows="3"
                                 maxlength="100"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="利用目的を入力してください（100文字以内）"
@@ -139,10 +142,10 @@
                             <label for="members" class="block text-sm font-medium text-gray-700 mb-2">
                                 利用メンバー（代表者以外、最大30名）
                             </label>
-                            <textarea 
-                                id="members" 
-                                name="members" 
-                                rows="6" 
+                            <textarea
+                                id="members"
+                                name="members"
+                                rows="6"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="メンバーの氏名と学籍番号を入力してください&#10;例：&#10;山田太郎 (S12345)&#10;佐藤花子 (S67890)"
                             >{{ old('members') }}</textarea>
@@ -153,11 +156,11 @@
 
                         <!-- ボタン -->
                         <div class="flex justify-between">
-                            <a href="{{ route('user.home.index') }}" 
+                            <a href="{{ route('user.home.index') }}"
                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200">
                                 キャンセル
                             </a>
-                            <button type="submit" 
+                            <button type="submit"
                                     class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
                                 確認画面へ
                             </button>
@@ -172,7 +175,7 @@
         // 文字数カウント
         const purposeTextarea = document.getElementById('purpose');
         const purposeCount = document.getElementById('purposeCount');
-        
+
         purposeTextarea.addEventListener('input', function() {
             purposeCount.textContent = this.value.length;
         });

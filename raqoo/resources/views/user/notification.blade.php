@@ -39,10 +39,13 @@
                     </a>
                 </li>
                 <li class="list">
-                    <a href="{{ route('logout') }}">
-                        <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                        <span class="title">ログアウト</span>
-                    </a>
+                    <form method="POST" action="{{ route('logout') }}" style="margin: 0; width: 100%;">
+                        @csrf
+                        <button type="submit" style="background: none; border: none; padding: 0; width: 100%; text-align: left; display: block; color: inherit; font: inherit; cursor: pointer;">
+                            <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
+                            <span class="title">ログアウト</span>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>
@@ -77,7 +80,7 @@
                         <div class="flex items-start justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center space-x-3 mb-2">
-                                    <span class="inline-block w-3 h-3 rounded-full 
+                                    <span class="inline-block w-3 h-3 rounded-full
                                         @if($notification->type === 'system') bg-blue-500
                                         @elseif($notification->type === 'reservation') bg-green-500
                                         @elseif($notification->type === 'urgent') bg-red-500
@@ -89,9 +92,9 @@
                                         {{ $notification->created_at->format('Y/m/d H:i') }}
                                     </span>
                                 </div>
-                                
+
                                 <p class="text-gray-600 mb-2">{{ $notification->message }}</p>
-                                
+
                                 <div class="flex items-center space-x-4 text-sm text-gray-500">
                                     <span>
                                         @if($notification->type === 'system') システム通知
