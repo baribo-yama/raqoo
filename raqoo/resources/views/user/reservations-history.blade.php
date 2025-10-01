@@ -109,13 +109,7 @@
                                     <div class="text-sm">
                                         <span class="text-gray-600">利用人数:</span>
                                         <span class="font-medium">
-                                            @php
-                                                $memberCount = 1; // 代表者
-                                                if($reservation->members) {
-                                                    $memberCount += count(array_filter(explode("\n", $reservation->members)));
-                                                }
-                                            @endphp
-                                            {{ $memberCount }}名
+                                            {{ $reservation->member_count }}名
                                         </span>
                                     </div>
                                 </div>

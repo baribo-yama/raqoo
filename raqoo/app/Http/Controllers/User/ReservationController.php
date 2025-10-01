@@ -138,12 +138,11 @@ class ReservationController extends Controller
     // 利用履歴表示
     public function history()
     {
-        $historyReservations = Reservation::where('user_id', Auth::id())
-            ->where('date', '<', Carbon::today())
-            ->orWhere(function($query) {
-                $query->where('user_id', Auth::id())
-                      ->whereIn('status', ['completed', 'cancelled', 'rejected']);
+        $historyReservations = Reservation::where(function($query) {
+                $query->where('date', '<', Carbon::today())
+                      ->orWhereIn('status', ['completed', 'cancelled', 'rejected']);
             })
+            ->where('user_id', Auth::id())
             ->with('room')
             ->orderBy('date', 'desc')
             ->paginate(10);
