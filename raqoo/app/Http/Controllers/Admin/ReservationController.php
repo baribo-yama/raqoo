@@ -12,7 +12,7 @@ class ReservationController extends Controller
     public function __construct()
     {
         // 一時的にコメントアウト - テスト用
-        // $this->middleware('auth:admin');
+        $this->middleware('auth:admin');
     }
 
     // 予約一覧表示

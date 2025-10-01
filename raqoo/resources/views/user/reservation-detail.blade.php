@@ -40,10 +40,13 @@
                     </a>
                 </li>
                 <li class="list">
-                    <a href="{{ route('logout') }}">
-                        <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                        <span class="title">ログアウト</span>
-                    </a>
+                    <form method="POST" action="{{ route('logout') }}" style="margin: 0; width: 100%;">
+                        @csrf
+                        <button type="submit" style="background: none; border: none; padding: 0; width: 100%; text-align: left; display: block; color: inherit; font: inherit; cursor: pointer;">
+                            <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
+                            <span class="title">ログアウト</span>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>
@@ -69,7 +72,7 @@
             <div class="recentOrders">
                 <div class="cardHeader">
                     <h2>予約詳細</h2>
-                    <a href="{{ route('user.reservations.index') }}" 
+                    <a href="{{ route('user.reservations.index') }}"
                        class="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition duration-200">
                         一覧に戻る
                     </a>
@@ -175,7 +178,7 @@
                     <div class="flex justify-center space-x-4">
                         @if(in_array($reservation->status, ['pending', 'approved']) && \Carbon\Carbon::parse($reservation->date)->isFuture())
                             <!-- キャンセルボタン -->
-                            <button onclick="confirmCancel()" 
+                            <button onclick="confirmCancel()"
                                     class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
                                 <ion-icon name="close-circle-outline" class="mr-2"></ion-icon>
                                 予約をキャンセル
@@ -193,14 +196,14 @@
             <h3 class="text-lg font-semibold mb-4">予約キャンセルの確認</h3>
             <p class="text-gray-600 mb-6">本当にこの予約をキャンセルしますか？<br>この操作は取り消すことができません。</p>
             <div class="flex justify-end space-x-3">
-                <button onclick="closeModal()" 
+                <button onclick="closeModal()"
                         class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition duration-200">
                     キャンセル
                 </button>
                 <form action="{{ route('user.reservations.cancel', $reservation->id) }}" method="POST" class="inline">
                     @csrf
                     @method('PATCH')
-                    <button type="submit" 
+                    <button type="submit"
                             class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-200">
                         予約をキャンセル
                     </button>

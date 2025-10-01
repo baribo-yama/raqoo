@@ -39,10 +39,13 @@
                     </a>
                 </li>
                 <li class="list">
-                    <a href="{{ route('logout') }}">
-                        <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                        <span class="title">ログアウト</span>
-                    </a>
+                    <form method="POST" action="{{ route('logout') }}" style="margin: 0; width: 100%;">
+                        @csrf
+                        <button type="submit" style="background: none; border: none; padding: 0; width: 100%; text-align: left; display: block; color: inherit; font: inherit; cursor: pointer;">
+                            <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
+                            <span class="title">ログアウト</span>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>
@@ -78,7 +81,7 @@
                             <div class="flex-1">
                                 <div class="flex items-center space-x-4 mb-2">
                                     <h3 class="text-lg font-semibold text-gray-800">{{ $reservation->room->name }}</h3>
-                                    <span class="px-2 py-1 text-xs rounded-full 
+                                    <span class="px-2 py-1 text-xs rounded-full
                                         @if($reservation->status === 'completed') bg-blue-100 text-blue-800
                                         @elseif($reservation->status === 'cancelled') bg-gray-100 text-gray-800
                                         @elseif($reservation->status === 'rejected') bg-red-100 text-red-800
@@ -89,7 +92,7 @@
                                         @endif
                                     </span>
                                 </div>
-                                
+
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
                                     <div class="text-sm">
                                         <span class="text-gray-600">日付:</span>
@@ -163,7 +166,7 @@
                     <ion-icon name="document-text-outline" class="text-6xl text-gray-300 mb-4"></ion-icon>
                     <h3 class="text-lg font-medium text-gray-600 mb-2">利用履歴がありません</h3>
                     <p class="text-gray-500">過去の利用実績がここに表示されます</p>
-                    <a href="{{ route('user.home.index') }}" 
+                    <a href="{{ route('user.home.index') }}"
                        class="inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
                         教室を予約する
                     </a>

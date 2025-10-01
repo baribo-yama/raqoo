@@ -40,10 +40,13 @@
                     </a>
                 </li>
                 <li class="list">
-                    <a href="{{ route('logout') }}">
-                        <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                        <span class="title">ログアウト</span>
-                    </a>
+                    <form method="POST" action="{{ route('logout') }}" style="margin: 0; width: 100%;">
+                        @csrf
+                        <button type="submit" style="background: none; border: none; padding: 0; width: 100%; text-align: left; display: block; color: inherit; font: inherit; cursor: pointer;">
+                            <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
+                            <span class="title">ログアウト</span>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>
@@ -75,7 +78,7 @@
                     <!-- 確認内容 -->
                     <div class="mb-6">
                         <h3 class="text-xl font-semibold mb-4 text-gray-800">申請内容をご確認ください</h3>
-                        
+
                         <!-- 予約情報 -->
                         <div class="bg-gray-50 p-4 rounded-lg mb-6">
                             <h4 class="font-semibold text-lg mb-3">予約情報</h4>
@@ -159,11 +162,11 @@
 
                     <!-- ボタン -->
                     <div class="flex justify-between">
-                        <button onclick="history.back()" 
+                        <button onclick="history.back()"
                                 class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200">
                             戻る
                         </button>
-                        
+
                         @if($memberCount <= $data['room']->capacity)
                         <form action="{{ route('user.reservations.store') }}" method="POST" class="inline">
                             @csrf
@@ -172,14 +175,14 @@
                             <input type="hidden" name="period" value="{{ $data['period'] }}">
                             <input type="hidden" name="purpose" value="{{ $data['purpose'] }}">
                             <input type="hidden" name="members" value="{{ $data['members'] }}">
-                            
-                            <button type="submit" 
+
+                            <button type="submit"
                                     class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
                                 申請する
                             </button>
                         </form>
                         @else
-                        <button disabled 
+                        <button disabled
                                 class="px-6 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed">
                             申請する（人数超過）
                         </button>
