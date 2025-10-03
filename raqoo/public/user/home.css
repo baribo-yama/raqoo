@@ -94,8 +94,8 @@ body {
   position: relative;
   width: 100%;
   height: 80px;
- 
-  
+
+
   display: flex;
   align-items: center;
 }
@@ -476,7 +476,23 @@ body {
   border-left: 2px solid #eee;
   border-right: 2px solid #eee;
   overflow-x: visible;
-  justify-content: center; 
+  justify-content: center;
+}
+
+/* 予約ボタンのスタイル */
+.reserve-btn {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: #3882F6;
+  color: white;
+  text-decoration: 4px;
+  font-size: 12px;
+  margin-top: 4px;
+  transition: background-color 0.2s;
+}
+
+reserve-btn:hover {
+  background-color: #2563EB;
 }
 
 .time-card {
@@ -485,7 +501,7 @@ body {
   color: #999;
   border-radius: 7px;
   width: 135px;
-  height: 110px;
+  /* height: 110px;   */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -496,7 +512,7 @@ body {
   position: relative;
   transition: background 0.2s, color 0.2s;
   margin: 0;
-  cursor: pointer; 
+  cursor: pointer;
 }
 
 /* ホバー時に青色 */
