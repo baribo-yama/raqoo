@@ -141,6 +141,19 @@
             </div>
         </div>
 
+        {{-- 予約申請の送信成功メッセージ --}}
+        @if (session('success'))
+            <div
+                class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ session('error') }}
+            </div>
+        @endif
 
         {{-- DBから繰り返し教室内容表示（表形式） --}}
         <table>
@@ -165,7 +178,7 @@
             <div class="room-group">
                 <div class="room-title">{{ $room->name }}</div>
                 <div class="room-times">
-                    @for($period = 1; $period <= 6; $period++)
+                    @for ($period = 1; $period <= 6; $period++)
                         @php
                             $status = $room->getStatusForPeriod(date('Y-m-d'), $period);
                             $times = [
@@ -174,17 +187,17 @@
                                 3 => ['13:00', '14:30'],
                                 4 => ['14:40', '16:10'],
                                 5 => ['16:20', '17:50'],
-                                6 => ['18:00', '19:30']
+                                6 => ['18:00', '19:30'],
                             ];
                         @endphp
-                         <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }}">
+                        <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }}">
                             <div class="time-main">{{ $times[$period][0] }}</div>
                             <div class="time-sub">~{{ $times[$period][1] }}</div>
                             <div class="floor">{{ $room->floor }}</div>
-                            @if($status === 'available')
+                            @if ($status === 'available')
                                 <div class="available-label">利用可能</div>
                                 <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => date('Y-m-d'), 'period' => $period]) }}"
-                                   class="reserve-btn">予約</a>
+                                    class="reserve-btn">予約</a>
                             @else
                                 <div class="unavailable-label">
                                     {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}
@@ -192,103 +205,6 @@
                             @endif
                         </div>
                     @endfor
-                    {{-- 1限目 09:10-10:40 --}}
-                    {{--<div class="time-card {{ $room->status === 'available' ? 'available' : 'unavailable'}}">
-                        <div class="time-main">09:10</div>
-                        <div class="time-sub">~10:40</div>
-                        <div class="floor">{{ $room->floor }}</div>
-                        @if($room->status === 'available')
-                            <div class="available-label">利用可能</div>
-                            <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => date('Y-m-d'), 'period' => 1]) }}"
-                                class="reserve-btn">予約</a>
-                        @else
-                            <div class="unavailable-label">
-                                {{ $room->status === 'in_use' ? '利用中' : ($room->status === 'reserved' ? '予約済み' : '利用不可') }}
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- 2限目 10:50-12:20 --}}
-                    {{--<div class="time-card {{ $room->status === 'available' ? 'available' : 'unavailable'}}">
-                        <div class="time-main">10:50</div>
-                        <div class="time-sub">~12:20</div>
-                        <div class="floor">{{ $room->floor }}</div>
-                        @if($room->status === 'available')
-                            <div class="available-label">利用可能</div>
-                            <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => date('Y-m-d'), 'period' => 2]) }}"
-                                class="reserve-btn">予約</a>
-                        @else
-                            <div class="unavailable-label">
-                                {{ $room->status === 'in_use' ? '利用中' : ($room->status === 'reserved' ? '予約済み' : '利用不可') }}
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- 3限目 13:00-14:30 --}}
-                    {{--<div class="time-card {{ $room->status === 'available' ? 'available' : 'unavailable'}}">
-                        <div class="time-main">13:00</div>
-                        <div class="time-sub">~14:30</div>
-                        <div class="floor">{{ $room->floor }}</div>
-                        @if($room->status === 'available')
-                            <div class="available-label">利用可能</div>
-                            <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => date('Y-m-d'), 'period' => 3]) }}"
-                                class="reserve-btn">予約</a>
-                        @else
-                            <div class="unavailable-label">
-                                {{ $room->status === 'in_use' ? '利用中' : ($room->status === 'reserved' ? '予約済み' : '利用不可') }}
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- 4限目 14:40-16:10 --}}
-                    {{--<div class="time-card {{ $room->status === 'available' ? 'available' : 'unavailable'}}">
-                        <div class="time-main">14:40</div>
-                        <div class="time-sub">~16:10</div>
-                        <div class="floor">{{ $room->floor }}</div>
-                        @if($room->status === 'available')
-                            <div class="available-label">利用可能</div>
-                            <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => date('Y-m-d'), 'period' => 4]) }}"
-                                class="reserve-btn">予約</a>
-                        @else
-                            <div class="unavailable-label">
-                                {{ $room->status === 'in_use' ? '利用中' : ($room->status === 'reserved' ? '予約済み' : '利用不可') }}
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- 5限目 16:20-17:50 --}}
-                    {{--<div class="time-card {{ $room->status === 'available' ? 'available' : 'unavailable'}}">
-                        <div class="time-main">16:20</div>
-                        <div class="time-sub">~17:50</div>
-                        <div class="floor">{{ $room->floor }}</div>
-                        @if($room->status === 'available')
-                            <div class="available-label">利用可能</div>
-                            <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => date('Y-m-d'), 'period' => 5]) }}"
-                                class="reserve-btn">予約</a>
-                        @else
-                            <div class="unavailable-label">
-                                {{ $room->status === 'in_use' ? '利用中' : ($room->status === 'reserved' ? '予約済み' : '利用不可') }}
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- 6限目 18:00-19:30 --}}
-                    {{--<div class="time-card {{ $room->status === 'available' ? 'available' : 'unavailable'}}">
-                        <div class="time-main">18:00</div>
-                        <div class="time-sub">~19:30</div>
-                        <div class="floor">{{ $room->floor }}</div>
-                        @if($room->status === 'available')
-                            <div class="available-label">利用可能</div>
-                            <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => date('Y-m-d'), 'period' => 6]) }}"
-                                class="reserve-btn">予約</a>
-                        @else
-                            <div class="unavailable-label">
-                                {{ $room->status === 'in_use' ? '利用中' : ($room->status === 'reserved' ? '予約済み' : '利用不可') }}
-                            </div>
-                        @endif
-                    </div>--}}
-
-
                 </div>
             </div>
         @endforeach
@@ -297,15 +213,16 @@
 
 
 
-  <script>
-    const list = document.querySelectorAll(".list");
-    function activeLink(){
-      list.forEach(item => item.classList.remove("active"));
-      this.classList.add("active");
-    }
-    list.forEach(item => item.addEventListener("click", activeLink));
-  </script>
-  <script src="home.js"></script>
+        <script>
+            const list = document.querySelectorAll(".list");
+
+            function activeLink() {
+                list.forEach(item => item.classList.remove("active"));
+                this.classList.add("active");
+            }
+            list.forEach(item => item.addEventListener("click", activeLink));
+        </script>
+        <script src="home.js"></script>
 </body>
 
 </html>
