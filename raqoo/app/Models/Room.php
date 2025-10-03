@@ -15,7 +15,7 @@ class Room extends Model
         return $this->hasMany(RoomStatus::class);
     }
 
-    // 特定の日付・次元のステータスを取得
+    // 特定の日付・時限のステータスを取得
     public function getStatusForPeriod($date, $period)
     {
         $roomStatus = $this->roomStatuses()

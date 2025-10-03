@@ -485,13 +485,13 @@ body {
   padding: 4px 8px;
   background-color: #3882F6;
   color: white;
-  text-decoration: 4px;
+  text-decoration: none;
   font-size: 12px;
   margin-top: 4px;
   transition: background-color 0.2s;
 }
 
-reserve-btn:hover {
+.reserve-btn:hover {
   background-color: #2563EB;
 }
 
