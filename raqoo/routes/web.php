@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\SignupController;
+use App\Http\Controllers\PollTestController; // ポーリングのテスト用コントローラー
 
 /*======= 認証関連 ========*/
 // ユーザーログイン
@@ -75,3 +76,7 @@ Route::get('/info', function () {
 Route::get('/', function () {
     return redirect('/home');
 });
+
+
+// ポーリングのテストのためのルート
+Route::get('/long-poll/test',[PollTestController::class, 'test']);
