@@ -9,7 +9,7 @@ class Reservation extends Model
 {
     protected $fillable = [
         'user_id',
-        'room_id', 
+        'room_id',
         'date',
         'period',
         'purpose',
@@ -40,11 +40,11 @@ class Reservation extends Model
     public function getMemberCountAttribute(): int
     {
         $memberCount = 1; // 代表者
-        
+
         if ($this->members) {
             $memberCount += count(array_filter(explode("\n", $this->members)));
         }
-        
+
         return $memberCount;
     }
 }

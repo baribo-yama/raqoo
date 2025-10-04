@@ -5,28 +5,46 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\RoomStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+
 
 class ReservationController extends Controller
 {
+    // コンストラクタで認証チェックを追加
     public function __construct()
     {
         $this->middleware('auth');
     }
 
-    // 予約申請フォーム表示
+    // 予約申請フォーム表示(MVP版)
     public function create(Request $request)
     {
-        $room = Room::findOrFail($request->room_id);
-        $date = $request->date;
-        $period = $request->period;
+        // デバッグ用　room_idとか取得できているか
+        // dd([
+        //     'room_id' => $request->room_id,
+        //     'date' => $request->date,
+        //     'period' => $request->period,
+        //     'selectedRoom' => Room::find($request->room_id)
+        // ]);
 
-        return view('user.reservation-form', compact('room', 'date', 'period'));
+
+        $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
+        $selectedDate = $request->date;
+        $selectedPeriod = $request->period;
+
+        // nullチェックを追加
+        if (!$selectedRoom) {
+            return redirect()->route('user.home.index')
+                ->with('error', '教室がみつかりません。もう一度選択してください。');
+        }
+        return view('user.reservation-form', compact('selectedRoom', 'selectedDate', 'selectedPeriod'));
     }
 
-    // 予約確認画面表示
+    // 予約確認画面表示（MVP版）
     public function confirm(Request $request)
     {
         $validated = $request->validate([
@@ -37,33 +55,59 @@ class ReservationController extends Controller
             'members' => 'nullable|string',
         ]);
 
-        $room = Room::findOrFail($validated['room_id']);
-        
-        // メンバー数計算（代表者 + メンバー）
-        $memberCount = 1; // 代表者
-        if ($validated['members']) {
-            $memberCount += count(array_filter(explode("\n", $validated['members'])));
+        $selectedRoom = Room::find($validated['room_id']);
+
+        // 重複予約チェック
+        $existing = Reservation::where('room_id', $validated['room_id'])
+            ->where('date', $validated['date'])
+            ->where('period', $validated['period'])
+            ->whereIn('status', ['pending', 'approved'])
+            ->exists();
+
+        if ($existing) {
+            return back()->withErrors(['error' => 'この時間帯はすでに予約されています。']);
         }
 
-        $data = [
-            'room' => $room,
-            'date' => $validated['date'],
-            'period' => $validated['period'],
-            'purpose' => $validated['purpose'],
-            'members' => $validated['members'],
+        // ビューで使いやすい形に整理
+        $reservationData = [
+        'room_id' => $validated['room_id'],
+        'room_name' => $selectedRoom->name,
+        'date' => $validated['date'],
+        'period' => $validated['period'],
+        'purpose' => $validated['purpose'],
+        'members' => $validated['members'],
+        'user_name' => Auth::user()->name,
+        'student_id' => Auth::user()->student_id,
         ];
 
-        return view('user.reservation-confirm', compact('data', 'memberCount'));
+        // 将来実装予定：利用人数計算
+        $memberCount = 1; // 代表者分
+        if (!empty($validated['members'])) {
+            $members = preg_split('/[\n\r]+/', trim($validated['members']));
+            $memberCount += count(array_filter($members, 'trim'));
+        }
+
+        return view('user.reservation-confirm', compact('reservationData', 'selectedRoom', 'memberCount'));
     }
 
-    // 予約申請保存
+    // 予約申請保存（MVP版）
     public function store(Request $request)
     {
+        // デバッグ用：リクエストデータをログに記録
+        Log::info('予約申請開始', [
+            'user_id' => Auth::id(),
+            'room_id' => $request->room_id,
+            'date' => $request->date,
+            'period' => $request->period,
+            'purpose' => $request->purpose
+        ]);
+
+        // バリデーション（confirmを経由しない場合もあるため　）
         $validated = $request->validate([
             'room_id' => 'required|exists:rooms,id',
             'date' => 'required|date|after_or_equal:today',
             'period' => 'required|integer|min:1|max:6',
-            'purpose' => 'required|string|max:100',
+            'purpose' => 'required|string|max:500',
             'members' => 'nullable|string',
         ]);
 
@@ -71,24 +115,37 @@ class ReservationController extends Controller
         $existing = Reservation::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
             ->where('period', $validated['period'])
-            ->whereIn('status', ['pending', 'approved', 'in_use'])
+            ->whereIn('status', ['pending', 'approved'])
             ->exists();
 
+        // storeでのチェック：データ整合性保証
         if ($existing) {
-            return back()->withErrors(['error' => 'この時間帯は既に予約されています。']);
+            return back()->withErrors(['error' => 'この時間帯はすでに予約されています。']);
         }
 
-        Reservation::create([
+        // 予約作成
+        $reservation = Reservation::create([
             'user_id' => Auth::id(),
-            'room_id' => $validated['room_id'],
-            'date' => $validated['date'],
-            'period' => $validated['period'],
+            'room_id' => $validated['room_id'],    // $request->room_id ではなく
+            'date' => $validated['date'],          // $request->date ではなく
+            'period' => $validated['period'],      // $request->period ではなく
             'purpose' => $validated['purpose'],
             'members' => $validated['members'],
             'status' => 'pending',
         ]);
 
-        return redirect()->route('user.reservations.index')
+        // 予約作成成功ログを追加
+        Log::info('予約申請完了', [
+            'reservation_id' => $reservation->id,
+            'user_id' => Auth::id(),
+            'room_id' => $validated['room_id'],
+            'date' => $validated['date'],
+            'period' => $validated['period'],
+            'status' => 'pending'
+        ]);
+
+        // 予約申請成功メッセージ
+        return redirect()->route('user.home.index')
             ->with('success', '予約申請を送信しました。承認をお待ちください。');
     }
 
@@ -138,10 +195,10 @@ class ReservationController extends Controller
     // 利用履歴表示
     public function history()
     {
-        $historyReservations = Reservation::where(function($query) {
-                $query->where('date', '<', Carbon::today())
-                      ->orWhereIn('status', ['completed', 'cancelled', 'rejected']);
-            })
+        $historyReservations = Reservation::where(function ($query) {
+            $query->where('date', '<', Carbon::today())
+                ->orWhereIn('status', ['completed', 'cancelled', 'rejected']);
+        })
             ->where('user_id', Auth::id())
             ->with('room')
             ->orderBy('date', 'desc')
