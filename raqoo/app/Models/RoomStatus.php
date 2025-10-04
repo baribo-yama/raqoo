@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class RoomStatus extends Model
 {
     protected $fillable = [
-        'room_id', 'date', 'period', 'status'
+        'room_id',
+        'date',
+        'period',
+        'status'
     ];
 
     protected $casts = [
@@ -18,5 +21,17 @@ class RoomStatus extends Model
     public function room()
     {
         return $this->belongsTo(Room::class);
+    }
+
+
+    // RoomStatus モデル
+    public static function getStatusForRoom($roomId, $date, $period)
+    {
+        $roomStatus = self::where('room_id', $roomId)
+            ->where('date', $date)
+            ->where('period', $period)
+            ->first();
+
+        return $roomStatus ? $roomStatus->status : 'available';
     }
 }

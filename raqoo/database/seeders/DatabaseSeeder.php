@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
         // ほかのseederをここから呼び出す（RoomSeederとか)
         $this->call([
             RoomSeeder::class,
+            AdminSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }
