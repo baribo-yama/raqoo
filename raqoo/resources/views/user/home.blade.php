@@ -155,23 +155,6 @@
             </div>
         @endif
 
-        {{-- DBから繰り返し教室内容表示（表形式） --}}
-        <table>
-            <tr>
-                <th>教室名</th>
-                <th>収容人数</th>
-                <th>ステータス</th>
-            </tr>
-            @foreach ($rooms as $room)
-                <tr>
-                    <td>{{ $room->name }}</td>
-                    <td>{{ $room->capacity }}</td>
-                    <td>
-                        {{ $room->status === 'available' ? '利用可能' : ($room->status === 'in_use' ? '利用中' : '利用不可') }}
-                    </td>
-                </tr>
-            @endforeach
-        </table>
 
         {{-- DBから繰り返し教室内容表示（本番向けの表示） --}}
         @foreach ($rooms as $room)
