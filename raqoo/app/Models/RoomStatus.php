@@ -24,7 +24,7 @@ class RoomStatus extends Model
     }
 
 
-    // RoomStatus モデル
+    // 予約申請が通ったものをhome.bladeに返す
     public static function getStatusForRoom($roomId, $date, $period)
     {
         $roomStatus = self::where('room_id', $roomId)
