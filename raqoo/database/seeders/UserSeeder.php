@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
         // テスト用のユーザーアカウントを作成
         User::create([
             'name' => 'ばやし',
-            'email' => 'kenta6flat@icloud.com',
+            'email' => 'bayashi@example.com',
             'password' => Hash::make('123456'),
             'student_id' => 'ST001',
         ]);
