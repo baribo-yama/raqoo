@@ -15,14 +15,10 @@ class Room extends Model
         return $this->hasMany(RoomStatus::class);
     }
 
-    // 特定の日付・時限のステータスを取得
+
+    // Room モデル
     public function getStatusForPeriod($date, $period)
     {
-        $roomStatus = $this->roomStatuses()
-            ->where('date', $date)
-            ->where('period', $period)
-            ->first();
-
-        return $roomStatus ? $roomStatus->status : 'available';
+        return RoomStatus::getStatusForRoom($this->id, $date, $period);
     }
 }

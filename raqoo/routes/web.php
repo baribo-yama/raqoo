@@ -38,10 +38,15 @@ Route::get('/admin/dashboard', [AdminRoomController::class, 'index'])->name('adm
 Route::post('/admin/room-status', [RoomStatusController::class, 'updateStatus'])->name('admin.room-status.update');
 
 // 管理者予約管理
-Route::get('/admin/reservations', [AdminReservationController::class, 'index'])->name('admin.reservations.index');
-Route::get('/admin/reservations/{reservation}', [AdminReservationController::class, 'show'])->name('admin.reservations.show');
-Route::patch('/admin/reservations/{reservation}/status', [AdminReservationController::class, 'updateStatus'])->name('admin.reservations.updateStatus');
-Route::patch('/admin/reservations/{reservation}/reject', [AdminReservationController::class, 'reject'])->name('admin.reservations.reject');
+Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function () {
+    Route::get('/reservations', [AdminReservationController::class, 'index'])->name('reservations.index');
+    Route::post('/reservations/{reservation}/approve', [AdminReservationController::class, 'approve'])->name('reservations.approve');
+    Route::post('/reservations/{reservation}/reject', [AdminReservationController::class, 'reject'])->name('reservations.reject');
+});
+// Route::get('/admin/reservations', [AdminReservationController::class, 'index'])->name('admin.reservations.index');
+// Route::get('/admin/reservations/{reservation}', [AdminReservationController::class, 'show'])->name('admin.reservations.show');
+// Route::patch('/admin/reservations/{reservation}/status', [AdminReservationController::class, 'updateStatus'])->name('admin.reservations.updateStatus');
+// Route::patch('/admin/reservations/{reservation}/reject', [AdminReservationController::class, 'reject'])->name('admin.reservations.reject');
 
 // 管理者教室管理
 Route::get('/admin/rooms', [AdminRoomController::class, 'roomsIndex'])->name('admin.rooms.index');
