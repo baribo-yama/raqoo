@@ -186,7 +186,7 @@
             }
             list.forEach(item => item.addEventListener("click", activeLink));
         </script>
-        <script src="home.js"></script>
+        <script src="{{ asset('user/home.js') }}"></script>
 </body>
 
 </html>
