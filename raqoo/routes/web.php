@@ -78,5 +78,7 @@ Route::get('/', function () {
 });
 
 
-// ポーリングのテストのためのルート
-Route::get('/long-poll/test',[PollTestController::class, 'test']);
+// 通信のテストのためのルート（ロングポーリング）
+Route::get('/long-poll/test',[\App\Http\Controllers\PollTestController::class, 'pollPage']);
+Route::get('/long-poll/receive',[\App\Http\Controllers\PollTestController::class, 'receive']);// 受け取る側
+Route::post('/long-poll/send',[\App\Http\Controllers\PollTestController::class, 'send']);// 送る側
