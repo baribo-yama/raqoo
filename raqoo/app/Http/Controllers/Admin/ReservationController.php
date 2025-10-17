@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\RoomStatus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ReservationController extends Controller
 {
@@ -15,52 +17,54 @@ class ReservationController extends Controller
         $this->middleware('auth:admin');
     }
 
-    // 予約一覧表示
+    // 予約申請一覧
     public function index()
     {
         $reservations = Reservation::with(['user', 'room'])
+            ->where('status', 'pending')
             ->orderBy('date')
             ->orderBy('period')
-            ->paginate(10);
+            ->get();
 
-        $rooms = Room::all();
-
-        return view('admin.reservations-index', compact('reservations', 'rooms'));
+        return view('admin.reservations-index', compact('reservations'));
     }
 
-    // 予約詳細表示
-    public function show(Reservation $reservation)
+    // 承認処理
+    public function approve(Reservation $reservation)
     {
-        $reservation->load(['user', 'room']);
-        return view('admin.reservation-detail', compact('reservation'));
-    }
+        $reservation->update(['status' => 'reserved']);
 
-    // 予約ステータス更新
-    public function updateStatus(Request $request, Reservation $reservation)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,approved,rejected,in_use,completed,cancelled'
+        // room_statusesテーブルに予約済み状態を追加
+        RoomStatus::updateOrCreate(
+            [
+                'room_id' => $reservation->room_id,
+                'date' => $reservation->date,
+                'period' => $reservation->period,
+            ],
+            ['status' => 'reserved']
+        );
+
+        // ログ追加
+        Log::info('予約承認完了', [
+            'reservation_id' => $reservation->id,
+            'room_id' => $reservation->room_id,
+            'date' => $reservation->date,
+            'period' => $reservation->period
         ]);
 
-        $reservation->update([
-            'status' => $validated['status']
-        ]);
-
-        return response()->json(['success' => true]);
+        return redirect()->back()->with('success', '予約を承認しました。');
     }
 
     // 予約却下（理由付き）
     public function reject(Request $request, Reservation $reservation)
     {
-        $validated = $request->validate([
-            'rejection_reason' => 'required|string|max:500'
+        $reservation->update(['status' => 'cancelled']);
+
+        Log::info('予約却下完了', [
+            'reservation_id' => $reservation->id,
+            'reason' => 'admin_rejected'
         ]);
 
-        $reservation->update([
-            'status' => 'rejected',
-            'rejection_reason' => $validated['rejection_reason']
-        ]);
-
-        return response()->json(['success' => true]);
+        return redirect()->back()->with(['success', '予約を却下しました。']);
     }
 }
