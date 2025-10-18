@@ -1,0 +1,125 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  background-color: #f5f6fa;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+/* サイドバー */
+.sidebar {
+  width: 220px;
+  background-color: #1f2b59;
+  color: white;
+  padding: 30px 20px;
+}
+
+.sidebar h2 {
+  font-size: 20px;
+  margin-bottom: 40px;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li {
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sidebar li.active,
+.sidebar li:hover {
+  background-color: #3246a8;
+}
+
+/* メイン画面 */
+.main {
+  flex: 1;
+  padding: 30px;
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+
+/* タイトル */
+.main h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+   text-align: center;
+}
+
+/* コンテンツ */
+.content {
+  display: flex;
+  gap: 30px;
+}
+
+/* 教室ステータス */
+.status-panel {
+  flex: 1;
+}
+
+.status-panel table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.status-panel th,
+.status-panel td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+.available {
+  color: green;
+  font-weight: bold;
+}
+
+.occupied {
+  color: red;
+  font-weight: bold;
+}
+
+/* 予約関連 */
+.reservation-panel {
+  width: 380px;
+}
+
+.reservation-panel h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.reservation-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.reservation-panel th,
+.reservation-panel td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: center;
+}
+
+/* 画面切り替え制御 */
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
