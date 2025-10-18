@@ -117,7 +117,6 @@
             </div>
         @endif
 
-<<<<<<< HEAD
         {{-- DBから繰り返し教室内容表示（表形式） --}}
         <table>
             <tr>
@@ -135,46 +134,29 @@
                 </tr>
             @endforeach
         </table>
-=======
->>>>>>> develop
 
         {{-- DBから繰り返し教室内容表示（本番向けの表示） --}}
         @foreach ($rooms as $room)
+           @php
+                $status = $room->status;
+                $times = [
+                    1 => ['09:10', '10:40'],
+                    2 => ['10:50', '12:20'],
+                    3 => ['13:00', '14:30'],
+                    4 => ['14:40', '16:10'],
+                    5 => ['16:20', '17:50'],
+                    6 => ['18:00', '19:30'],
+                ];
+            @endphp
             <div class="room-group">
                 <div class="room-title">{{ $room->name }}</div>
                 <div class="room-times">
                     @for ($period = 1; $period <= 6; $period++)
-<<<<<<< HEAD
-    @php
-        $status = $room->status; // ←ここを変更
-        $times = [
-            1 => ['09:10', '10:40'],
-            2 => ['10:50', '12:20'],
-            3 => ['13:00', '14:30'],
-            4 => ['14:40', '16:10'],
-            5 => ['16:20', '17:50'],
-            6 => ['18:00', '19:30'],
-        ];
-    @endphp
 
-=======
-                        @php
-                            $status = $room->getStatusForPeriod(date('Y-m-d'), $period);
-                            $times = [
-                                1 => ['09:10', '10:40'],
-                                2 => ['10:50', '12:20'],
-                                3 => ['13:00', '14:30'],
-                                4 => ['14:40', '16:10'],
-                                5 => ['16:20', '17:50'],
-                                6 => ['18:00', '19:30'],
-                            ];
-                        @endphp
->>>>>>> develop
                         <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }}">
                             <div class="time-main">{{ $times[$period][0] }}</div>
                             <div class="time-sub">~{{ $times[$period][1] }}</div>
                             <div class="floor">{{ $room->floor }}</div>
-<<<<<<< HEAD
                            @if ($status === 'available')
     <div class="available-label">利用可能</div>
     {{-- 一時的にルート呼び出しを停止 --}}
@@ -185,24 +167,12 @@
     </div>
 @endif
 
-=======
-                            @if ($status === 'available')
-                                <div class="available-label">利用可能</div>
-                                <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => date('Y-m-d'), 'period' => $period]) }}"
-                                    class="reserve-btn">予約</a>
-                            @else
-                                <div class="unavailable-label">
-                                    {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}
-                                </div>
-                            @endif
->>>>>>> develop
                         </div>
                     @endfor
                 </div>
             </div>
         @endforeach
 
-<<<<<<< HEAD
 
 
 
@@ -217,9 +187,6 @@
             list.forEach(item => item.addEventListener("click", activeLink));
         </script>
         <script src="{{ asset('user/home.js') }}"></script>
-=======
-        <script src="{{ asset('user/home.js' )}}"></script>
->>>>>>> develop
 </body>
 
 </html>
