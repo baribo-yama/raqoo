@@ -84,6 +84,10 @@ Route::get('/', function () {
 
 
 // 通信のテストのためのルート（ロングポーリング）
-Route::get('/long-poll/test',[\App\Http\Controllers\PollTestController::class, 'pollPage']);
-Route::get('/long-poll/receive',[\App\Http\Controllers\PollTestController::class, 'receive']);// 受け取る側
-Route::post('/long-poll/send',[\App\Http\Controllers\PollTestController::class, 'send']);// 送る側
+// テストページ（管理者・利用者）
+Route::get('/long-poll/admin', [PollTestController::class, 'pollPageAdmin']);
+Route::get('/long-poll/user', [PollTestController::class, 'pollPageUser']);
+
+// long-poll API
+Route::get('/long-poll/receive', [PollTestController::class, 'receive']);
+Route::post('/long-poll/send', [PollTestController::class, 'send']);
