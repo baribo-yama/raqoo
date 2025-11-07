@@ -13,46 +13,8 @@
 
 <body>
     <div class="main-content">
-        <div class="navigation">
-            <ul>
-                <li class="list active">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                        <span class="title">ホーム</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="person-circle-outline"></ion-icon></span>
-                        <span class="title">プロフィール</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="settings-outline"></ion-icon></span>
-                        <span class="title">設定</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="radio-outline"></ion-icon></span>
-                        <span class="title">お知らせ</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="newspaper-outline"></ion-icon></span>
-                        <span class="title">利用規約</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                        <span class="title">サインアウト</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+        {{-- ナビゲーション --}}
+        <x-user.sidebar />
 
         <!-- ヘッダー -->
         <div class="header">
@@ -143,8 +105,7 @@
 
         {{-- 予約申請の送信成功メッセージ --}}
         @if (session('success'))
-            <div
-                class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                 {{ session('success') }}
             </div>
         @endif
@@ -192,7 +153,9 @@
             </div>
         @endforeach
 
-        <script src="{{ asset('user/home.js' )}}"></script>
+        <script src="{{ asset('user/home.js') }}"></script>
+
+    </div>
 </body>
 
 </html>

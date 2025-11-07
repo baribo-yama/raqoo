@@ -430,7 +430,7 @@ body {
 
 /*サイドバーの分の左余白確保コード*/
 .main-content{
-  padding-left:60px;
+  padding-left:216px;
   padding-right:16px;
   max-width:950px;
   margin:0 auto;
