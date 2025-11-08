@@ -568,3 +568,39 @@ body {
 .time-card.unavailable .unavailable-label {
   color: #888;
 }
+/* === タブとかぶらない“押し出し”配置：矢印だけ左右に出す === */
+
+/* タブ帯を基準に。余白は増やさず、外側に出すので padding 0 のままでOK */
+.day-tabs{
+  position: relative !important;
+  padding: 0 !important;
+  overflow: visible !important;   /* ボタンを外側へはみ出させるため */
+  border: none !important;
+  background: transparent !important;
+}
+
+/* タブはそのまま（前面優先度はボタンより低くてOK） */
+.day-tabs .day-tab{ position: relative; z-index: 1; }
+
+/* 左右ボタン：タブ帯の“外側”に固定（負のオフセット） */
+.day-tabs .strip-btn{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;                   /* 小さめで干渉防止 */
+  height: 28px;
+  border: none;
+  border-radius: 9999px;
+  background: #6b7280;           /* 無地・影なし */
+  color: #fff;
+  box-shadow: none;
+  cursor: pointer;
+  z-index: 3;
+}
+
+/* ここがポイント：負方向にずらして完全に外へ出す */
+.day-tabs .strip-prev{ left:  -20px; }   /* もっと離したければ -24px などに */
+.day-tabs .strip-next{ right: -20px; }
+
+.day-tabs .strip-btn:hover{ opacity: .95; }
+.day-tabs .strip-btn:active{ transform: translateY(-50%) scale(.96); }
