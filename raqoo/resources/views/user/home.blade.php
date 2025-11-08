@@ -72,66 +72,77 @@
         </div>
 
         <!-- 検索バー -->
-        <div class="search-container">
-            <form class="search-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>日付</label>
-                        <input type="date" placeholder="yyyy/mm/dd">
-                    </div>
-                    <div class="form-group">
-                        <label>何限～何限利用するか</label>
-                        <input type="text" placeholder="例: 1限 〜 3限">
-                    </div>
-                    <div class="form-group">
-                        <label>利用人数</label>
-                        <input type="text" placeholder="〇人">
-                    </div>
-                </div>
-                <div class="form-row-btn">
-                    <button type="submit" class="search-btn">検索</button>
-                </div>
-            </form>
-        </div>
+      <!-- （中略）検索フォーム。フォームには .search-form、日付入力は type="date" -->
+<form class="search-form">
+  <div class="form-row">
+    <div class="form-group">
+      <label>日付</label>
+      <input type="date" id="dateInput" placeholder="yyyy/mm/dd">
+    </div>
+    <!-- …制限や人数の入力はそのまま… -->
+  </div>
+  <div class="form-row-btn">
+    <button type="submit" class="search-btn">検索</button>
+  </div>
+</form>
 
-        <!-- 曜日タブ -->
-        <div>
-            <div class="day-tabs">
-                <div class="day-tab">
-                    <div class="day-label">日</div>
-                    <div class="date-label">05/19</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">月</div>
-                    <div class="date-label">05/20</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">火</div>
-                    <div class="date-label">05/21</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">水</div>
-                    <div class="date-label">05/22</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">木</div>
-                    <div class="date-label">05/23</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">金</div>
-                    <div class="date-label">05/24</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">土</div>
-                    <div class="date-label">05/25</div>
-                </div>
-            </div>
-            <div class="date-section">
-                <div class="date-title-row">
-                    <span class="date-year">2025</span>
-                    <span class="date-main">05/20</span>
-                    <span class="date-weekday">（月）</span>
-                </div>
+<!-- ▼曜日ストリップ：.day-tabs の中に左右ボタンを置く -->
+<div class="day-tabs">
+  <!-- 左矢印（前日へ） -->
+  <button type="button" class="strip-btn strip-prev" aria-label="前日へ">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <!-- ここに既存の .day-tab × 7 -->
+  <!-- 例）.day-label が曜日, .date-label が MM/DD を表示 -->
+  <div class="day-tab">
+    <div class="day-label">日</div>
+    <div class="date-label">05/18</div>
+  </div>
+  <div class="day-tab">
+    <div class="day-label">月</div>
+    <div class="date-label">05/19</div>
+  </div>
+  <div class="day-tab">
+    <div class="day-label">火</div>
+    <div class="date-label">05/20</div>
+  </div>
+  <div class="day-tab">
+    <div class="day-label">水</div>
+    <div class="date-label">05/21</div>
+  </div>
+  <div class="day-tab">
+    <div class="day-label">木</div>
+    <div class="date-label">05/22</div>
+  </div>
+  <div class="day-tab">
+    <div class="day-label">金</div>
+    <div class="date-label">05/23</div>
+  </div>
+  <div class="day-tab">
+    <div class="day-label">土</div>
+    <div class="date-label">05/24</div>
+  </div>
+
+  <!-- 右矢印（翌日へ） -->
+  <button type="button" class="strip-btn strip-next" aria-label="翌日へ">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</div>
+
+<!-- ▼中央の大きい日付（クラス名は既存のままに合わせてください） -->
+<div class="date-display">
+  <span class="date-year">2025</span>
+  <span class="date-main">05/20</span>
+  <span class="date-weekday">（火）</span>
+</div>
+
                 <div class="status-bar-2">
                     <span class="status-line"></span>
                     ･･･現在使用中
