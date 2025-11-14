@@ -603,3 +603,128 @@ body {
 
 .day-tabs .strip-btn:hover{ opacity: .95; }
 .day-tabs .strip-btn:active{ transform: translateY(-50%) scale(.96); }
+
+/* ===== 検索フォーム（既存の .search-form をそのままカード風に） ===== */
+.search-form{
+  width: 100%;
+  max-width: 880px;
+  margin: 24px auto 28px;        /* 画面中央寄せ */
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.06);
+  padding: 20px 22px;
+}
+
+/* 1行に並べても1個でも崩れないレスポンシブグリッド */
+.search-form .form-row{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.search-form .form-row-btn{
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+/* ラベル＆インプット */
+.search-form .form-group{ display: flex; flex-direction: column; gap: 6px; }
+
+.search-form label{
+  font-size: 12px;
+  color: #62667a;
+}
+
+/* 入力の外観（うす紫の枠＋角丸） */
+.search-form input[type="text"],
+.search-form input[type="date"]{
+  height: 40px;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #d7d3f0;     /* うす紫 */
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  color: #2b2f3a;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+
+.search-form input[type="text"]::placeholder,
+.search-form input[type="date"]::placeholder{ color: #a9a7bd; }
+
+.search-form input[type="text"]:focus,
+.search-form input[type="date"]:focus{
+  border-color: #c2b8ff;
+  box-shadow: 0 0 0 3px rgba(146,131,255,.18);
+}
+
+/* 日付ピッカーはブラウザ標準 */
+.search-form input[type="date"]{ appearance: auto; }
+
+/* 検索ボタン（中央・淡い黄色） */
+.search-btn{
+  min-width: 120px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid #e2c985;
+  background: #ffe3a8;
+  color: #3d3a2a;
+  border-radius: 10px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+  cursor: pointer;
+  transition: transform .04s ease, filter .15s ease;
+}
+.search-btn:hover{ filter: brightness(0.98); }
+.search-btn:active{ transform: translateY(1px); }
+
+/* スマホ幅では縦並び */
+@media (max-width: 720px){
+  .search-form .form-row{ grid-template-columns: 1fr; }
+}
+/* ===== 中央の日付を大きく・見出し風に ===== */
+.date-display{
+  margin: 16px auto 8px;         /* 上下の余白 */
+  text-align: center;
+}
+
+.date-display-inner{
+  display: inline-flex;          /* ベースラインを揃えて横並び */
+  align-items: baseline;
+  gap: 10px;                     /* 2025 と 05/20 の間の余白 */
+}
+
+/* 年 */
+.date-display .date-year{
+  font-size: 28px;               /* ←お好みで 30〜34 に */
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: #222;
+}
+
+/* 月日（メイン） */
+.date-display .date-main{
+  font-size: 40px;               /* ←お好みで 42〜48 に */
+  font-weight: 800;
+  letter-spacing: .05em;
+  color: #222;
+}
+
+/* （曜） */
+.date-display .date-weekday{
+  font-size: 24px;               /* ←お好みで 24〜28 に */
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: #222;
+  margin-left: 4px;
+}
+
+/* 小さめ画面での縮小 */
+@media (max-width: 720px){
+  .date-display .date-year{ font-size: 22px; }
+  .date-display .date-main{ font-size: 32px; }
+  .date-display .date-weekday{ font-size: 20px; }
+}
