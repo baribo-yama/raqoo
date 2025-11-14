@@ -75,16 +75,31 @@
       <!-- （中略）検索フォーム。フォームには .search-form、日付入力は type="date" -->
 <form class="search-form">
   <div class="form-row">
+    <!-- 日付 -->
     <div class="form-group">
-      <label>日付</label>
+      <label for="dateInput">日付</label>
       <input type="date" id="dateInput" placeholder="yyyy/mm/dd">
     </div>
-    <!-- …制限や人数の入力はそのまま… -->
+
+    <!-- 何限～何限 -->
+    <div class="form-group">
+      <label for="periodInput">何限～何限利用するか</label>
+      <input type="text" id="periodInput" placeholder="例：1限 ～ 3限">
+    </div>
+
+    <!-- 利用人数 -->
+    <div class="form-group">
+      <label for="peopleInput">利用人数</label>
+      <input type="text" id="peopleInput" placeholder="〇人">
+      <!-- 数字限定にしたいなら type="number" min="1" step="1" に変更可 -->
+    </div>
   </div>
+
   <div class="form-row-btn">
     <button type="submit" class="search-btn">検索</button>
   </div>
 </form>
+
 
 <!-- ▼曜日ストリップ：.day-tabs の中に左右ボタンを置く -->
 <div class="day-tabs">
