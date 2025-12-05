@@ -54,9 +54,18 @@
             </ul>
         </div>
 
-        <!-- ヘッダー -->
-        <div class="header">
-            <div class="logo-box">Raqoo</div>
+            <!-- ヘッダー（ロゴ画像＋プロフィール） -->
+  <div class="header">
+    {{-- ロゴ画像 --}}
+    <div class="logo-wrapper">
+        <img src="{{ asset('user/images/raqoo-logo.png') }}"
+             alt="raqoo logo"
+             class="raqoo-logo">
+         </div>
+    </div>
+
+
+            {{-- プロフィールボックス --}}
             <div class="profile-box">
                 <div class="profile-icon">
                     <svg width="32" height="32" viewBox="0 0 32 32">
@@ -70,6 +79,7 @@
                 </div>
             </div>
         </div>
+
 
         <!-- 検索バー -->
       <!-- （中略）検索フォーム。フォームには .search-form、日付入力は type="date" -->
@@ -153,7 +163,6 @@
 
 <!-- ▼中央の大きい日付（クラス名は既存のままに合わせてください） -->
 <div class="date-display">
-  <span class="date-year">2025</span>
   <span class="date-main">05/20</span>
   <span class="date-weekday">（火）</span>
 </div>
