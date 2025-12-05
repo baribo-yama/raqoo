@@ -83,11 +83,11 @@ body {
 /* ===== ヘッダー＋ロゴ周り ===== */
 /* ===== ヘッダー＋ロゴ＋プロフィール周り ===== */
 /* ===== ヘッダーを背景と完全に同化させる（上書き） ===== */
-.header{
+.header {
   width: 100%;
-  background: #f5f6fa !important; /* body と同じ色に完全統一 */
-  padding-top: 28px;
-  padding-bottom: 12px;
+  background: #f5f6fa !important;  /* 背景はそのまま */
+  padding-top: 40px;               /* ← 上の余白を少し増やす（28→40） */
+  padding-bottom: 16px;            /* ← 下の余白も少しだけ増やす（12→16） */
 
   display: flex;
   justify-content: center;
@@ -96,6 +96,9 @@ body {
   border: none !important;
   box-shadow: none !important;
 }
+
+
+
 
 /* ロゴ周りの余計な白背景・カード感を完全に消す */
 .logo-wrapper{
@@ -263,7 +266,7 @@ body {
 }
 
 .search-btn {
-  background: var(--raqoo-btn);   /* or background: #2F4A6A; */
+  background: var(--raqoo-btn);   /* ここで上の色を使う */
   color: #fff;
   border: none;
   padding: 12px 44px;
@@ -271,18 +274,19 @@ body {
   font-weight: bold;
   border-radius: 10px;
   cursor: pointer;
-  box-shadow: 0px 2px 8px rgba(80, 120, 180, 0.10); /* ほんのり影 */
+  box-shadow: 0px 2px 8px rgba(80, 120, 180, 0.10);
   transition: background 0.2s, transform 0.1s;
 }
 
 .search-btn:hover {
   background: #243955;            /* 少し濃いネイビー */
-  transform: translateY(-1px);    /* ちょっと浮く */
+  transform: translateY(-1px);
 }
 
 .search-btn:active {
-  transform: translateY(0);       /* 押したら元の位置に */
+  transform: translateY(0);
 }
+
 
 
 @media (max-width: 720px) {
