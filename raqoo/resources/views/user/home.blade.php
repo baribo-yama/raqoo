@@ -148,7 +148,7 @@
                     $week = ['日', '月', '火', '水', '木', '金', '土'];
                     $today = now();
                 @endphp
-
+                <span class="date-year" style="display:none;"></span>
                 <span class="date-main">{{ $today->format('m/d') }}</span>
                 <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
             </div>
