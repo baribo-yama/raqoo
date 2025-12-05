@@ -637,3 +637,17 @@ body {
 .time-card.unavailable .unavailable-label {
   color: #888;
 }
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.navigation { flex: 0 0 200px; /* さっきの修正 */ }
+
+.main-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 24px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
