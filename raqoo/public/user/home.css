@@ -266,7 +266,7 @@ body {
 }
 
 .search-btn {
-  background: var(--raqoo-btn);   /* ここで上の色を使う */
+  background: #2F4A6A;   /* ← ここを直接色指定にする */
   color: #fff;
   border: none;
   padding: 12px 44px;
@@ -277,6 +277,8 @@ body {
   box-shadow: 0px 2px 8px rgba(80, 120, 180, 0.10);
   transition: background 0.2s, transform 0.1s;
 }
+
+
 
 .search-btn:hover {
   background: #243955;            /* 少し濃いネイビー */
