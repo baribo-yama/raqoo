@@ -101,15 +101,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ===== Arrow buttons -> slide by 1 day =====
-  prevBtn?.addEventListener('click', () => {
-    startDate.setDate(startDate.getDate() - 1);
-    renderStrip();
-  });
-  nextBtn?.addEventListener('click', () => {
-    startDate.setDate(startDate.getDate() + 1);
-    renderStrip();
-  });
+ // 前へ
+prevBtn?.addEventListener('click', () => {
+  const newDate = new Date(startDate);        // 現在の日付をコピー
+  newDate.setDate(startDate.getDate() - 1);   // ← 1日戻す
+  startDate = newDate;                        // ← 上書き
+  renderStrip();                              // 再描画
+});
+
+// 次へ
+nextBtn?.addEventListener('click', () => {
+  const newDate = new Date(startDate);        // 現在の日付をコピー
+  newDate.setDate(startDate.getDate() + 1);   // ← 1日進める
+  startDate = newDate;
+  renderStrip();
+});
+
 
   // ===== (既存) time-card selection =====
   document.querySelectorAll('.time-card').forEach(card => {

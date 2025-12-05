@@ -94,7 +94,7 @@
     <!-- 何限～何限 -->
     <div class="form-group">
       <label for="periodInput">何限～何限利用するか</label>
-      <input type="text" id="periodInput" placeholder="例：1限 ～ 3限">
+     <input type="text" id="periodInput" placeholder="例：1限 〜 3限">
     </div>
 
     <!-- 利用人数 -->
@@ -121,36 +121,25 @@
     </svg>
   </button>
 
-  <!-- ここに既存の .day-tab × 7 -->
+    <!-- ここに既存の .day-tab × 7 -->
   <!-- 例）.day-label が曜日, .date-label が MM/DD を表示 -->
-  <div class="day-tab">
-    <div class="day-label">日</div>
-    <div class="date-label">05/18</div>
-  </div>
-  <div class="day-tab">
-    <div class="day-label">月</div>
-    <div class="date-label">05/19</div>
-  </div>
-  <div class="day-tab">
-    <div class="day-label">火</div>
-    <div class="date-label">05/20</div>
-  </div>
-  <div class="day-tab">
-    <div class="day-label">水</div>
-    <div class="date-label">05/21</div>
-  </div>
-  <div class="day-tab">
-    <div class="day-label">木</div>
-    <div class="date-label">05/22</div>
-  </div>
-  <div class="day-tab">
-    <div class="day-label">金</div>
-    <div class="date-label">05/23</div>
-  </div>
-  <div class="day-tab">
-    <div class="day-label">土</div>
-    <div class="date-label">05/24</div>
-  </div>
+
+  @php
+      // 今日を基準に 7 日分のタブを作る
+      $weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+      $baseDate = now();  // ここを $selectedDate に変えれば「選択中の日付」基準にもできる
+  @endphp
+
+  @for ($i = 0; $i < 7; $i++)
+      @php
+          $d = $baseDate->copy()->addDays($i);
+      @endphp
+      <div class="day-tab">
+          <div class="day-label">{{ $weekdayLabels[$d->dayOfWeek] }}</div>
+          <div class="date-label">{{ $d->format('m/d') }}</div>
+      </div>
+  @endfor
+
 
   <!-- 右矢印（翌日へ） -->
   <button type="button" class="strip-btn strip-next" aria-label="翌日へ">
@@ -163,8 +152,14 @@
 
 <!-- ▼中央の大きい日付（クラス名は既存のままに合わせてください） -->
 <div class="date-display">
-  <span class="date-main">05/20</span>
-  <span class="date-weekday">（火）</span>
+  @php
+    $week = ['日', '月', '火', '水', '木', '金', '土'];
+    $today = now();
+@endphp
+
+<span class="date-main">{{ $today->format('m/d') }}</span>
+<span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
+
 </div>
 
                 <div class="status-bar-2">

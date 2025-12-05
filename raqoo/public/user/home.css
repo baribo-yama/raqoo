@@ -80,43 +80,30 @@ body {
 }
 
 /* ========== ヘッダー＋ロゴ＋プロフィール ========== */
-/* ===== ヘッダー＋ロゴ周り ===== */
-/* ===== ヘッダー＋ロゴ＋プロフィール周り ===== */
-/* ===== ヘッダーを背景と完全に同化させる（上書き） ===== */
+/* ヘッダー本体（!important なし） */
 .header {
   width: 100%;
-  background: #f5f6fa !important;  /* 背景はそのまま */
-  padding-top: 40px;               /* ← 上の余白を少し増やす（28→40） */
-  padding-bottom: 16px;            /* ← 下の余白も少しだけ増やす（12→16） */
+  background: #f5f6fa;
+  padding-top: 40px;
+  padding-bottom: 16px;
 
   display: flex;
   justify-content: center;
   align-items: center;
 
-  border: none !important;
-  box-shadow: none !important;
+  border: none;
+  box-shadow: none;
 }
-
-
-
 
 /* ロゴ周りの余計な白背景・カード感を完全に消す */
-.logo-wrapper{
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 auto !important;
+/* ヘッダー内のロゴだけに適用するよう強めのセレクタに変更 */
+.header .logo-wrapper {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 auto;
 }
-
-/* ロゴ画像を自然表示 */
-.logo-wrapper img{
-  max-width: 320px;
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
 
 .raqoo-logo {
   max-width: 320px;
@@ -254,7 +241,7 @@ body {
 }
 
 .form-group input[type="text"]:focus,
-.form-group input[type="date"]*:focus {
+.form-group input[type="date"]:focus {
   border-color: #c2b8ff;
   box-shadow: 0 0 0 3px rgba(146, 131, 255, 0.18);
 }
