@@ -93,7 +93,7 @@
                     <!-- 何限～何限 -->
                     <div class="form-group">
                         <label for="periodInput">何限～何限利用するか</label>
-                        <input type="text" id="periodInput" placeholder="例：1限 〜 3限">
+                        <input type="text" id="periodInput" placeholder="例: 1限 〜 3限">
                     </div>
 
                     <!-- 利用人数 -->

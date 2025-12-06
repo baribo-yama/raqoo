@@ -16,8 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 日付
   let selectedDate = new Date();
-  let startDate = new Date();
-  startDate.setDate(selectedDate.getDate() - selectedDate.getDay()); // 日曜開始
+  let startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
 
   // 中央の日付更新
   function updateCenterDisplay(d) {
@@ -29,15 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // 7つのタブ表示
   function renderStrip() {
     tabs.forEach((tab, i) => {
-      const d = new Date(startDate);
-      d.setDate(startDate.getDate() + i);
+      const d = new Date(startDate.getTime() + i * 86400000);
 
       tab.querySelector(".day-label").textContent = jaWeek[d.getDay()];
       tab.querySelector(".date-label").textContent = toMMDD(d);
 
       tab.dataset.date = toISO(d);
 
-      // active
       const active =
         d.getFullYear() === selectedDate.getFullYear() &&
         d.getMonth() === selectedDate.getMonth() &&
@@ -51,52 +48,56 @@ document.addEventListener("DOMContentLoaded", () => {
   renderStrip();
 
   // タブクリックで中央更新
-  tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-      const iso = tab.dataset.date;
-      if (!iso) return;
-      selectedDate = new Date(iso);
+ tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    const iso = tab.dataset.date;
+    if (!iso) return;
 
-      updateCenterDisplay(selectedDate);
+    // ローカル日付として正しくパース
+    const [year, month, day] = iso.split("-").map(Number);
+    selectedDate = new Date(year, month - 1, day);
 
-      // 週の開始を調整
-      startDate = new Date(selectedDate);
-      startDate.setDate(selectedDate.getDate() - selectedDate.getDay());
+    updateCenterDisplay(selectedDate);
 
-      renderStrip();
-    });
+    startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
+
+    renderStrip();
   });
+});
 
   // 前へ
   prevBtn?.addEventListener("click", () => {
-    selectedDate.setDate(selectedDate.getDate() - 1);
-    updateCenterDisplay(selectedDate);
+    selectedDate = new Date(selectedDate.getTime() - 86400000);
+    startDate   = new Date(startDate.getTime()   - 86400000);
 
-    startDate.setDate(startDate.getDate() - 1);
+    updateCenterDisplay(selectedDate);
     renderStrip();
   });
 
   // 次へ
   nextBtn?.addEventListener("click", () => {
-    selectedDate.setDate(selectedDate.getDate() + 1);
-    updateCenterDisplay(selectedDate);
+    selectedDate = new Date(selectedDate.getTime() + 86400000);
+    startDate   = new Date(startDate.getTime()   + 86400000);
 
-    startDate.setDate(startDate.getDate() + 1);
+    updateCenterDisplay(selectedDate);
     renderStrip();
   });
 
-  // 入力フォーム（日付変更）
-  dateInput?.addEventListener("change", () => {
-    const d = new Date(dateInput.value);
-    if (isNaN(d)) return;
+ // 入力フォーム（日付変更）
+dateInput?.addEventListener("change", () => {
+  // "YYYY-MM-DD" をローカル日付としてパース
+  const [year, month, day] = dateInput.value.split('-').map(Number);
+  const d = new Date(year, month - 1, day);
 
-    selectedDate = d;
-    updateCenterDisplay(selectedDate);
+  if (isNaN(d)) return;
 
-    startDate = new Date(selectedDate);
-    startDate.setDate(selectedDate.getDate() - selectedDate.getDay());
+  selectedDate = d;
+  updateCenterDisplay(selectedDate);
 
-    renderStrip();
-  });
+  startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
+
+  renderStrip();
+});
+
 
 });
