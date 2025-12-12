@@ -25,11 +25,11 @@ body {
 
 /* 上部タイトル「教室管理」 */
 .navigation::before {
-  content: "教室管理";
+  content: "raqoo";
   display: block;
-  font-size: 16px;
+  font-size: 40px;
   font-weight: bold;
-  color: white;
+  color: #47a7f5;
   padding: 12px 14px 6px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
   margin-bottom: 6px;
@@ -105,7 +105,7 @@ body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  font-size: 32px;
+  font-size: 10px;
   padding: 10px 20px;
   border: 1px solid #ccc;
   border-radius: 8px;
