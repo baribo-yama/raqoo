@@ -54,3 +54,89 @@ button{
 #up{
     text-align: right;
 }
+
+/* =====================
+   レスポンシブ対応 (タブレット・スマホ)
+   ===================== */
+
+/* 共通調整：ボックスの幅を固定せず可変に */
+.main{
+    width: 30%;
+    max-width: 720px;
+    min-width: 280px;
+    padding: 0 1rem;
+}
+
+@media (max-width: 1024px) {
+    .main{
+        /* iPad向けにさらに大きく表示 */
+        width: 92%;
+        max-width: 1200px;
+        /* 縦幅をさらに確保して中央寄せにする */
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        /* ベースフォントを大きくして読みやすく */
+        font-size: 20px;
+    }
+    .forms{
+        /* 内側の余白をさらに増やし縦スペースを確保 */
+        padding-left: 6vh;
+        padding-right: 6vh;
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+        font-size: 20px;
+    }
+    /* 入力やボタンをタッチしやすい大きさに */
+    .forms input,
+    .forms button{
+        font-size: 20px;
+        padding: 1rem 0.8rem;
+    }
+    /* 見出しをさらに強調 */
+    .main p, .main p font{
+        font-size: 2rem;
+        font-weight: 700;
+    }
+}
+
+@media (max-width: 768px) {
+    body{
+        height: auto;
+        padding: 40px 12px;
+        display: block;
+    }
+    .main{
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+    .forms{
+        border-width: 1px;
+        padding-left: 3vh;
+        padding-right: 3vh;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+    button, input{
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .forms{
+        padding-left: 2vh;
+        padding-right: 2vh;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    .main{
+        min-width: 0;
+        padding: 0 8px;
+    }
+    input, button{
+        font-size: 15px;
+    }
+}

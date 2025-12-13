@@ -88,3 +88,47 @@ body{
 }
 .dot[data-active="true"]{ background:var(--dot-active); transform:scale(1.05); }
 .dot:focus-visible{ outline:3px solid #bcd3ff; outline-offset:2px; }
+
+/* =====================
+   Responsive tweaks
+   ===================== */
+
+/* Larger screens (tablet landscape / small desktop) */
+@media (min-width: 1024px) {
+  .viewport{ padding:40px; }
+  .card{
+    width:clamp(480px, 65vw, 900px);
+    padding:32px 32px 88px;
+    border-radius:14px;
+  }
+  .card-title{ font-size:34px; }
+  .lead{ font-size:24px; }
+  .desc{ font-size:16px; max-width:720px; }
+  .badge{ width:72px; height:72px; font-size:28px; margin:10px auto 16px; }
+  .dot{ width:10px; height:10px; }
+}
+
+/* Tablet portrait (iPad) - make content larger and more touch-friendly */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .viewport{ padding:30px; }
+  .card{
+    width:clamp(420px, 86vw, 920px);
+    padding:28px 28px 72px;
+  }
+  .card-title{ font-size:30px; }
+  .lead{ font-size:22px; }
+  .desc{ font-size:15px; max-width:640px; }
+  .badge{ width:64px; height:64px; font-size:24px; }
+}
+
+/* Small screens (phones) - tighten spacing */
+@media (max-width: 480px) {
+  .viewport{ padding:12px; }
+  .card{ width:100%; padding:14px 12px 44px; border-radius:10px; }
+  .card-kicker{ font-size:11px; }
+  .card-title{ font-size:20px; }
+  .lead{ font-size:16px; }
+  .desc{ font-size:13px; max-width:100%; }
+  .badge{ width:48px; height:48px; font-size:18px; }
+  .dot{ width:8px; height:8px; }
+}

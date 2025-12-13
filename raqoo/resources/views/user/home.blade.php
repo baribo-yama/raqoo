@@ -5,57 +5,61 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Raqoo</title>
-    <link rel="stylesheet" href="{{ asset('user/home.css') }}" />
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}" />
+
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
 <body>
-    <div class="main-content">
-        <div class="navigation">
-            <ul>
-                <li class="list active">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                        <span class="title">ホーム</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="person-circle-outline"></ion-icon></span>
-                        <span class="title">プロフィール</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="settings-outline"></ion-icon></span>
-                        <span class="title">設定</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="radio-outline"></ion-icon></span>
-                        <span class="title">お知らせ</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="newspaper-outline"></ion-icon></span>
-                        <span class="title">利用規約</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                        <span class="title">サインアウト</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+    <!-- サイドバーを body 直下に配置 -->
+    <div class="navigation">
+        <ul>
+            <li class="list active">
+                <a href="#">
+                    <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
+                    <span class="title">ホーム</span>
+                </a>
+            </li>
+            <li class="list">
+                <a href="#">
+                    <span class="icon"><ion-icon name="person-circle-outline"></ion-icon></span>
+                    <span class="title">プロフィール</span>
+                </a>
+            </li>
+            <li class="list">
+                <a href="#">
+                    <span class="icon"><ion-icon name="settings-outline"></ion-icon></span>
+                    <span class="title">設定</span>
+                </a>
+            </li>
+            <li class="list">
+                <a href="#">
+                    <span class="icon"><ion-icon name="radio-outline"></ion-icon></span>
+                    <span class="title">お知らせ</span>
+                </a>
+            </li>
+            <li class="list">
+                <a href="#">
+                    <span class="icon"><ion-icon name="newspaper-outline"></ion-icon></span>
+                    <span class="title">利用規約</span>
+                </a>
+            </li>
+            <li class="list">
+                <a href="#">
+                    <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
+                    <span class="title">サインアウト</span>
+                </a>
+            </li>
+        </ul>
+    </div>
 
+    <!-- メインコンテンツ -->
+    <div class="main-content">
         <!-- ヘッダー -->
         <div class="header">
+            <button class="hamburger-btn" aria-label="メニューを開く" aria-expanded="false">☰</button>
             <div class="logo-box">Raqoo</div>
             <div class="profile-box">
                 <div class="profile-icon">
@@ -126,6 +130,7 @@
                     <div class="date-label">05/25</div>
                 </div>
             </div>
+
             <div class="date-section">
                 <div class="date-title-row">
                     <span class="date-year">2025</span>
@@ -141,22 +146,19 @@
             </div>
         </div>
 
-        {{-- 予約申請の送信成功メッセージ --}}
+        {{-- 予約申請メッセージ --}}
         @if (session('success'))
-            <div
-                class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                 {{ session('success') }}
             </div>
         @endif
-
         @if (session('error'))
             <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                 {{ session('error') }}
             </div>
         @endif
 
-
-        {{-- DBから繰り返し教室内容表示（本番向けの表示） --}}
+        {{-- 教室表示 --}}
         @foreach ($rooms as $room)
             <div class="room-group">
                 <div class="room-title">{{ $room->name }}</div>
@@ -191,8 +193,9 @@
                 </div>
             </div>
         @endforeach
+    </div>
 
-        <script src="{{ asset('user/home.js' )}}"></script>
+    <script src="{{ asset('user/home.js') }}?v={{ time() }}"></script>
 </body>
 
 </html>

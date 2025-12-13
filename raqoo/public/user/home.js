@@ -32,4 +32,41 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     list.forEach(item => item.addEventListener("click", activeLink));
+
+    // Mobile sidebar toggle
+    const hamburger = document.querySelector('.hamburger-btn');
+    const overlay = document.createElement('div');
+    overlay.className = 'nav-overlay';
+    document.body.appendChild(overlay);
+
+    function openNav() {
+        document.body.classList.add('nav-visible');
+        if (hamburger) hamburger.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeNav() {
+        document.body.classList.remove('nav-visible');
+        if (hamburger) hamburger.setAttribute('aria-expanded', 'false');
+    }
+
+    if (hamburger) {
+        hamburger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (document.body.classList.contains('nav-visible')) {
+                closeNav();
+            } else {
+                openNav();
+            }
+        });
+    }
+
+    // close via overlay click
+    overlay.addEventListener('click', function () { closeNav(); });
+
+    // close on ESC
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && document.body.classList.contains('nav-visible')) {
+            closeNav();
+        }
+    });
 });
