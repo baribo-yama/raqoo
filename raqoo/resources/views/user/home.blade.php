@@ -17,7 +17,7 @@
         <x-user.sidebar />
 
         {{-- 右：メインコンテンツ --}}
-        <div class="main-content">
+        <div class="content-area">
 
             <!-- ヘッダー（ロゴ画像） -->
             <div class="header">
@@ -69,6 +69,9 @@
                 </div>
             </form>
 
+            {{-- ▼ここから中央揃えブロック --}}
+            <div class="center-wrap">
+
             <!-- ▼曜日ストリップ -->
             <div class="day-tabs">
                 <!-- 左矢印（前日へ） -->
@@ -102,11 +105,6 @@
                     </svg>
                 </button>
             </div>
-
-        {{-- 予約申請の送信成功メッセージ --}}
-        @if (session('success'))
-            <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                {{ session('success') }}
             <!-- ▼中央の大きい日付 -->
             <div class="date-display">
                 @php
@@ -125,6 +123,8 @@
                 ･･･利用可能
             </div>
 
+        </div>
+{{-- ▲ここまで中央揃えブロック --}}
             {{-- フラッシュメッセージ --}}
             @if (session('success'))
                 <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
