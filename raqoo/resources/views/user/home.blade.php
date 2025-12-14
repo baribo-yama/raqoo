@@ -103,40 +103,36 @@
                 </button>
             </div>
 
-        {{-- 予約申請の送信成功メッセージ --}}
+        {{-- フラッシュメッセージ --}}
         @if (session('success'))
             <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                 {{ session('success') }}
-            <!-- ▼中央の大きい日付 -->
-            <div class="date-display">
-                @php
-                    $week = ['日', '月', '火', '水', '木', '金', '土'];
-                    $today = now();
-                @endphp
-                <span class="date-year" style="display:none;"></span>
-                <span class="date-main">{{ $today->format('m/d') }}</span>
-                <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
             </div>
+        @endif
 
-            <div class="status-bar-2">
-                <span class="status-line"></span>
-                ･･･現在使用中
-                <span class="status-dot"></span>
-                ･･･利用可能
+        @if (session('error'))
+            <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ session('error') }}
             </div>
+        @endif
 
-            {{-- フラッシュメッセージ --}}
-            @if (session('success'))
-                <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    {{ session('success') }}
-                </div>
-            @endif
+        <!-- ▼中央の大きい日付 -->
+        <div class="date-display">
+            @php
+                $week = ['日', '月', '火', '水', '木', '金', '土'];
+                $today = now();
+            @endphp
+            <span class="date-year" style="display:none;"></span>
+            <span class="date-main">{{ $today->format('m/d') }}</span>
+            <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
+        </div>
 
-            @if (session('error'))
-                <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {{ session('error') }}
-                </div>
-            @endif
+        <div class="status-bar-2">
+            <span class="status-line"></span>
+            ･･･現在使用中
+            <span class="status-dot"></span>
+            ･･･利用可能
+        </div>
 
             {{-- 教室カード --}}
             @foreach ($rooms as $room)
