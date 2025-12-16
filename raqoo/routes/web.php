@@ -63,6 +63,16 @@ Route::get('/admin/notifications', function() {
 // ユーザーホーム
 Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index');
 
+// 夜間注意事項ページ
+Route::get('/night-precautions', function () {
+    return view('user.night-precautions');
+})->name('user.night.precautions');
+
+// 注意事項ページ（昼間/共通版がある場合）
+Route::get('/precautions', function () {
+    return view('user.precautions');
+})->name('user.precautions');
+
 // ユーザー予約関連
 Route::get('/reservations/create', [UserReservationController::class, 'create'])->name('user.reservations.create');
 Route::post('/reservations/confirm', [UserReservationController::class, 'confirm'])->name('user.reservations.confirm');
