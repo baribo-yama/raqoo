@@ -33,8 +33,12 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 // 管理者ダッシュボード
 Route::get('/admin/dashboard', [AdminRoomController::class, 'index'])->name('admin.dashboard');
 
-// 教室ステータス更新API
+// 教室ステータス更新API（管理者）
 Route::post('/admin/room-status', [RoomStatusController::class, 'updateStatus'])->name('admin.room-status.update');
+Route::get('/admin/room-status', [RoomStatusController::class, 'getStatus'])->name('admin.room-status.get');
+
+// ユーザー向け教室ステータス更新API
+Route::get('/user/room-status', [RoomStatusController::class, 'getStatus'])->name('api.room-status');
 
 // 管理者予約管理
 Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function () {
