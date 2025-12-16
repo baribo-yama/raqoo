@@ -91,53 +91,113 @@ function renderCalendar() {
   }
 }
 
-// ========== 教室テーブル描画 ==========
-// function renderRoomTable() {
-//   const tbody = document.getElementById('roomTableBody');
-//   const dateStr = formatDate(selectedDate);
 
-//   document.getElementById('selectedDate').textContent =
-//     formatDateJapanese(selectedDate);
+// 教室テーブルのセルを取得
+function renderRoomTable() {
 
-//   tbody.innerHTML = '';
+  const date = formatDate(selectedDate)
 
-//   rooms.forEach(room => {
-//     const tr = document.createElement('tr');
+  document.getElementById('selectedDate').textContent = formatDateJapanese(selectedDate);
 
-//     // 教室名セル
-//     const roomCell = document.createElement('td');
-//     roomCell.className = 'room-col';
-//     roomCell.textContent = room;
-//     tr.appendChild(roomCell);
+  const cells = document.querySelectorAll('td[data-room-id]');
 
-//     // 各時限セル
-//     periods.forEach(period => {
-//       const td = document.createElement('td');
-//       const slot = document.createElement('div');
-//       slot.className = 'time-slot';
+  cells.forEach(cell => {
+    cell.classList.remove('unavailable');
+    cell.textContent = '';
+    cell.style.backgroundColor = '';
+    cell.style.color = '';
+  });
 
-//       const reservation = reservations[dateStr]?.[room]?.[period.id];
+  // サーバーからステータスを取得
+  fetch(`/admin/room-status?date=${date}`)
+    .then(response => response.json())
+    .then(data => {
+      console.log('取得したステータス:', data);
 
-//       if (reservation) {
-//         slot.classList.add('reserved');
-//         slot.innerHTML = `<div class="slot-content">${reservation}</div>`;
-//       } else {
-//         slot.addEventListener('click', () => {
-//           handleSlotClick(room, period.id, dateStr);
-//         });
-//       }
+      cells.forEach(cell => {
+        const roomId = cell.dataset.roomId;
+        const periodId = cell.dataset.periodId;
 
-//       td.appendChild(slot);
-//       tr.appendChild(td);
-//     });
+        // 該当するステータスを検索
+        const statusData = data.find(
+          item => item.room_id == roomId && item.period == periodId
+        );
 
-//     tbody.appendChild(tr);
-//   });
-// }
+        if (statusData && statusData.status === 'unavailable') {
+          cell.classList.add('unavailable');
+          cell.textContent = '利用不可';
+          cell.style.backgroundColor = '#e5e7eb';
+          cell.style.color = '#6b7280';
+        }
+      });
+    })
+    .catch(error => console.error('ステータス取得エラー:', error));
 
-function clickTable() {
-  const
+  // クリックイベントの設定
+  cells.forEach(cell => {
+    cell.style.cursor = 'pointer';
+    cell.onclick = () => {
+      toggleCellStatus(cell);
+    };
+  });
+
 }
+
+function toggleCellStatus(cell) {
+  const roomId = cell.dataset.roomId;
+  const periodId = cell.dataset.periodId;
+  const date = formatDate(selectedDate);
+
+  // 現在のステータスを判定
+  const isUnavailable = cell.classList.contains('unavailable');
+  const newStatus = isUnavailable ? 'available' : 'unavailable';
+
+  console.log('送信データ:', { roomId, periodId, date, newStatus });
+
+  // APIリクエスト送信
+  fetch('/admin/room-status', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({
+      room_id: roomId,
+      date: date,
+      period: periodId,
+      status: newStatus
+    })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('ステータス更新に失敗しました');
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('レスポンス:', data);
+    if (data.success) {
+      // UI更新
+      if (newStatus === 'unavailable') {
+        cell.classList.add('unavailable');
+        cell.textContent = '利用不可';
+        cell.style.backgroundColor = '#e5e7eb';
+        cell.style.color = '#6b7280';
+      } else {
+        cell.classList.remove('unavailable');
+        cell.textContent = '';
+        cell.style.backgroundColor = '';
+        cell.style.color = '';
+      }
+    }
+  })
+  .catch(error => {
+    console.error('エラー:', error);
+    alert('ステータスの更新に失敗しました')
+  });
+}
+
+
 
 // ========== 予約リクエスト一覧描画 ==========
 function renderRequestList() {
@@ -201,8 +261,8 @@ function setupEventListeners() {
 // ========== ユーティリティ関数 ==========
 function isSameDay(date1, date2) {
   return date1.getDate() === date2.getDate() &&
-         date1.getMonth() === date2.getMonth() &&
-         date1.getFullYear() === date2.getFullYear();
+    date1.getMonth() === date2.getMonth() &&
+    date1.getFullYear() === date2.getFullYear();
 }
 
 function formatDate(date) {
