@@ -31,7 +31,9 @@ Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 
 // 管理者ダッシュボード
-Route::get('/admin/dashboard', [AdminDashBoardController::class, 'index'])->name('admin.dashboard');
+Route::get('/admin/dashboard', [AdminDashBoardController::class, 'index'])
+    ->middleware('auth:admin')
+    ->name('admin.dashboard');
 
 // 予約リクエスト数取得
 Route::get('/admin/reservations/count', [AdminReservationController::class, 'count'])
