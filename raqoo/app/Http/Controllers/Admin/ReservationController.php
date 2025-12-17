@@ -18,6 +18,19 @@ class ReservationController extends Controller
         $this->middleware('auth:admin');
     }
 
+    // AdminDashBoardControllerで予約申請一覧のindex()定義して使ってるからこれいらんかも
+    //=====予約申請一覧=====//
+    // public function index()
+    // {
+    //     $reservations = Reservation::with(['user', 'room'])
+    //         ->where('status', 'pending')
+    //         ->orderBy('date')
+    //         ->orderBy('period')
+    //         ->get();
+
+    //     return view('admin.reservations-index', compact('reservations'));
+    // }
+
     //=====予約リクエスト承認処理=====//
     public function approve(Reservation $reservation)
     {
