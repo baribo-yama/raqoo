@@ -3,6 +3,7 @@ let currentDate = new Date();
 let selectedDate = new Date();
 
 // サンプルデータ
+// 本番はこれいらない
 const rooms = ['A101', 'A102', 'A103', 'A104', 'A105'];
 const periods = [
   { id: 1, time: '9:00-10:30' },
@@ -27,11 +28,16 @@ const requests = [
 ];
 
 // ========== 初期化 ==========
+// 初回実行
 document.addEventListener('DOMContentLoaded', () => {
   renderCalendar();
   renderRoomTable();
-  renderRequestList();
+  // renderRequestList();
   setupEventListeners();
+
+  updateReservationBadge();  // 初回実行
+  // 30秒ごとに更新（定期実行）
+  setInterval(updateReservationBadge, 30000);
 });
 
 // ========== カレンダー描画 ==========
@@ -200,28 +206,48 @@ function toggleCellStatus(cell) {
 
 
 // ========== 予約リクエスト一覧描画 ==========
-function renderRequestList() {
-  const container = document.getElementById('requestList');
-  container.innerHTML = '';
+// function renderRequestList() {
+//   const container = document.getElementById('requestList');
+//   container.innerHTML = '';
 
-  requests.forEach(req => {
-    const card = document.createElement('div');
-    card.className = 'request-card';
-    card.innerHTML = `
-      <div class="request-card-header">
-        <h4>${req.name}</h4>
-      </div>
-      <div class="request-card-info">教室: ${req.room}</div>
-      <div class="request-card-info">日付: ${req.date}</div>
-      <div class="request-card-info">時限: ${req.period}限</div>
-      <div class="request-actions">
-        <button class="btn btn-approve" onclick="approveRequest(${req.id})">承認</button>
-        <button class="btn btn-reject" onclick="rejectRequest(${req.id})">却下</button>
-      </div>
-    `;
-    container.appendChild(card);
-  });
+//   requests.forEach(req => {
+//     const card = document.createElement('div');
+//     card.className = 'request-card';
+//     card.innerHTML = `
+//       <div class="request-card-header">
+//         <h4>${req.name}</h4>
+//       </div>
+//       <div class="request-card-info">教室: ${req.room}</div>
+//       <div class="request-card-info">日付: ${req.date}</div>
+//       <div class="request-card-info">時限: ${req.period}限</div>
+//       <div class="request-actions">
+//         <button class="btn btn-approve" onclick="approveRequest(${req.id})">承認</button>
+//         <button class="btn btn-reject" onclick="rejectRequest(${req.id})">却下</button>
+//       </div>
+//     `;
+//     container.appendChild(card);
+//   });
+// }
+
+// 予約リクエスト数を更新する
+function updateReservationBadge() {
+  // 予約数を取得するAPIエンドポイント
+  fetch('/admin/reservations/count')
+    .then(response => response.json())
+    .then(data => {
+      const badge = document.getElementById('reservationBadge');
+      if (badge) {
+        // data.countがあればtrutyでdata.countが代入, なければfaultyで0になる
+        const count = data.count || 0;
+        badge.textContent = count;
+        // 0件の場合は非表示にする
+        // 1件でもあればcssでdisplay = 'block' で表示される
+        badge.style.display = count > 0 ? 'block' : 'none';
+      }
+    })
+    .catch(error => console.error('予約取得数エラー:', error));
 }
+
 
 // ========== イベントリスナー設定 ==========
 function setupEventListeners() {
