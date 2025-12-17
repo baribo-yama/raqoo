@@ -18,18 +18,6 @@ class ReservationController extends Controller
         $this->middleware('auth:admin');
     }
 
-    // 予約申請一覧
-    public function index()
-    {
-        $reservations = Reservation::with(['user', 'room'])
-            ->where('status', 'pending')
-            ->orderBy('date')
-            ->orderBy('period')
-            ->get();
-
-        return view('admin.reservations-index', compact('reservations'));
-    }
-
     //=====予約リクエスト承認処理=====//
     public function approve(Reservation $reservation)
     {
@@ -78,5 +66,14 @@ class ReservationController extends Controller
         ]);
 
         return redirect()->back()->with('success', '予約を却下しました。');
+    }
+
+
+
+    //=====予約リクエスト数取得=====//
+    public function count()
+    {
+        $count = Reservation::where('status', 'pending')->count();
+        return response()->json(['count' => $count]);
     }
 }

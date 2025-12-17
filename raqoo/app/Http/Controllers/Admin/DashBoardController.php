@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Reservation;
 use App\Models\Room;
 use Illuminate\Http\Request;
 
-class RoomController extends Controller
+class DashBoardController extends Controller
 {
     // 教室一覧画面（トップ）
     public function index()
@@ -23,6 +24,13 @@ class RoomController extends Controller
             (object)['id' => 6, 'time' => '18:00-19:30'],
         ];
 
-        return view('admin.dashboard', compact('rooms', 'periods'));
+        // Reservationモデルを直接使って「ダッシュボード用の予約一覧」を取る
+        $reservations = Reservation::with(['user', 'room'])
+            ->where('status', 'pending')
+            ->orderBy('date')
+            ->orderBy('period')
+            ->get();
+
+        return view('admin.dashboard', compact('rooms', 'periods', 'reservations'));
     }
 }
