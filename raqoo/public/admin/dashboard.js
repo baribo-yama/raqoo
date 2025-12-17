@@ -230,6 +230,18 @@ function toggleCellStatus(cell) {
 // }
 
 // 予約リクエスト数を更新する
+/**
+ * 管理画面の予約リクエスト用バッジの件数を最新の状態に更新する。
+ *
+ * `/admin/reservations/count` エンドポイントから予約リクエスト数を取得し、
+ * `#reservationBadge` 要素のテキストと表示／非表示を更新する。
+ *
+ * 想定されるAPIレスポンス:
+ *   { count: number }  // count が未定義または falsy の場合は 0 として扱う
+ *
+ * この関数はページロード時および一定間隔（例: 30秒ごと）のタイマーから
+ * 呼び出されることを想定している。
+ */
 function updateReservationBadge() {
   // 予約数を取得するAPIエンドポイント
   fetch('/admin/reservations/count')
