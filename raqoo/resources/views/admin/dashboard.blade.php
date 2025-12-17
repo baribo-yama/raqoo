@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>管理ダッシュボード - Raqoo</title>
     <link rel="stylesheet" href="{{ asset('admin/dashboard.css') }}">
 </head>
@@ -30,7 +31,7 @@
         <aside class="calendar-section">
             <div class="calendar-header">
                 <button id="prevMonth">◀</button>
-                <h2 id="currentMonth">2025年11月</h2>
+                <h2 id="currentMonth"></h2>
                 <button id="nextMonth">▶</button>
             </div>
             <div class="calendar-grid" id="calendar">
@@ -41,7 +42,7 @@
         <!-- 右カラム: 教室テーブル（70%） -->
         <main class="room-table-section">
             <div class="table-header">
-                <h2 id="selectedDate">2025年11月15日（金）</h2>
+                <h2 id="selectedDate"></h2>
             </div>
 
             <div class="table-wrapper">
