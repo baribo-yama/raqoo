@@ -12,7 +12,7 @@
 <body>
     <!-- ヘッダー -->
     <header class="header">
-        <div class="title">Raqoo 管理うにょにょーー</div>
+        <div class="d">Raqoo 管理うにょにょーー</div>
         <nav class="menu">
             <a class="menu-item" href="#">ダッシュボード</a>
             <a class="menu-item" href="#">教室管理</a>
