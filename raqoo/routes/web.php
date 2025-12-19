@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\RoomController as AdminRoomController;
+use App\Http\Controllers\Admin\DashBoardController as AdminDashBoardController;
 use App\Http\Controllers\User\RoomController as UserRoomController;
 use App\Http\Controllers\Admin\RoomStatusController;
 use App\Http\Controllers\User\ReservationController as UserReservationController;
@@ -31,10 +31,21 @@ Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 
 // 管理者ダッシュボード
-Route::get('/admin/dashboard', [AdminRoomController::class, 'index'])->name('admin.dashboard');
+Route::get('/admin/dashboard', [AdminDashBoardController::class, 'index'])
+    ->middleware('auth:admin')
+    ->name('admin.dashboard');
 
-// 教室ステータス更新API
+// 予約リクエスト数取得
+Route::get('/admin/reservations/count', [AdminReservationController::class, 'count'])
+    ->middleware('auth:admin')
+    ->name('admin.reservations.count');
+
+// 教室ステータス更新API（管理者）
 Route::post('/admin/room-status', [RoomStatusController::class, 'updateStatus'])->name('admin.room-status.update');
+Route::get('/admin/room-status', [RoomStatusController::class, 'getStatus'])->name('admin.room-status.get');
+
+// ユーザー向け教室ステータス更新API
+Route::get('/user/room-status', [RoomStatusController::class, 'getStatus'])->name('api.room-status');
 
 // 管理者予約管理
 Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function () {
@@ -48,7 +59,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
 // Route::patch('/admin/reservations/{reservation}/reject', [AdminReservationController::class, 'reject'])->name('admin.reservations.reject');
 
 // 管理者教室管理
-Route::get('/admin/rooms', [AdminRoomController::class, 'roomsIndex'])->name('admin.rooms.index');
+Route::get('/admin/rooms', [AdminDashBoardController::class, 'roomsIndex'])->name('admin.rooms.index');
 
 // 管理者お知らせ管理
 Route::get('/admin/notifications', function() {
@@ -58,6 +69,16 @@ Route::get('/admin/notifications', function() {
 /*======= ユーザー画面 ========*/
 // ユーザーホーム
 Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index');
+
+// 夜間注意事項ページ
+Route::get('/night-precautions', function () {
+    return view('user.night-precautions');
+})->name('user.night.precautions');
+
+// 注意事項ページ（昼間/共通版がある場合）
+Route::get('/precautions', function () {
+    return view('user.precautions');
+})->name('user.precautions');
 
 // ユーザー予約関連
 Route::get('/reservations/create', [UserReservationController::class, 'create'])->name('user.reservations.create');

@@ -13,50 +13,20 @@
 
 <body>
     <div class="main-content">
-        <div class="navigation">
-            <ul>
-                <li class="list active">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                        <span class="title">ホーム</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="person-circle-outline"></ion-icon></span>
-                        <span class="title">プロフィール</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="settings-outline"></ion-icon></span>
-                        <span class="title">設定</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="radio-outline"></ion-icon></span>
-                        <span class="title">お知らせ</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="newspaper-outline"></ion-icon></span>
-                        <span class="title">利用規約</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="#">
-                        <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                        <span class="title">サインアウト</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+        {{-- ナビゲーション --}}
+        <x-user.sidebar />
 
-        <!-- ヘッダー -->
-        <div class="header">
-            <div class="logo-box">Raqoo</div>
+        {{-- 右：メインコンテンツ --}}
+        <div class="main-content">
+
+            <!-- ヘッダー（ロゴ画像） -->
+            <div class="header">
+                <div class="logo-wrapper">
+                    <img src="{{ asset('user/images/raqoo-logo.png') }}" alt="raqoo logo" class="raqoo-logo">
+                </div>
+            </div>
+
+            {{-- プロフィールボックス --}}
             <div class="profile-box">
                 <div class="profile-icon">
                     <svg width="32" height="32" viewBox="0 0 32 32">
@@ -69,82 +39,71 @@
                     <div class="profile-name">名前〇〇〇〇</div>
                 </div>
             </div>
-        </div>
 
-        <!-- 検索バー -->
-        <div class="search-container">
+            <!-- 検索フォーム -->
             <form class="search-form">
                 <div class="form-row">
+                    <!-- 日付 -->
                     <div class="form-group">
-                        <label>日付</label>
-                        <input type="date" placeholder="yyyy/mm/dd">
+                        <label for="dateInput">日付</label>
+                        <input type="date" id="dateInput" placeholder="yyyy/mm/dd">
                     </div>
+
+                    <!-- 何限～何限 -->
                     <div class="form-group">
-                        <label>何限～何限利用するか</label>
-                        <input type="text" placeholder="例: 1限 〜 3限">
+                        <label for="periodInput">何限～何限利用するか</label>
+                        <input type="text" id="periodInput" placeholder="例: 1限 〜 3限">
                     </div>
+
+                    <!-- 利用人数 -->
                     <div class="form-group">
-                        <label>利用人数</label>
-                        <input type="text" placeholder="〇人">
+                        <label for="peopleInput">利用人数</label>
+                        <input type="text" id="peopleInput" placeholder="〇人">
                     </div>
                 </div>
+
                 <div class="form-row-btn">
                     <button type="submit" class="search-btn">検索</button>
                 </div>
             </form>
-        </div>
 
-        <!-- 曜日タブ -->
-        <div>
+            <!-- ▼曜日ストリップ -->
             <div class="day-tabs">
-                <div class="day-tab">
-                    <div class="day-label">日</div>
-                    <div class="date-label">05/19</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">月</div>
-                    <div class="date-label">05/20</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">火</div>
-                    <div class="date-label">05/21</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">水</div>
-                    <div class="date-label">05/22</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">木</div>
-                    <div class="date-label">05/23</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">金</div>
-                    <div class="date-label">05/24</div>
-                </div>
-                <div class="day-tab">
-                    <div class="day-label">土</div>
-                    <div class="date-label">05/25</div>
-                </div>
-            </div>
-            <div class="date-section">
-                <div class="date-title-row">
-                    <span class="date-year">2025</span>
-                    <span class="date-main">05/20</span>
-                    <span class="date-weekday">（月）</span>
-                </div>
-                <div class="status-bar-2">
-                    <span class="status-line"></span>
-                    ･･･現在使用中
-                    <span class="status-dot"></span>
-                    ･･･利用可能
-                </div>
-            </div>
-        </div>
+                <!-- 左矢印（前日へ） -->
+                <button type="button" class="strip-btn strip-prev" aria-label="前日へ">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
 
-        {{-- 予約申請の送信成功メッセージ --}}
+                @php
+                    $weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+                    $baseDate = now();
+                @endphp
+
+                @for ($i = 0; $i < 7; $i++)
+                    @php
+                        $d = $baseDate->copy()->addDays($i);
+                    @endphp
+                    <div class="day-tab">
+                        <div class="day-label">{{ $weekdayLabels[$d->dayOfWeek] }}</div>
+                        <div class="date-label">{{ $d->format('m/d') }}</div>
+                    </div>
+                @endfor
+
+                <!-- 右矢印（翌日へ） -->
+                <button type="button" class="strip-btn strip-next" aria-label="翌日へ">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+
+        {{-- フラッシュメッセージ --}}
         @if (session('success'))
-            <div
-                class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                 {{ session('success') }}
             </div>
         @endif
@@ -155,44 +114,83 @@
             </div>
         @endif
 
+        <!-- ▼中央の大きい日付 -->
+        <div class="date-display">
+            @php
+                $week = ['日', '月', '火', '水', '木', '金', '土'];
+                $today = now();
+            @endphp
+            <span class="date-year" style="display:none;"></span>
+            <span class="date-main">{{ $today->format('m/d') }}</span>
+            <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
+        </div>
 
-        {{-- DBから繰り返し教室内容表示（本番向けの表示） --}}
-        @foreach ($rooms as $room)
-            <div class="room-group">
-                <div class="room-title">{{ $room->name }}</div>
-                <div class="room-times">
-                    @for ($period = 1; $period <= 6; $period++)
-                        @php
-                            $status = $room->getStatusForPeriod(date('Y-m-d'), $period);
-                            $times = [
-                                1 => ['09:10', '10:40'],
-                                2 => ['10:50', '12:20'],
-                                3 => ['13:00', '14:30'],
-                                4 => ['14:40', '16:10'],
-                                5 => ['16:20', '17:50'],
-                                6 => ['18:00', '19:30'],
-                            ];
-                        @endphp
-                        <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }}">
-                            <div class="time-main">{{ $times[$period][0] }}</div>
-                            <div class="time-sub">~{{ $times[$period][1] }}</div>
-                            <div class="floor">{{ $room->floor }}</div>
-                            @if ($status === 'available')
-                                <div class="available-label">利用可能</div>
-                                <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => date('Y-m-d'), 'period' => $period]) }}"
-                                    class="reserve-btn">予約</a>
-                            @else
-                                <div class="unavailable-label">
+        <div class="status-bar-2">
+            <span class="status-line"></span>
+            ･･･現在使用中
+            <span class="status-dot"></span>
+            ･･･利用可能
+        </div>
+
+            {{-- 教室カード --}}
+            @php
+                // javascriptからの日付パラメータを取得（デフォルトは今日）
+                $selectedDate = request()->query('date', date('Y-m-d'));
+            @endphp
+
+            @foreach ($rooms as $room)
+                <div class="room-group" data-room-id="{{ $room->id }}">
+                    <div class="room-title">{{ $room->name }}</div>
+                    <div class="room-times">
+                        @for ($period = 1; $period <= 6; $period++)
+                            @php
+                                $status = $room->getStatusForPeriod($selectedDate, $period);
+
+                                $times = [
+                                    1 => ['09:10', '10:40'],
+                                    2 => ['10:50', '12:20'],
+                                    3 => ['13:00', '14:30'],
+                                    4 => ['14:40', '16:10'],
+                                    5 => ['16:20', '17:50'],
+                                    6 => ['18:00', '19:30'],
+                                ];
+                                // デバッグ用
+                                echo "<!-- Room: {$room->id}, Period: {$period}, Status: {$status} -->";
+                            @endphp
+
+                            <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }}">
+                                <div class="time-main">{{ $times[$period][0] }}</div>
+                                <div class="time-sub">~{{ $times[$period][1] }}</div>
+                                <div class="floor">{{ $room->floor }}階</div>
+
+                                {{-- 利用可能ラベル --}}
+                                <div class="available-label"
+                                    style="{{ $status === 'available' ? '' : 'display: none;' }}">
+                                    利用可能
+                                </div>
+
+                                {{-- 利用不可ラベル --}}
+                                <div class="unavailable-label"
+                                    style="{{ $status === 'available' ? 'display: none;' : '' }}">
                                     {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}
                                 </div>
-                            @endif
-                        </div>
-                    @endfor
-                </div>
-            </div>
-        @endforeach
 
-        <script src="{{ asset('user/home.js' )}}"></script>
+                                {{-- 予約ボタン --}}
+                                <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => $selectedDate, 'period' => $period]) }}"
+                                    class="reserve-btn"
+                                    style="{{ $status === 'available' ? '' : 'display: none;' }}">
+                                    予約
+                                </a>
+
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+            @endforeach
+
+        </div> {{-- /.main-content --}}
+
+        <script src="{{ asset('user/home.js') }}"></script>
 </body>
 
 </html>
