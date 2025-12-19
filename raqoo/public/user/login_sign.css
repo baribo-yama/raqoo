@@ -15,6 +15,9 @@ body{
     margin-top: auto;
     margin-bottom: auto;
     width: 30%;
+    max-width: 560px;
+    min-width: 320px;
+    padding: 0 16px;
 }
 
 .forms{
@@ -25,10 +28,10 @@ body{
 
     /* 文字やフォームの配置 */
     
-    padding-left: 5vh;
-    padding-right:5vh;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 24px;
+    padding-bottom: 24px;
     line-height: 2;
 }
 
@@ -53,4 +56,43 @@ button{
 
 #up{
     text-align: right;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+    .main {
+        width: 50%;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        align-items: flex-start;
+    }
+    .main {
+        width: 90%;
+        max-width: 520px;
+        margin-top: 6vh;
+    }
+    .forms {
+        border-width: 1.5px;
+        padding: 20px;
+    }
+    input, button {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 540px) {
+    .main {
+        width: 100%;
+        max-width: 460px;
+        padding: 0 12px;
+    }
+    .forms {
+        padding: 18px;
+    }
+    #up {
+        text-align: center;
+    }
 }

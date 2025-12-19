@@ -1,100 +1,340 @@
-const screens = {
-  dashboardBtn: "dashboardScreen",
-  noticeBtn: "noticeScreen",
-  historyBtn: "historyScreen"
+// ========== グローバル変数 ==========
+let currentDate = new Date();
+let selectedDate = new Date();
+
+// サンプルデータ
+// 本番はこれいらない
+const rooms = ['A101', 'A102', 'A103', 'A104', 'A105'];
+const periods = [
+  { id: 1, time: '9:00-10:30' },
+  { id: 2, time: '10:40-12:10' },
+  { id: 3, time: '13:00-14:30' },
+  { id: 4, time: '14:40-16:10' },
+  { id: 5, time: '16:20-17:50' },
+  { id: 6, time: '18:00-19:30' }
+];
+
+const reservations = {
+  '2025-11-15': {
+    'A101': { 1: '基礎プログラミング', 3: '予約済み' },
+    'A102': { 2: 'Web開発演習' }
+  }
 };
 
-const menuItems = document.querySelectorAll(".menu-item");
+const requests = [
+  { id: 1, name: '田中太郎', room: 'A103', date: '2025-11-20', period: 3 },
+  { id: 2, name: '佐藤花子', room: 'A104', date: '2025-11-21', period: 4 },
+  { id: 3, name: '鈴木一郎', room: 'A101', date: '2025-11-22', period: 2 }
+];
 
-menuItems.forEach(item => {
-  item.addEventListener("click", () => {
-    // メニューの選択状態を更新
-    menuItems.forEach(m => m.classList.remove("active"));
-    item.classList.add("active");
-
-    // 画面を切り替え
-    document.querySelectorAll(".screen").forEach(screen => {
-      screen.classList.remove("active");
-    });
-
-    const targetScreenId = screens[item.id];
-    document.getElementById(targetScreenId).classList.add("active");
-  });
-});
-document.querySelectorAll(".detail-toggle").forEach(button => {
-  button.addEventListener("click", () => {
-    const currentRow = button.closest("tr");
-    const detailRow = currentRow.nextElementSibling;
-    const detailCell = detailRow.querySelector(".detail-content");
-
-    const datetime = currentRow.dataset.datetime || "不明";
-    const name = currentRow.dataset.name || "不明";
-    const purpose = currentRow.dataset.purpose || "不明";
-
-    // 展開するHTMLをセット
-    detailCell.innerHTML = `
-        <div style="padding: 10px;">
-          <p><strong>予約日時:</strong> ${datetime}</p>
-          <p><strong>ステータス:</strong>
-            <select class="status-select">
-              <option value="pending">承認待ち</option>
-              <option value="confirmed">確定</option>
-            </select>
-          </p>
-          <p><strong>名前:</strong> ${name}</p>
-          <p><strong>予約内容:</strong> ${purpose}</p>
-        </div>
-      `;
-
-    // 表示/非表示切り替え
-    if (detailRow.style.display === "none" || detailRow.style.display === "") {
-      detailRow.style.display = "table-row";
-    } else {
-      detailRow.style.display = "none";
-    }
-  });
-});
-
-
-// 日付選択時に表示
+// ========== 初期化 ==========
+// 初回実行
 document.addEventListener('DOMContentLoaded', () => {
-  const datePicker = document.getElementById('datePicker');
-  const selectedDateSpan = document.getElementById('selectedDate');
+  renderCalendar();
+  renderRoomTable();
+  // renderRequestList();
+  setupEventListeners();
 
-  datePicker.addEventListener('change', function() {
-    selectedDateSpan.textContent = this.value;
-  });
-
-  // ステータス変更時にAPIで登録
-  document.querySelectorAll('.status-select').forEach(select => {
-    select.addEventListener('change', function() {
-      const roomId = this.dataset.room;
-      const period = this.dataset.period;
-      const status = this.value;
-      const date = datePicker.value;
-
-      if (!date) {
-        alert('日付を選択してください');
-        return;
-      }
-
-      fetch('/admin/room-status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ room_id: roomId, period, status, date })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          console.log('更新成功:', data);
-        } else {
-          console.error('更新失敗:', data);
-        }
-      })
-      .catch(err => console.error('通信エラー:', err));
-    });
-  });
+  updateReservationBadge();  // 初回実行
+  // 30秒ごとに更新（定期実行）
+  setInterval(updateReservationBadge, 30000);
 });
+
+// ========== カレンダー描画 ==========
+function renderCalendar() {
+  const calendar = document.getElementById('calendar');
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  document.getElementById('currentMonth').textContent =
+    `${year}年${month + 1}月`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  calendar.innerHTML = '';
+
+  // 曜日ヘッダー
+  ['日', '月', '火', '水', '木', '金', '土'].forEach(day => {
+    const dayEl = document.createElement('div');
+    dayEl.textContent = day;
+    dayEl.style.fontWeight = '600';
+    dayEl.style.color = '#6b7280';
+    dayEl.style.padding = '8px';
+    dayEl.style.textAlign = 'center';
+    calendar.appendChild(dayEl);
+  });
+
+  // 空白セル
+  for (let i = 0; i < firstDay; i++) {
+    calendar.appendChild(document.createElement('div'));
+  }
+
+  // 日付セル
+  const today = new Date();
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayEl = document.createElement('div');
+    dayEl.className = 'calendar-day';
+    dayEl.textContent = day;
+
+    const cellDate = new Date(year, month, day);
+
+    if (isSameDay(cellDate, today)) {
+      dayEl.classList.add('today');
+    }
+
+    if (isSameDay(cellDate, selectedDate)) {
+      dayEl.classList.add('selected');
+    }
+
+    dayEl.addEventListener('click', () => {
+      selectedDate = cellDate;
+      renderCalendar();
+      renderRoomTable();
+    });
+
+    calendar.appendChild(dayEl);
+  }
+}
+
+
+// 教室テーブルのセルを取得
+function renderRoomTable() {
+
+  const date = formatDate(selectedDate)
+
+  document.getElementById('selectedDate').textContent = formatDateJapanese(selectedDate);
+
+  const cells = document.querySelectorAll('td[data-room-id]');
+
+  cells.forEach(cell => {
+    cell.classList.remove('unavailable');
+    cell.textContent = '';
+    cell.style.backgroundColor = '';
+    cell.style.color = '';
+  });
+
+  // サーバーからステータスを取得
+  fetch(`/admin/room-status?date=${date}`)
+    .then(response => response.json())
+    .then(data => {
+      console.log('取得したステータス:', data);
+
+      cells.forEach(cell => {
+        const roomId = cell.dataset.roomId;
+        const periodId = cell.dataset.periodId;
+
+        // 該当するステータスを検索
+        const statusData = data.find(
+          item => item.room_id == roomId && item.period == periodId
+        );
+
+        if (statusData && statusData.status === 'unavailable') {
+          cell.classList.add('unavailable');
+          cell.textContent = '利用不可';
+          cell.style.backgroundColor = '#e5e7eb';
+          cell.style.color = '#6b7280';
+        }
+      });
+    })
+    .catch(error => console.error('ステータス取得エラー:', error));
+
+  // クリックイベントの設定
+  cells.forEach(cell => {
+    cell.style.cursor = 'pointer';
+    cell.onclick = () => {
+      toggleCellStatus(cell);
+    };
+  });
+
+}
+
+function toggleCellStatus(cell) {
+  const roomId = cell.dataset.roomId;
+  const periodId = cell.dataset.periodId;
+  const date = formatDate(selectedDate);
+
+  // 現在のステータスを判定
+  const isUnavailable = cell.classList.contains('unavailable');
+  const newStatus = isUnavailable ? 'available' : 'unavailable';
+
+  console.log('送信データ:', { roomId, periodId, date, newStatus });
+
+  // APIリクエスト送信
+  fetch('/admin/room-status', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({
+      room_id: roomId,
+      date: date,
+      period: periodId,
+      status: newStatus
+    })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('ステータス更新に失敗しました');
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('レスポンス:', data);
+    if (data.success) {
+      // UI更新
+      if (newStatus === 'unavailable') {
+        cell.classList.add('unavailable');
+        cell.textContent = '利用不可';
+        cell.style.backgroundColor = '#e5e7eb';
+        cell.style.color = '#6b7280';
+      } else {
+        cell.classList.remove('unavailable');
+        cell.textContent = '';
+        cell.style.backgroundColor = '';
+        cell.style.color = '';
+      }
+    }
+  })
+  .catch(error => {
+    console.error('エラー:', error);
+    alert('ステータスの更新に失敗しました')
+  });
+}
+
+
+
+// ========== 予約リクエスト一覧描画 ==========
+// function renderRequestList() {
+//   const container = document.getElementById('requestList');
+//   container.innerHTML = '';
+
+//   requests.forEach(req => {
+//     const card = document.createElement('div');
+//     card.className = 'request-card';
+//     card.innerHTML = `
+//       <div class="request-card-header">
+//         <h4>${req.name}</h4>
+//       </div>
+//       <div class="request-card-info">教室: ${req.room}</div>
+//       <div class="request-card-info">日付: ${req.date}</div>
+//       <div class="request-card-info">時限: ${req.period}限</div>
+//       <div class="request-actions">
+//         <button class="btn btn-approve" onclick="approveRequest(${req.id})">承認</button>
+//         <button class="btn btn-reject" onclick="rejectRequest(${req.id})">却下</button>
+//       </div>
+//     `;
+//     container.appendChild(card);
+//   });
+// }
+
+// 予約リクエスト数を更新する
+/**
+ * 管理画面の予約リクエスト用バッジの件数を最新の状態に更新する。
+ *
+ * `/admin/reservations/count` エンドポイントから予約リクエスト数を取得し、
+ * `#reservationBadge` 要素のテキストと表示／非表示を更新する。
+ *
+ * 想定されるAPIレスポンス:
+ *   { count: number }  // count が未定義または falsy の場合は 0 として扱う
+ *
+ * この関数はページロード時および一定間隔（例: 30秒ごと）のタイマーから
+ * 呼び出されることを想定している。
+ */
+function updateReservationBadge() {
+  // 予約数を取得するAPIエンドポイント
+  fetch('/admin/reservations/count')
+    .then(response => response.json())
+    .then(data => {
+      const badge = document.getElementById('reservationBadge');
+      if (badge) {
+        // data.countがあればtrutyでdata.countが代入, なければfaultyで0になる
+        const count = data.count || 0;
+        badge.textContent = count;
+        // 0件の場合は非表示にする
+        // 1件でもあればcssでdisplay = 'block' で表示される
+        badge.style.display = count > 0 ? 'block' : 'none';
+      }
+    })
+    .catch(error => console.error('予約取得数エラー:', error));
+}
+
+
+// ========== イベントリスナー設定 ==========
+function setupEventListeners() {
+  // 月移動
+  document.getElementById('prevMonth').addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+  });
+
+  document.getElementById('nextMonth').addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+  });
+
+  // サイドバー開閉
+  const sidebar = document.getElementById('requestSidebar');
+  const overlay = document.getElementById('overlay');
+  const toggleBtn = document.getElementById('requestToggle');
+  const closeBtn = document.getElementById('closeSidebar');
+
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.add('open');
+    overlay.classList.add('active');
+  });
+
+  closeBtn.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
+
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
+}
+
+// ========== ユーティリティ関数 ==========
+function isSameDay(date1, date2) {
+  return date1.getDate() === date2.getDate() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getFullYear() === date2.getFullYear();
+}
+
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateJapanese(date) {
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const dayOfWeek = days[date.getDay()];
+  return `${year}年${month}月${day}日（${dayOfWeek}）`;
+}
+
+function handleSlotClick(room, period, date) {
+  const content = prompt(`${room} ${period}限の予約内容を入力してください:`);
+  if (content) {
+    if (!reservations[date]) reservations[date] = {};
+    if (!reservations[date][room]) reservations[date][room] = {};
+    reservations[date][room][period] = content;
+    renderRoomTable();
+  }
+}
+
+function approveRequest(id) {
+  alert(`リクエスト${id}を承認しました`);
+  // ここで実際の処理を実装
+}
+
+function rejectRequest(id) {
+  alert(`リクエスト${id}を却下しました`);
+  // ここで実際の処理を実装
+}

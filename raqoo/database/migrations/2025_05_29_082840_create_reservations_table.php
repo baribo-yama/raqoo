@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('room_id')->constrained()->onDelete('cascade');
             $table->date('date');
             $table->tinyInteger('period'); //1～6限
-            $table->enum('status', ['pending', 'reserved', 'in_use', 'canceled', 'finished'])->default('pending');  // 予約申請中、予約済み、利用中、キャンセル、利用終了
+            $table->enum('status', ['pending', 'reserved', 'in_use', 'cancelled', 'finished'])->default('pending');  // 予約申請中、予約済み、利用中、キャンセル、利用終了
             $table->string('purpose', 100);
             $table->text('members')->nullable(); // カンマ区切り or JSON
             $table->timestamps();
