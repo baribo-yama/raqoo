@@ -3,6 +3,7 @@ let currentDate = new Date();
 let selectedDate = new Date();
 
 // サンプルデータ
+// 本番はこれいらない
 const rooms = ['A101', 'A102', 'A103', 'A104', 'A105'];
 const periods = [
   { id: 1, time: '9:00-10:30' },
@@ -27,11 +28,16 @@ const requests = [
 ];
 
 // ========== 初期化 ==========
+// 初回実行
 document.addEventListener('DOMContentLoaded', () => {
   renderCalendar();
   renderRoomTable();
-  renderRequestList();
+  // renderRequestList();
   setupEventListeners();
+
+  updateReservationBadge();  // 初回実行
+  // 30秒ごとに更新（定期実行）
+  setInterval(updateReservationBadge, 30000);
 });
 
 // ========== カレンダー描画 ==========
@@ -91,77 +97,169 @@ function renderCalendar() {
   }
 }
 
-// ========== 教室テーブル描画 ==========
-// function renderRoomTable() {
-//   const tbody = document.getElementById('roomTableBody');
-//   const dateStr = formatDate(selectedDate);
 
-//   document.getElementById('selectedDate').textContent =
-//     formatDateJapanese(selectedDate);
+// 教室テーブルのセルを取得
+function renderRoomTable() {
 
-//   tbody.innerHTML = '';
+  const date = formatDate(selectedDate)
 
-//   rooms.forEach(room => {
-//     const tr = document.createElement('tr');
+  document.getElementById('selectedDate').textContent = formatDateJapanese(selectedDate);
 
-//     // 教室名セル
-//     const roomCell = document.createElement('td');
-//     roomCell.className = 'room-col';
-//     roomCell.textContent = room;
-//     tr.appendChild(roomCell);
+  const cells = document.querySelectorAll('td[data-room-id]');
 
-//     // 各時限セル
-//     periods.forEach(period => {
-//       const td = document.createElement('td');
-//       const slot = document.createElement('div');
-//       slot.className = 'time-slot';
+  cells.forEach(cell => {
+    cell.classList.remove('unavailable');
+    cell.textContent = '';
+    cell.style.backgroundColor = '';
+    cell.style.color = '';
+  });
 
-//       const reservation = reservations[dateStr]?.[room]?.[period.id];
+  // サーバーからステータスを取得
+  fetch(`/admin/room-status?date=${date}`)
+    .then(response => response.json())
+    .then(data => {
+      console.log('取得したステータス:', data);
 
-//       if (reservation) {
-//         slot.classList.add('reserved');
-//         slot.innerHTML = `<div class="slot-content">${reservation}</div>`;
-//       } else {
-//         slot.addEventListener('click', () => {
-//           handleSlotClick(room, period.id, dateStr);
-//         });
-//       }
+      cells.forEach(cell => {
+        const roomId = cell.dataset.roomId;
+        const periodId = cell.dataset.periodId;
 
-//       td.appendChild(slot);
-//       tr.appendChild(td);
-//     });
+        // 該当するステータスを検索
+        const statusData = data.find(
+          item => item.room_id == roomId && item.period == periodId
+        );
 
-//     tbody.appendChild(tr);
+        if (statusData && statusData.status === 'unavailable') {
+          cell.classList.add('unavailable');
+          cell.textContent = '利用不可';
+          cell.style.backgroundColor = '#e5e7eb';
+          cell.style.color = '#6b7280';
+        }
+      });
+    })
+    .catch(error => console.error('ステータス取得エラー:', error));
+
+  // クリックイベントの設定
+  cells.forEach(cell => {
+    cell.style.cursor = 'pointer';
+    cell.onclick = () => {
+      toggleCellStatus(cell);
+    };
+  });
+
+}
+
+function toggleCellStatus(cell) {
+  const roomId = cell.dataset.roomId;
+  const periodId = cell.dataset.periodId;
+  const date = formatDate(selectedDate);
+
+  // 現在のステータスを判定
+  const isUnavailable = cell.classList.contains('unavailable');
+  const newStatus = isUnavailable ? 'available' : 'unavailable';
+
+  console.log('送信データ:', { roomId, periodId, date, newStatus });
+
+  // APIリクエスト送信
+  fetch('/admin/room-status', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({
+      room_id: roomId,
+      date: date,
+      period: periodId,
+      status: newStatus
+    })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('ステータス更新に失敗しました');
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('レスポンス:', data);
+    if (data.success) {
+      // UI更新
+      if (newStatus === 'unavailable') {
+        cell.classList.add('unavailable');
+        cell.textContent = '利用不可';
+        cell.style.backgroundColor = '#e5e7eb';
+        cell.style.color = '#6b7280';
+      } else {
+        cell.classList.remove('unavailable');
+        cell.textContent = '';
+        cell.style.backgroundColor = '';
+        cell.style.color = '';
+      }
+    }
+  })
+  .catch(error => {
+    console.error('エラー:', error);
+    alert('ステータスの更新に失敗しました')
+  });
+}
+
+
+
+// ========== 予約リクエスト一覧描画 ==========
+// function renderRequestList() {
+//   const container = document.getElementById('requestList');
+//   container.innerHTML = '';
+
+//   requests.forEach(req => {
+//     const card = document.createElement('div');
+//     card.className = 'request-card';
+//     card.innerHTML = `
+//       <div class="request-card-header">
+//         <h4>${req.name}</h4>
+//       </div>
+//       <div class="request-card-info">教室: ${req.room}</div>
+//       <div class="request-card-info">日付: ${req.date}</div>
+//       <div class="request-card-info">時限: ${req.period}限</div>
+//       <div class="request-actions">
+//         <button class="btn btn-approve" onclick="approveRequest(${req.id})">承認</button>
+//         <button class="btn btn-reject" onclick="rejectRequest(${req.id})">却下</button>
+//       </div>
+//     `;
+//     container.appendChild(card);
 //   });
 // }
 
-function clickTable() {
-  const
+// 予約リクエスト数を更新する
+/**
+ * 管理画面の予約リクエスト用バッジの件数を最新の状態に更新する。
+ *
+ * `/admin/reservations/count` エンドポイントから予約リクエスト数を取得し、
+ * `#reservationBadge` 要素のテキストと表示／非表示を更新する。
+ *
+ * 想定されるAPIレスポンス:
+ *   { count: number }  // count が未定義または falsy の場合は 0 として扱う
+ *
+ * この関数はページロード時および一定間隔（例: 30秒ごと）のタイマーから
+ * 呼び出されることを想定している。
+ */
+function updateReservationBadge() {
+  // 予約数を取得するAPIエンドポイント
+  fetch('/admin/reservations/count')
+    .then(response => response.json())
+    .then(data => {
+      const badge = document.getElementById('reservationBadge');
+      if (badge) {
+        // data.countがあればtrutyでdata.countが代入, なければfaultyで0になる
+        const count = data.count || 0;
+        badge.textContent = count;
+        // 0件の場合は非表示にする
+        // 1件でもあればcssでdisplay = 'block' で表示される
+        badge.style.display = count > 0 ? 'block' : 'none';
+      }
+    })
+    .catch(error => console.error('予約取得数エラー:', error));
 }
 
-// ========== 予約リクエスト一覧描画 ==========
-function renderRequestList() {
-  const container = document.getElementById('requestList');
-  container.innerHTML = '';
-
-  requests.forEach(req => {
-    const card = document.createElement('div');
-    card.className = 'request-card';
-    card.innerHTML = `
-      <div class="request-card-header">
-        <h4>${req.name}</h4>
-      </div>
-      <div class="request-card-info">教室: ${req.room}</div>
-      <div class="request-card-info">日付: ${req.date}</div>
-      <div class="request-card-info">時限: ${req.period}限</div>
-      <div class="request-actions">
-        <button class="btn btn-approve" onclick="approveRequest(${req.id})">承認</button>
-        <button class="btn btn-reject" onclick="rejectRequest(${req.id})">却下</button>
-      </div>
-    `;
-    container.appendChild(card);
-  });
-}
 
 // ========== イベントリスナー設定 ==========
 function setupEventListeners() {
@@ -201,8 +299,8 @@ function setupEventListeners() {
 // ========== ユーティリティ関数 ==========
 function isSameDay(date1, date2) {
   return date1.getDate() === date2.getDate() &&
-         date1.getMonth() === date2.getMonth() &&
-         date1.getFullYear() === date2.getFullYear();
+    date1.getMonth() === date2.getMonth() &&
+    date1.getFullYear() === date2.getFullYear();
 }
 
 function formatDate(date) {

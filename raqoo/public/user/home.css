@@ -21,6 +21,7 @@ body {
   overflow: hidden;
   padding-top: 10px;
   z-index: 10;
+  transition: transform 0.25s ease;
 }
 
 /* 上部タイトル「教室管理」 */
@@ -77,6 +78,28 @@ body {
   margin-left: 8px;
   white-space: nowrap;
   opacity: 1;
+}
+
+.nav-toggle {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 1100;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  border: 1px solid #d0d4dc;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #1c2b4a;
+}
+
+.nav-toggle ion-icon {
+  font-size: 26px;
 }
 
 /* ========== ヘッダー＋ロゴ＋プロフィール ========== */
@@ -651,39 +674,136 @@ body {
   max-width: 1100px;
   margin: 0 auto;
 }
-.content-area{
-  margin-left: 200px;  /* サイドバー分 */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.navigation {
+  flex: 0 0 200px; /* サイドバー幅固定 */
+}
+
+.main-content {
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 0 24px 40px;
   max-width: 1100px;
-  margin-right: auto;
-}
-.center-wrap{
-  width: 896px;
-  max-width: calc(100% - 48px);
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
-.center-wrap .day-tabs{
-  width: 100%;
-  margin: 30px 0 8px;
-  justify-content: center;
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .navigation {
+    position: fixed;
+    width: 240px;
+    height: 100vh;
+    transform: translateX(-110%);
+    box-shadow: 4px 0 14px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+  }
+
+  .navigation ul li {
+    justify-content: flex-start;
+  }
+
+  .header {
+    padding-top: 24px;
+  }
+
+  .main-content {
+    padding: 0 16px 28px;
+    max-width: 100%;
+  }
+
+  .profile-box {
+    position: static;
+    margin: 8px 0 0 auto;
+  }
+
+  /* Day tabs: make evenly spaced on tablets */
+  .day-tabs {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 6px;
+    padding: 0 12px;
+    border-bottom-width: 4px;
+    justify-content: space-between;
+  }
+
+  .day-tab {
+    width: auto;
+    flex: 1 1 calc(14.28% - 6px);
+    min-width: 96px;
+    height: 56px;
+  }
+
+  .day-label { font-size: 14px; }
+  .date-label { font-size: 16px; margin-top: 8px; }
+
+  .day-tabs .strip-btn {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: flex;
+  }
+
+  body.nav-open .navigation {
+    transform: translateX(0);
+  }
 }
 
-.center-wrap .date-display{
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: baseline;
-  gap: 6px;
+@media (max-width: 720px) {
+  /* Day tabs: 3 per row on small tablets */
+  .day-tabs { gap: 6px; padding: 0 10px; }
+  .day-tab { flex: 1 1 calc(33.33% - 8px); min-width: 110px; height: 54px; }
+  .day-label { font-size: 13.5px; }
+  .date-label { font-size: 15.5px; margin-top: 6px; }
 
-  transform: translateX(30px); /* ←右に60px。左なら -60px */
+  .room-times {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .time-card {
+    width: calc(50% - 10px);
+    margin-bottom: 12px;
+  }
+
+  .status-bar-2 {
+    width: calc(100% - 24px);
+    font-size: 14px;
+    gap: 8px;
+  }
 }
 
+@media (max-width: 540px) {
+  .search-btn {
+    width: 100%;
+  }
 
-.center-wrap .status-bar-2{
-  width: 100%;
-  max-width: none;
+  /* Day tabs: 2 per row on phones */
+  .day-tabs { gap: 6px; padding: 0 8px; }
+  .day-tab { flex: 1 1 calc(50% - 8px); min-width: 120px; height: 52px; }
+  .day-label { font-size: 13px; }
+  .date-label { font-size: 15px; margin-top: 6px; }
+
+  .profile-box {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 420px) {
+  .time-card {
+    width: 100%;
+  }
+
+  .navigation ul li {
+    height: 48px;
+  }
 }

@@ -22,9 +22,7 @@
             <!-- ヘッダー（ロゴ画像） -->
             <div class="header">
                 <div class="logo-wrapper">
-                    <img src="{{ asset('user/images/raqoo-logo.png') }}"
-                         alt="raqoo logo"
-                         class="raqoo-logo">
+                    <img src="{{ asset('user/images/raqoo-logo.png') }}" alt="raqoo logo" class="raqoo-logo">
                 </div>
             </div>
 
@@ -78,7 +76,7 @@
                 <button type="button" class="strip-btn strip-prev" aria-label="前日へ">
                     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                         <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"
-                              stroke-linecap="round" stroke-linejoin="round"/>
+                            stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </button>
 
@@ -101,51 +99,64 @@
                 <button type="button" class="strip-btn strip-next" aria-label="翌日へ">
                     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                         <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"
-                              stroke-linecap="round" stroke-linejoin="round"/>
+                            stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </button>
             </div>
-            <!-- ▼中央の大きい日付 -->
-            <div class="date-display">
-                @php
-                    $week = ['日', '月', '火', '水', '木', '金', '土'];
-                    $today = now();
-                @endphp
-                <span class="date-year" style="display:none;"></span>
-                <span class="date-main">{{ $today->format('m/d') }}</span>
-                <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
+<!-- ▼中央の大きい日付 -->
+<div class="date-display">
+    @php
+        $week = ['日', '月', '火', '水', '木', '金', '土'];
+        $today = now();
+    @endphp
+    <span class="date-year" style="display:none;"></span>
+    <span class="date-main">{{ $today->format('m/d') }}</span>
+    <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
+</div>
+
+{{-- フラッシュメッセージ --}}
+@if (session('success'))
+    <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if (session('error'))
+    <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        {{ session('error') }}
+    </div>
+@endif
+
             </div>
+        @endif
 
-            <div class="status-bar-2">
-                <span class="status-line"></span>
-                ･･･現在使用中
-                <span class="status-dot"></span>
-                ･･･利用可能
+        @if (session('error'))
+            <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ session('error') }}
             </div>
+@endif
 
-        </div>
-{{-- ▲ここまで中央揃えブロック --}}
-            {{-- フラッシュメッセージ --}}
-            @if (session('success'))
-                <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {{ session('error') }}
-                </div>
-            @endif
+<div class="status-bar-2">
+    <span class="status-line"></span>
+    ･･･現在使用中
+    <span class="status-dot"></span>
+    ･･･利用可能
+</div>
 
             {{-- 教室カード --}}
+            @php
+                // javascriptからの日付パラメータを取得（デフォルトは今日）
+                $selectedDate = request()->query('date', date('Y-m-d'));
+            @endphp
+
             @foreach ($rooms as $room)
-                <div class="room-group">
+                <div class="room-group" data-room-id="{{ $room->id }}">
                     <div class="room-title">{{ $room->name }}</div>
                     <div class="room-times">
                         @for ($period = 1; $period <= 6; $period++)
                             @php
-                                $status = $room->getStatusForPeriod(date('Y-m-d'), $period);
+                                $status = $room->getStatusForPeriod($selectedDate, $period);
+
                                 $times = [
                                     1 => ['09:10', '10:40'],
                                     2 => ['10:50', '12:20'],
@@ -154,20 +165,34 @@
                                     5 => ['16:20', '17:50'],
                                     6 => ['18:00', '19:30'],
                                 ];
+                                // デバッグ用
+                                echo "<!-- Room: {$room->id}, Period: {$period}, Status: {$status} -->";
                             @endphp
+
                             <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }}">
                                 <div class="time-main">{{ $times[$period][0] }}</div>
                                 <div class="time-sub">~{{ $times[$period][1] }}</div>
-                                <div class="floor">{{ $room->floor }}</div>
-                                @if ($status === 'available')
-                                    <div class="available-label">利用可能</div>
-                                    <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => date('Y-m-d'), 'period' => $period]) }}"
-                                       class="reserve-btn">予約</a>
-                                @else
-                                    <div class="unavailable-label">
-                                        {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}
-                                    </div>
-                                @endif
+                                <div class="floor">{{ $room->floor }}階</div>
+
+                                {{-- 利用可能ラベル --}}
+                                <div class="available-label"
+                                    style="{{ $status === 'available' ? '' : 'display: none;' }}">
+                                    利用可能
+                                </div>
+
+                                {{-- 利用不可ラベル --}}
+                                <div class="unavailable-label"
+                                    style="{{ $status === 'available' ? 'display: none;' : '' }}">
+                                    {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}
+                                </div>
+
+                                {{-- 予約ボタン --}}
+                                <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => $selectedDate, 'period' => $period]) }}"
+                                    class="reserve-btn"
+                                    style="{{ $status === 'available' ? '' : 'display: none;' }}">
+                                    予約
+                                </a>
+
                             </div>
                         @endfor
                     </div>
@@ -175,9 +200,8 @@
             @endforeach
 
         </div> {{-- /.main-content --}}
-    </div>     {{-- /.layout --}}
 
-    <script src="{{ asset('user/home.js') }}"></script>
+        <script src="{{ asset('user/home.js') }}"></script>
 </body>
 
 </html>
