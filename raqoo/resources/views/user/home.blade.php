@@ -67,81 +67,74 @@
                 </div>
             </form>
 
-            {{-- ▼ここから中央揃えブロック --}}
+            {{-- ▼ここから中央揃えブロック（CSSがcenter-wrap前提なら残す） --}}
             <div class="center-wrap">
 
-            <!-- ▼曜日ストリップ -->
-            <div class="day-tabs">
-                <!-- 左矢印（前日へ） -->
-                <button type="button" class="strip-btn strip-prev" aria-label="前日へ">
-                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </button>
+                <!-- ▼曜日ストリップ -->
+                <div class="day-tabs">
+                    <!-- 左矢印（前日へ） -->
+                    <button type="button" class="strip-btn strip-prev" aria-label="前日へ">
+                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
 
-                @php
-                    $weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
-                    $baseDate = now();
-                @endphp
-
-                @for ($i = 0; $i < 7; $i++)
                     @php
-                        $d = $baseDate->copy()->addDays($i);
+                        $weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+                        $baseDate = now();
                     @endphp
-                    <div class="day-tab">
-                        <div class="day-label">{{ $weekdayLabels[$d->dayOfWeek] }}</div>
-                        <div class="date-label">{{ $d->format('m/d') }}</div>
-                    </div>
-                @endfor
 
-                <!-- 右矢印（翌日へ） -->
-                <button type="button" class="strip-btn strip-next" aria-label="翌日へ">
-                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </button>
-            </div>
-<!-- ▼中央の大きい日付 -->
-<div class="date-display">
-    @php
-        $week = ['日', '月', '火', '水', '木', '金', '土'];
-        $today = now();
-    @endphp
-    <span class="date-year" style="display:none;"></span>
-    <span class="date-main">{{ $today->format('m/d') }}</span>
-    <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
-</div>
+                    @for ($i = 0; $i < 7; $i++)
+                        @php $d = $baseDate->copy()->addDays($i); @endphp
+                        <div class="day-tab">
+                            <div class="day-label">{{ $weekdayLabels[$d->dayOfWeek] }}</div>
+                            <div class="date-label">{{ $d->format('m/d') }}</div>
+                        </div>
+                    @endfor
 
-{{-- フラッシュメッセージ --}}
-@if (session('success'))
-    <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-        {{ session('success') }}
-    </div>
-@endif
+                    <!-- 右矢印（翌日へ） -->
+                    <button type="button" class="strip-btn strip-next" aria-label="翌日へ">
+                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
 
-@if (session('error'))
-    <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-        {{ session('error') }}
-    </div>
-@endif
+                <!-- ▼中央の大きい日付（必要なら残す。不要ならここ丸ごと削ってOK） -->
+                <div class="date-display">
+                    @php
+                        $week = ['日', '月', '火', '水', '木', '金', '土'];
+                        $today = now();
+                    @endphp
+                    <span class="date-year" style="display:none;"></span>
+                    <span class="date-main">{{ $today->format('m/d') }}</span>
+                    <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
+                </div>
+
+                <div class="status-bar-2">
+                    <span class="status-line"></span>
+                    ･･･現在使用中
+                    <span class="status-dot"></span>
+                    ･･･利用可能
+                </div>
 
             </div>
-        @endif
+            {{-- ▲ここまで中央揃えブロック --}}
 
-        @if (session('error'))
-            <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                {{ session('error') }}
-            </div>
-@endif
+            {{-- フラッシュメッセージ（ここに1回だけ） --}}
+            @if (session('success'))
+                <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {{ session('success') }}
+                </div>
+            @endif
 
-<div class="status-bar-2">
-    <span class="status-line"></span>
-    ･･･現在使用中
-    <span class="status-dot"></span>
-    ･･･利用可能
-</div>
+            @if (session('error'))
+                <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             {{-- 教室カード --}}
             @php
@@ -152,6 +145,7 @@
             @foreach ($rooms as $room)
                 <div class="room-group" data-room-id="{{ $room->id }}">
                     <div class="room-title">{{ $room->name }}</div>
+
                     <div class="room-times">
                         @for ($period = 1; $period <= 6; $period++)
                             @php
@@ -169,39 +163,45 @@
                                 echo "<!-- Room: {$room->id}, Period: {$period}, Status: {$status} -->";
                             @endphp
 
-                            <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }}">
-                                <div class="time-main">{{ $times[$period][0] }}</div>
-                                <div class="time-sub">~{{ $times[$period][1] }}</div>
-                                <div class="floor">{{ $room->floor }}階</div>
+                           <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }}">
+                            <div class="time-main">{{ $times[$period][0] }}</div>
+                            <div class="time-sub">~{{ $times[$period][1] }}</div>
+                            <div class="floor">{{ $room->floor }}階</div>
 
-                                {{-- 利用可能ラベル --}}
-                                <div class="available-label"
-                                    style="{{ $status === 'available' ? '' : 'display: none;' }}">
-                                    利用可能
-                                </div>
+                                @if ($status === 'available')
+                                <div class="available-label">利用可能</div>
 
-                                {{-- 利用不可ラベル --}}
-                                <div class="unavailable-label"
-                                    style="{{ $status === 'available' ? 'display: none;' : '' }}">
+                                @php
+                                    $nextUrl = route('user.reservations.create', [
+                                        'room_id' => $room->id,
+                                        'date' => $selectedDate,
+                                        'period' => $period,
+                                    ]);
+                                    @endphp
+
+                                    <a href="{{ route('user.precautions', ['next' => $nextUrl]) }}" class="reserve-btn">
+                                     予約
+                                    </a>
+
+
+
+                                @else
+                                <div class="unavailable-label">
                                     {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}
                                 </div>
-
-                                {{-- 予約ボタン --}}
-                                <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => $selectedDate, 'period' => $period]) }}"
-                                    class="reserve-btn"
-                                    style="{{ $status === 'available' ? '' : 'display: none;' }}">
-                                    予約
-                                </a>
+                                @endif
 
                             </div>
+
                         @endfor
                     </div>
                 </div>
             @endforeach
 
-        </div> {{-- /.main-content --}}
+        </div> {{-- /.content-area --}}
+    </div>     {{-- /.main-content --}}
 
-        <script src="{{ asset('user/home.js') }}"></script>
+    <script src="{{ asset('user/home.js') }}"></script>
 </body>
 
 </html>
