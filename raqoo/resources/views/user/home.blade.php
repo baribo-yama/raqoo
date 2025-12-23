@@ -171,10 +171,18 @@
                             @if ($status === 'available')
                                 <div class="available-label">利用可能</div>
 
-                                <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => $selectedDate, 'period' => $period]) }}"
-                                    class="reserve-btn">
+                                @php
+                                    $nextUrl = route('user.reservations.create', [
+                                        'room_id' => $room->id,
+                                        'date' => $selectedDate,
+                                        'period' => $period,
+                                    ]);
+                                @endphp
+
+                                    <a href="{{ route('user.precautions', ['next' => $nextUrl]) }}" class="reserve-btn">
                                     予約
-                               </a>
+                                    </a>
+
                             @else
                                 <div class="unavailable-label">
                                     {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}

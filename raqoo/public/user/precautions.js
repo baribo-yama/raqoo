@@ -1,38 +1,49 @@
-(() => {
-  const cards = document.querySelectorAll('.card');
-  const dots  = document.querySelectorAll('.dot');
+document.addEventListener('DOMContentLoaded', () => {
+  const mode = document.body.dataset.mode || 'terms'; // confirm or terms
+  const agreeBtn = document.getElementById('agreeBtn');
+
+  const cards = [...document.querySelectorAll('.terms-card[data-step]')];
+  const dots  = [...document.querySelectorAll('.terms-dot[data-stepjump]')];
+
   const TOTAL = 3;
   let current = 1;
+  const visited = new Set();
 
-  function setActive(step){
-    current = step;
-    // カード切替
-    cards.forEach(c => c.style.display = (Number(c.dataset.step) === step) ? 'block' : 'none');
-    // ドット更新
-    dots.forEach(d => d.dataset.active = (Number(d.dataset.stepjump) === step) ? 'true' : 'false');
-  }
+  const setStep = (n) => {
+    current = n;
 
-  function next(){ setActive(current % TOTAL + 1); }
-
-  // カード全体クリックで次へ（ドット/バッジは除外）
-  cards.forEach(c => {
-    c.addEventListener('click', (e)=>{
-      if(e.target.closest('.dot, .badge')) return;
-      next();
+    cards.forEach(card => {
+      card.dataset.active = (Number(card.dataset.step) === n) ? 'true' : 'false';
     });
-  });
 
-  // ドットで直接ジャンプ
-  dots.forEach(d => d.addEventListener('click', (e)=>{
-    e.stopPropagation();
-    setActive(Number(d.dataset.stepjump));
+    dots.forEach(dot => {
+      dot.dataset.active = (Number(dot.dataset.stepjump) === n) ? 'true' : 'false';
+    });
+
+    visited.add(n);
+
+    // confirm（/precautions）の時だけ有効化
+    if (mode === 'confirm' && agreeBtn) {
+      const ok = visited.size >= TOTAL;
+      agreeBtn.disabled = !ok;
+      agreeBtn.setAttribute('aria-disabled', ok ? 'false' : 'true');
+    }
+  };
+
+  const next = () => setStep((current % TOTAL) + 1);
+
+  // カードクリックで次へ（dotは除外）
+  cards.forEach(c => c.addEventListener('click', (e) => {
+    if (e.target.closest('.terms-dot')) return;
+    next();
   }));
 
-  // ←/→ でも切替
-  window.addEventListener('keydown', (e)=>{
-    if(e.key === 'ArrowRight') next();
-    if(e.key === 'ArrowLeft')  setActive((current - 2 + TOTAL) % TOTAL + 1);
-  });
+  // dotでジャンプ
+  dots.forEach(d => d.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setStep(Number(d.dataset.stepjump));
+  }));
 
-  setActive(1);
-})();
+  // 初期表示
+  setStep(1);
+});
