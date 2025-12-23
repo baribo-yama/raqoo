@@ -1,49 +1,71 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const mode = document.body.dataset.mode || 'terms'; // confirm or terms
-  const agreeBtn = document.getElementById('agreeBtn');
+document.addEventListener("DOMContentLoaded", () => {
+  const mode = document.body.dataset.mode; // 'confirm' or 'terms'
+  const startStep = Number(document.body.dataset.startStep || 1);
 
-  const cards = [...document.querySelectorAll('.terms-card[data-step]')];
-  const dots  = [...document.querySelectorAll('.terms-dot[data-stepjump]')];
+  const cards = Array.from(document.querySelectorAll(".terms-card"));
+  const dots = Array.from(document.querySelectorAll(".terms-dot"));
+  const agreeBtn = document.getElementById("agreeBtn");
 
-  const TOTAL = 3;
-  let current = 1;
+  const TOTAL = cards.length || 3;
+
+  // 3ステップ閲覧状況（confirm時のみ使う）
   const visited = new Set();
 
-  const setStep = (n) => {
-    current = n;
+  // 初期：startStep を visited に入れる（confirm時のみ）
+  if (mode === "confirm") {
+    visited.add(startStep);
+  }
 
-    cards.forEach(card => {
-      card.dataset.active = (Number(card.dataset.step) === n) ? 'true' : 'false';
+  // 表示切替
+  const setActive = (step) => {
+    // カード切替
+    cards.forEach((c) => {
+      const isActive = Number(c.dataset.step) === step;
+      c.dataset.active = isActive ? "true" : "false";
+      c.style.display = isActive ? "block" : "none";
     });
 
-    dots.forEach(dot => {
-      dot.dataset.active = (Number(dot.dataset.stepjump) === n) ? 'true' : 'false';
+    // ドット更新
+    dots.forEach((d) => {
+      const isActive = Number(d.dataset.stepjump) === step;
+      d.dataset.active = isActive ? "true" : "false";
     });
 
-    visited.add(n);
+    // confirm（予約フロー）のときだけ「全部見たら同意ボタン解除」
+    if (mode === "confirm") {
+      visited.add(step);
 
-    // confirm（/precautions）の時だけ有効化
-    if (mode === 'confirm' && agreeBtn) {
-      const ok = visited.size >= TOTAL;
-      agreeBtn.disabled = !ok;
-      agreeBtn.setAttribute('aria-disabled', ok ? 'false' : 'true');
+      if (agreeBtn) {
+        const ok = visited.size >= TOTAL;
+        agreeBtn.disabled = !ok;
+        agreeBtn.setAttribute("aria-disabled", ok ? "false" : "true");
+      }
     }
   };
 
-  const next = () => setStep((current % TOTAL) + 1);
-
-  // カードクリックで次へ（dotは除外）
-  cards.forEach(c => c.addEventListener('click', (e) => {
-    if (e.target.closest('.terms-dot')) return;
-    next();
-  }));
-
-  // dotでジャンプ
-  dots.forEach(d => d.addEventListener('click', (e) => {
-    e.stopPropagation();
-    setStep(Number(d.dataset.stepjump));
-  }));
-
   // 初期表示
-  setStep(1);
+  setActive(startStep);
+
+  // カードクリックで次へ（ドットは除外）
+  cards.forEach((c) => {
+    c.addEventListener("click", (e) => {
+      if (e.target.closest(".terms-dot")) return;
+
+      const current = Number(
+        (document.querySelector('.terms-card[data-active="true"]') || {}).dataset
+          ?.step || startStep
+      );
+      const next = (current % TOTAL) + 1;
+      setActive(next);
+    });
+  });
+
+  // ドットでジャンプ
+  dots.forEach((d) => {
+    d.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setActive(Number(d.dataset.stepjump));
+    });
+  });
 });

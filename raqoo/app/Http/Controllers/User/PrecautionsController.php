@@ -12,7 +12,10 @@ class PrecautionsController extends Controller
         $next = $this->sanitizeNext($request->query('next', route('user.home.index')));
 
         // ✅ 「次回から表示しない」を選んだ人だけスキップ
-        if (session('precautions_skip', false) && $next) {
+        $hasExplicitNext = $request->has('next');
+
+        // ✅ 「次回から表示しない」は予約フロー（next付き）のときだけスキップ
+        if ($hasExplicitNext && session('precautions_skip', false) && $next) {
             return redirect($next);
         }
 
@@ -48,12 +51,15 @@ class PrecautionsController extends Controller
      */
     private function sanitizeNext(?string $next): ?string
     {
-        if (!$next) return null;
-
         // 相対パスならOK（/xxx）
+// ⚠️ ただし //evil.com は外部扱いなので拒否
         if (str_starts_with($next, '/')) {
+            if (str_starts_with($next, '//')) {
+                return route('user.home.index');
+            }
             return $next;
         }
+
 
         // 絶対URLならhostチェックして同一hostだけ許可
         $u = parse_url($next);

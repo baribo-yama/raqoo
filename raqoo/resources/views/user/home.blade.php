@@ -168,7 +168,7 @@
                             <div class="time-sub">~{{ $times[$period][1] }}</div>
                             <div class="floor">{{ $room->floor }}階</div>
 
-                            @if ($status === 'available')
+                                @if ($status === 'available')
                                 <div class="available-label">利用可能</div>
 
                                 @php
@@ -177,17 +177,20 @@
                                         'date' => $selectedDate,
                                         'period' => $period,
                                     ]);
-                                @endphp
+                                    @endphp
 
                                     <a href="{{ route('user.precautions', ['next' => $nextUrl]) }}" class="reserve-btn">
-                                    予約
+                                     予約
                                     </a>
 
-                            @else
+
+
+                                @else
                                 <div class="unavailable-label">
                                     {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}
                                 </div>
-                              @endif
+                                @endif
+
                             </div>
 
                         @endfor
