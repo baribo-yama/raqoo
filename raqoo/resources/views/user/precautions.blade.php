@@ -1,6 +1,6 @@
 @php
   $showAgree = $showAgree ?? false;
-  $next = $next ?? null;
+  $next      = $next ?? null;
   $startStep = $startStep ?? 1;
 @endphp
 
@@ -11,10 +11,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>注意事項｜3ステップ案内</title>
 
-  {{-- サイドバー&共通レイアウト --}}
+  {{-- サイドバー&共通 --}}
   <link rel="stylesheet" href="{{ asset('user/home.css') }}">
 
-  {{-- 3ステップ用（terms-クラスで衝突回避） --}}
+  {{-- 3ステップ用 --}}
   <link rel="stylesheet" href="{{ asset('user/precautions.css') }}">
 
   {{-- ion-icon --}}
@@ -98,8 +98,8 @@ PASS証提示 や 申請書提出 を事前に行う必要あり。
           </div>
         </article>
 
-        {{-- ✅ /precautions のときだけ同意フォーム --}}
-        @if ($showAgree && $next)
+        {{-- 同意UI：/precautions のときだけ --}}
+        @if($showAgree && $next)
           <div class="agree-wrap">
             <form method="POST" action="{{ route('user.precautions.agree') }}" class="agree-form">
               @csrf
@@ -107,7 +107,7 @@ PASS証提示 や 申請書提出 を事前に行う必要あり。
 
               <label class="skip-check">
                 <input type="checkbox" name="skip_next_time" value="1">
-                次回からこの確認を表示しない
+                次回からこの注意事項を表示しない
               </label>
 
               <button

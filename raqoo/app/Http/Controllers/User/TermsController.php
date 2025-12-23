@@ -9,8 +9,8 @@ class TermsController extends Controller
     public function index()
     {
         return view('user.precautions', [
-            'showAgree' => false,
-            'next' => null,
+            'showAgree' => false,  // 利用規約は同意UIなし
+            'next'      => null,
             'startStep' => 1,
         ]);
     }
