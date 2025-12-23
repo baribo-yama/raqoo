@@ -23,6 +23,12 @@
                 </a>
             </li>
             <li class="list">
+                <a href="{{ route('user.terms') }}">
+                    <span class="icon"><ion-icon name="document-text-outline"></ion-icon></span>
+                    <span class="title">利用規約</span>
+                </a>
+            </li>
+            <li class="list">
                 <a href="{{ route('user.notifications.index') }}">
                     <span class="icon">
                         <ion-icon name="notifications-outline"></ion-icon>
@@ -66,6 +72,16 @@
     .icon {
         position: relative;
     }
+    /* クリック判定を強制的に行ごとに切り分ける */
+.navigation ul li { position: relative; }
+.navigation ul li a { position: relative; z-index: 2; }
+
+/* 余計な重なりを潰す */
+.navigation ul li { overflow: hidden; }
+
+/* spanがイベント奪うことがあるので無効化（aだけクリック判定にする） */
+.navigation ul li a * { pointer-events: none; }
+
 </style>
 
 <script>
