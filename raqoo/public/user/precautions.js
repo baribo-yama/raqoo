@@ -8,55 +8,92 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const TOTAL = cards.length || 3;
 
-  // 3ステップ閲覧状況（confirm時のみ使う）
-  const visited = new Set();
+  // confirm 時だけ visited を保持（リロード対策）
+  const STORAGE_KEY = "precautions_visited_steps_v1";
 
-  // 初期：startStep を visited に入れる（confirm時のみ）
-  if (mode === "confirm") {
-    visited.add(startStep);
-  }
+  const loadVisited = () => {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return new Set();
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return new Set();
+      return new Set(arr.map((n) => Number(n)).filter((n) => Number.isFinite(n)));
+    } catch {
+      return new Set();
+    }
+  };
 
-  // 表示切替
+  const saveVisited = (set) => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(set)));
+    } catch {}
+  };
+
+  const visited = mode === "confirm" ? loadVisited() : new Set();
+
+  let currentStep = Math.min(Math.max(startStep, 1), TOTAL);
+
+  const updateAgree = () => {
+    if (mode !== "confirm" || !agreeBtn) return;
+    const ok = visited.size >= TOTAL;
+    agreeBtn.disabled = !ok;
+    agreeBtn.setAttribute("aria-disabled", ok ? "false" : "true");
+  };
+
   const setActive = (step) => {
-    // カード切替
+    currentStep = step;
+
     cards.forEach((c) => {
       const isActive = Number(c.dataset.step) === step;
       c.dataset.active = isActive ? "true" : "false";
       c.style.display = isActive ? "block" : "none";
+
+      // アクティブカードにフォーカス（キーボード利用者向け）
+      if (isActive) {
+        c.focus({ preventScroll: true });
+      }
     });
 
-    // ドット更新
     dots.forEach((d) => {
       const isActive = Number(d.dataset.stepjump) === step;
       d.dataset.active = isActive ? "true" : "false";
     });
 
-    // confirm（予約フロー）のときだけ「全部見たら同意ボタン解除」
     if (mode === "confirm") {
       visited.add(step);
-
-      if (agreeBtn) {
-        const ok = visited.size >= TOTAL;
-        agreeBtn.disabled = !ok;
-        agreeBtn.setAttribute("aria-disabled", ok ? "false" : "true");
-      }
+      saveVisited(visited);
+      updateAgree();
     }
   };
 
+  // 初期状態：startStep も visited に入れる（confirmのみ）
+  if (mode === "confirm") {
+    visited.add(currentStep);
+    saveVisited(visited);
+    updateAgree();
+  }
+
   // 初期表示
-  setActive(startStep);
+  setActive(currentStep);
+
+  const goNext = () => {
+    const next = (currentStep % TOTAL) + 1;
+    setActive(next);
+  };
 
   // カードクリックで次へ（ドットは除外）
   cards.forEach((c) => {
     c.addEventListener("click", (e) => {
       if (e.target.closest(".terms-dot")) return;
+      goNext();
+    });
 
-      const current = Number(
-        (document.querySelector('.terms-card[data-active="true"]') || {}).dataset
-          ?.step || startStep
-      );
-      const next = (current % TOTAL) + 1;
-      setActive(next);
+    // ✅ キーボード操作：Enter / Space で次へ
+    c.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        goNext();
+      }
     });
   });
 
@@ -65,7 +102,21 @@ document.addEventListener("DOMContentLoaded", () => {
     d.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      setActive(Number(d.dataset.stepjump));
+      const step = Number(d.dataset.stepjump);
+      if (!Number.isFinite(step)) return;
+      setActive(step);
     });
   });
+
+  // confirm では「同意して予約へ進む」押したら visited をクリア（次の予約フローに影響させない）
+  if (mode === "confirm" && agreeBtn) {
+    const form = agreeBtn.closest("form");
+    if (form) {
+      form.addEventListener("submit", () => {
+        try {
+          sessionStorage.removeItem(STORAGE_KEY);
+        } catch {}
+      });
+    }
+  }
 });

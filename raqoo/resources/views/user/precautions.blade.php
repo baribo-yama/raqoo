@@ -1,7 +1,13 @@
 @php
-  $showAgree = $showAgree ?? false;
+  $showAgree = (bool)($showAgree ?? false);
   $next      = $next ?? null;
-  $startStep = $startStep ?? 1;
+  $startStep = (int)($startStep ?? 1);
+
+  // ✅ data-mode を必ず "confirm" or "terms" の2択に固定
+  $mode = $showAgree ? 'confirm' : 'terms';
+
+  // startStep の安全化（1〜3）
+  if ($startStep < 1 || $startStep > 3) $startStep = 1;
 @endphp
 
 <!doctype html>
@@ -23,8 +29,8 @@
 </head>
 
 <body
-  data-start-step="{{ (int)$startStep }}"
-  data-mode="{{ $showAgree ? 'confirm' : 'terms' }}"
+  data-start-step="{{ $startStep }}"
+  data-mode="{{ $mode }}"
 >
   <div class="main-content">
     <x-user.sidebar />
@@ -33,56 +39,56 @@
       <main class="terms-viewport">
 
         {{-- STEP 1 --}}
-        <article class="terms-card" data-step="1" data-active="true">
+        <article class="terms-card" data-step="1" data-active="true" tabindex="0" role="button" aria-label="ステップ1：対象と条件を確認する（クリックまたはEnterで次へ）">
           <div class="terms-kicker">注意事項</div>
           <h1 class="terms-title">3ステップで確認しよう！</h1>
 
           <div class="terms-panel">
-            <div class="terms-badge">1</div>
+            <div class="terms-badge" aria-hidden="true">1</div>
             <div class="terms-lead">対象と条件を確認する</div>
             <p class="terms-desc">
-利用時間は平日9:10~21:30分の授業時間のみ
+利用時間は平日 9:10〜21:30 の授業時間のみ
 学生同士のみの使用は不可（教員同伴必須）。
-PASS証提示 や 申請書提出 を事前に行う必要あり。
+PASS証提示や申請書提出を事前に行う必要あり。
             </p>
           </div>
 
           <div class="terms-dots" aria-label="手順ナビ（ドット）">
-            <button class="terms-dot" data-stepjump="1" data-active="true" aria-label="ステップ1へ"></button>
-            <button class="terms-dot" data-stepjump="2" aria-label="ステップ2へ"></button>
-            <button class="terms-dot" data-stepjump="3" aria-label="ステップ3へ"></button>
+            <button type="button" class="terms-dot" data-stepjump="1" data-active="true" aria-label="ステップ1へ"></button>
+            <button type="button" class="terms-dot" data-stepjump="2" aria-label="ステップ2へ"></button>
+            <button type="button" class="terms-dot" data-stepjump="3" aria-label="ステップ3へ"></button>
           </div>
         </article>
 
         {{-- STEP 2 --}}
-        <article class="terms-card" data-step="2">
+        <article class="terms-card" data-step="2" tabindex="0" role="button" aria-label="ステップ2：申請書記入と提出（クリックまたはEnterで次へ）">
           <div class="terms-kicker">注意事項</div>
           <h1 class="terms-title">3ステップで確認しよう！</h1>
 
           <div class="terms-panel">
-            <div class="terms-badge">2</div>
+            <div class="terms-badge" aria-hidden="true">2</div>
             <div class="terms-lead">申請書記入と提出</div>
             <p class="terms-desc">
-代表者が氏名・学年・コース・使用目的
+代表者が氏名・学年・コース・使用目的、
 教室・メンバー名を記入。使用目的は詳細に記載。
 指定場所へ事前に申請書を提出。
             </p>
           </div>
 
           <div class="terms-dots" aria-label="手順ナビ（ドット）">
-            <button class="terms-dot" data-stepjump="1" aria-label="ステップ1へ"></button>
-            <button class="terms-dot" data-stepjump="2" data-active="true" aria-label="ステップ2へ"></button>
-            <button class="terms-dot" data-stepjump="3" aria-label="ステップ3へ"></button>
+            <button type="button" class="terms-dot" data-stepjump="1" aria-label="ステップ1へ"></button>
+            <button type="button" class="terms-dot" data-stepjump="2" data-active="true" aria-label="ステップ2へ"></button>
+            <button type="button" class="terms-dot" data-stepjump="3" aria-label="ステップ3へ"></button>
           </div>
         </article>
 
         {{-- STEP 3 --}}
-        <article class="terms-card" data-step="3">
+        <article class="terms-card" data-step="3" tabindex="0" role="button" aria-label="ステップ3：利用日当日の対応（クリックまたはEnterで次へ）">
           <div class="terms-kicker">注意事項</div>
           <h1 class="terms-title">3ステップで確認しよう！</h1>
 
           <div class="terms-panel">
-            <div class="terms-badge">3</div>
+            <div class="terms-badge" aria-hidden="true">3</div>
             <div class="terms-lead">利用日当日の対応</div>
             <p class="terms-desc">
 利用開始10分前には受付で手続き。
@@ -92,9 +98,9 @@ PASS証提示 や 申請書提出 を事前に行う必要あり。
           </div>
 
           <div class="terms-dots" aria-label="手順ナビ（ドット）">
-            <button class="terms-dot" data-stepjump="1" aria-label="ステップ1へ"></button>
-            <button class="terms-dot" data-stepjump="2" aria-label="ステップ2へ"></button>
-            <button class="terms-dot" data-stepjump="3" data-active="true" aria-label="ステップ3へ"></button>
+            <button type="button" class="terms-dot" data-stepjump="1" aria-label="ステップ1へ"></button>
+            <button type="button" class="terms-dot" data-stepjump="2" aria-label="ステップ2へ"></button>
+            <button type="button" class="terms-dot" data-stepjump="3" data-active="true" aria-label="ステップ3へ"></button>
           </div>
         </article>
 

@@ -105,15 +105,15 @@ Route::get('/', function () {
 });
 // ✅ 利用規約（同意ボタン無し）
 Route::get('/terms', [TermsController::class, 'index'])
-    ->middleware('auth')   // ←必要なら付ける（後述）
+    ->middleware('auth')
     ->name('user.terms');
 
 // ✅ 予約前 注意事項（同意ボタンあり）
 Route::get('/precautions', [PrecautionsController::class, 'show'])
-    ->middleware('auth')   // ←必要なら付ける（後述）
+    ->middleware('auth')
     ->name('user.precautions');
 
 // ✅ 同意POST（次回スキップもここで保存）
 Route::post('/precautions/agree', [PrecautionsController::class, 'agree'])
-    ->middleware('auth')   // ←必要なら付ける（後述）
+    ->middleware('auth')
     ->name('user.precautions.agree');
