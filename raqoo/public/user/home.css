@@ -821,3 +821,26 @@ body {
   font: inherit;
   cursor: pointer;
 }
+/* ===== Sidebar Notification Badge ===== */
+.navigation .notification-icon{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navigation .notification-badge{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  background:red;
+  color:white;
+  border-radius:50%;
+  width:18px;
+  height:18px;
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+}
