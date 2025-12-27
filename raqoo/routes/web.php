@@ -99,10 +99,6 @@ Route::get('/info', function () {
     return view('user.info');
 });
 
-// デフォルトルート
-Route::get('/', function () {
-    return redirect('/home');
-});
 // ✅ 利用規約（同意ボタン無し）
 Route::get('/terms', [TermsController::class, 'index'])
     ->middleware('auth')

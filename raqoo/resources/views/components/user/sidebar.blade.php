@@ -1,3 +1,4 @@
+@props(['unreadCount' => 0])
 <button class="nav-toggle" type="button" aria-label="メニューを開閉" aria-expanded="false">
   <ion-icon name="menu-outline"></ion-icon>
 </button>
@@ -33,15 +34,16 @@
     </li>
 
     <li class="list">
-      <a href="{{ route('user.notifications.index') }}">
-        <span class="icon">
-          <ion-icon name="notifications-outline"></ion-icon>
-          @if ($unreadCount > 0)
-            <span class="notification-badge">!</span>
-          @endif
-        </span>
-        <span class="title">お知らせ</span>
-      </a>
+     <a href="{{ route('user.notifications.index') }}">
+      <span class="icon notification-icon">
+        <ion-icon name="notifications-outline"></ion-icon>
+        @if ($unreadCount > 0)
+          <span class="notification-badge">!</span>
+        @endif
+      </span>
+      <span class="title">お知らせ</span>
+    </a>
+
     </li>
 
     <li class="list">
