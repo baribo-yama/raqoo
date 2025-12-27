@@ -214,8 +214,6 @@ body {
   padding: 28px 24px 24px 24px;
   margin-bottom: 24px;
 }
-
-/* 実際のフォーム枠 */
 .search-form {
   width: 100% !important;
   max-width: 720px !important;
@@ -438,7 +436,9 @@ body {
 .date-display {
   margin: 16px auto 8px;
   text-align: center;
+  transform: translateX(34px); /* ← 左に100px */
 }
+
 
 .date-display .date-year {
   font-size: 28px;
