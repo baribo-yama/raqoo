@@ -436,7 +436,7 @@ body {
 .date-display {
   margin: 16px auto 8px;
   text-align: center;
-  transform: translateX(34px); /* ← 左に100px */
+  transform: translateX(34px); /* ← 左に34px */
 }
 
 
@@ -829,6 +829,82 @@ body {
   justify-content: center;
 }
 
+.navigation .notification-badge{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  background:red;
+  color:white;
+  border-radius:50%;
+  width:18px;
+  height:18px;
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+}
+/* =========================
+   Layout fix: sidebar + main
+   追記（上書き）用
+========================= */
+
+/* PC：左に固定サイドバーがある前提で右をずらす */
+.layout{
+  display: flex;
+  min-height: 100vh;
+}
+
+/* 既存の .main-content が中央寄せなどを持っている可能性があるので無効化 */
+.main-content{
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* 右側コンテンツ：サイドバー幅ぶん右に寄せる */
+.content-area{
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-left: 200px;      /* ← sidebar幅 */
+  padding: 0 24px 40px;    /* ← 既存の余白感は維持 */
+}
+
+/* タブや日付の「見た目中央」微調整（必要なら） */
+.date-display{
+  transform: translateX(34px); /* ← いまの調整値を維持 */
+}
+
+/* タブ横並びの中央寄せを安定させる */
+.center-wrap{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* =========================
+   Responsive: mobile sidebar
+========================= */
+@media (max-width: 1024px){
+  .content-area{
+    margin-left: 0;          /* ← モバイルはサイドバー引っ込む */
+    padding: 0 16px 28px;
+  }
+}
+
+/* =========================
+   Notification badge fix
+========================= */
+/* HTMLで icon に notification-icon を付ける前提 */
+.navigation .notification-icon{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 既にあるなら上書き用 */
 .navigation .notification-badge{
   position:absolute;
   top:-5px;
