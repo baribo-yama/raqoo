@@ -77,30 +77,27 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const toggles = Array.from(document.querySelectorAll('.nav-toggle'));
-  const navs = Array.from(document.querySelectorAll('.navigation'));
+  const toggle =
+    document.querySelector('.nav-toggle')
+    || document.querySelector('button[aria-label*="メニュー"]');
 
-  // デバッグ（本番は消してOK）
-  // console.log('[sidebar] toggles:', toggles.length, 'navs:', navs.length);
+  const nav = document.querySelector('.navigation');
+  if (!toggle || !nav) return;
 
-  if (toggles.length === 0 || navs.length === 0) return;
-
-  const setOpen = (open) => {
-    document.body.classList.toggle('nav-open', open);
-    navs.forEach(n => n.dataset.open = open ? 'true' : 'false');
-    toggles.forEach(t => t.setAttribute('aria-expanded', open ? 'true' : 'false'));
+  const closeMenu = () => {
+    document.body.classList.remove('nav-open');
+    nav.dataset.open = 'false';
+    toggle.setAttribute('aria-expanded', 'false');
   };
 
-  toggles.forEach(t => {
-    t.addEventListener('click', (e) => {
-      e.preventDefault();
-      const open = !document.body.classList.contains('nav-open');
-      setOpen(open);
-    });
+  toggle.addEventListener('click', () => {
+    const isOpen = document.body.classList.toggle('nav-open');
+    nav.dataset.open = isOpen ? 'true' : 'false';
+    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') setOpen(false);
+    if (e.key === 'Escape') closeMenu();
   });
 });
 </script>
