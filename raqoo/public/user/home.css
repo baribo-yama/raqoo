@@ -9,6 +9,12 @@ body {
   font-family: "Meiryo", "Yu Gothic", Arial, sans-serif;
 }
 
+/* サイドバー分だけメインコンテンツを右へオフセット（PC幅） */
+body.with-sidebar {
+  padding-left: 220px; /* 200px のサイドバー幅 + 余白 */
+  transition: padding-left 0.25s ease;
+}
+
 /* ========== サイドバー ========== */
 .navigation {
   width: 200px;
@@ -677,6 +683,10 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
+  body.with-sidebar {
+    padding-left: 0;
+  }
+
   .layout {
     flex-direction: column;
   }
