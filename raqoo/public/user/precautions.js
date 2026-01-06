@@ -85,14 +85,24 @@ document.addEventListener("DOMContentLoaded", () => {
   cards.forEach((c) => {
     c.addEventListener("click", (e) => {
       if (e.target.closest(".terms-dot")) return;
-      goNext();
+
+      // ★修正: クリックされたカードが「現在アクティブなステップ」か確認
+      const step = Number(c.dataset.step);
+      if (step === currentStep) {
+        goNext();
+      }
     });
 
     // ✅ キーボード操作：Enter / Space で次へ
     c.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        goNext();
+        e.preventDefault(); // Spaceのスクロール等を防止
+        
+        // ★修正: 重複発火防止のため、ここでも現在ステップかチェック
+        const step = Number(c.dataset.step);
+        if (step === currentStep) {
+          goNext();
+        }
       }
     });
   });
