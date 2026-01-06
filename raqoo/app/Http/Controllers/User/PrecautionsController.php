@@ -20,7 +20,8 @@ class PrecautionsController extends Controller
 
         // ✅ 「次回から表示しない」は予約フロー（next付き）のときだけスキップ
         if ($hasExplicitNext && session('precautions_skip', false)) {
-            return redirect($next);
+            // ★Copilot対応: 明示的に to() を使用
+            return redirect()->to($next);
         }
 
         return view('user.precautions', [
@@ -57,7 +58,8 @@ class PrecautionsController extends Controller
             session()->forget('precautions_skip');
         }
 
-        return redirect($next);
+        // ★Copilot対応: redirect($next) ではなく redirect()->to($next) に変更
+        return redirect()->to($next);
     }
 
     /**

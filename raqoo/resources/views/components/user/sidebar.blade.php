@@ -47,7 +47,7 @@
     </li>
 
     <li class="list">
-      <form method="POST" action="{{ route('logout') }}" class="logout-form">
+      <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form">
         @csrf
         <button type="submit" class="logout-btn">
           <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
@@ -57,25 +57,6 @@
     </li>
   </ul>
 </div>
-
-<style>
-  /* ✅ badgeだけここに残してもOK（home.cssへ移しても可） */
-  .notification-badge{
-    position:absolute;
-    top:-5px;
-    right:-5px;
-    background:red;
-    color:white;
-    border-radius:50%;
-    width:18px;
-    height:18px;
-    font-size:12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:bold;
-  }
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {

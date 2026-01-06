@@ -21,10 +21,14 @@ class RoomController extends Controller
             $temp = $startPeriod;
             $startPeriod = $endPeriod;
             $endPeriod = $temp;
+
+            // ★追加: 自動修正したことをユーザーに通知（フラッシュメッセージ）
+            session()->flash('info', '開始時限が終了時限より遅いため、自動的に順序を入れ替えました。');
         }
 
         // 2. クエリの準備
-        $query = Room::query();
+        // ★修正: N+1問題対策として with('roomStatuses') を追加
+        $query = Room::query()->with('roomStatuses');
 
         // --- 検索条件1: 人数 ---
         // 入力がある場合のみ、定員(capacity)と比較
