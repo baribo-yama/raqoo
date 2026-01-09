@@ -1,0 +1,227 @@
+/* =========================================
+   Raqoo Mobile UI (<=560px)
+========================================= */
+@media (max-width: 560px){
+  :root{
+    --bg:#f5f6fa;
+    --card:#fff;
+    --line:#e6e9ef;
+    --blue:#2F4A6A;
+    --blue2:#243955;
+    --tab-active:#4C85B6;
+    --radius:16px;
+    --shadow:0 8px 22px rgba(0,0,0,.08);
+  }
+
+  /* mobile専用UIは今回使わない */
+  .m-hamburger, .m-backdrop, .m-drawer{ display:none !important; }
+
+  body{ background:var(--bg); }
+  .navigation{ display:none !important; }
+
+  /* ===== 全体余白 ===== */
+  .content-area{
+    margin-left:0 !important;
+    padding:10px 16px 18px !important;
+  }
+
+  /* ===== ヘッダー/ロゴ/プロフィール ===== */
+  .header{
+    padding:6px 0 4px !important;
+    margin:0 !important;
+    background:transparent !important;
+  }
+  .raqoo-logo{ max-width:230px !important; }
+
+  .profile-box{
+    position:static !important;
+    transform:none !important;
+    margin:6px 0 8px auto !important;
+    border-radius:12px !important;
+  }
+
+  /* ===== 検索カード ===== */
+  .search-form{
+    margin:8px auto 10px !important;
+    padding:14px !important;
+    max-width:none !important;
+    background:var(--card) !important;
+    border:1px solid var(--line) !important;
+    border-radius:var(--radius) !important;
+    box-shadow:var(--shadow) !important;
+  }
+
+  /* 日付以外は非表示 */
+  label[for="periodInput"], #periodInput,
+  label[for="peopleInput"], #peopleInput{
+    display:none !important;
+  }
+
+  .form-row{
+    grid-template-columns:1fr !important;
+    gap:10px !important;
+  }
+
+  #dateInput{
+    font-size:18px !important;
+    padding:14px 44px 14px 14px !important;
+    border-radius:12px !important;
+    border:1px solid var(--line) !important;
+  }
+
+  .form-row-btn{ margin-top:10px !important; }
+
+  .search-btn{
+    width:100% !important;
+    padding:16px 0 !important;
+    font-size:20px !important;
+    font-weight:900 !important;
+    border-radius:14px !important;
+    background:linear-gradient(180deg, var(--blue), var(--blue2)) !important;
+    box-shadow:0 6px 18px rgba(0,0,0,.12) !important;
+  }
+
+  /* ===== 曜日ストリップ（左右の余り無し＋矢印は外） ===== */
+  .day-tabs{
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    width:100% !important;
+    height:72px !important;
+    margin:10px auto 6px !important;
+    padding:0 !important;                  /* ←余り消す本命 */
+    gap:0 !important;
+    justify-content:center !important;
+    align-items:center !important;
+    position:relative !important;
+    background:#b3b3b3 !important;
+    border-radius:12px !important;
+    border:none !important;
+    overflow:hidden !important;            /* 帯は角丸 */
+  }
+
+  .day-tab{
+    flex:1 1 0 !important;
+    min-width:0 !important;
+    height:72px !important;
+    background:transparent !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+    align-items:center !important;
+    gap:6px !important;
+    padding:0 !important;
+  }
+
+  .day-tab.active{ background:var(--tab-active) !important; }
+
+  .day-label, .date-label{
+    margin:0 !important;
+    line-height:1 !important;
+    color:#fff !important;
+    opacity:.92 !important;
+    white-space:nowrap !important;
+  }
+  .day-label{ font-size:14px !important; letter-spacing:.2px !important; }
+  .date-label{ font-size:13px !important; letter-spacing:0 !important; }
+
+  /* 矢印：帯の外側に重ねる（帯幅を広げない） */
+  .day-tabs .strip-btn{
+    position:absolute !important;
+    top:50% !important;
+    transform:translateY(-50%) !important;
+    width:30px !important;
+    height:30px !important;
+    background:#6b7280 !important;
+    border-radius:999px !important;
+    z-index:20 !important;
+  }
+  .day-tabs .strip-prev{ left:-16px !important; }
+  .day-tabs .strip-next{ right:-16px !important; }
+
+  /* ===== 中央日付 ===== */
+  .date-display{
+    transform:none !important;
+    margin:4px auto 6px !important;
+    text-align:center !important;
+  }
+  .date-display .date-main{ font-size:42px !important; font-weight:900 !important; }
+  .date-display .date-weekday{ font-size:24px !important; font-weight:900 !important; }
+
+  /* ===== 凡例 ===== */
+  .status-bar-2{
+    width:100% !important;
+    max-width:none !important;
+    margin:8px auto 10px !important;
+    padding:8px 12px !important;
+    border-radius:10px !important;
+    border:1px solid #d7dbe3 !important;
+    background:#fff !important;
+    justify-content:center !important;
+    gap:18px !important;
+  }
+
+  /* ===== 教室 ===== */
+  .room-title{
+    background:transparent !important;
+    color:#111 !important;
+    font-size:22px !important;
+    font-weight:900 !important;
+    padding:6px 2px 6px !important;
+    margin:0 !important;
+  }
+
+  .room-times{
+    display:grid !important;
+    grid-template-columns:repeat(3, 1fr) !important;
+    gap:10px !important;
+    margin-top:6px !important;
+    padding:0 !important;
+    background:transparent !important;
+    border:none !important;
+  }
+
+  .time-card{
+    width:auto !important;
+    background:#fff !important;
+    border:1px solid #e5e7eb !important;
+    border-radius:12px !important;
+    box-shadow:0 2px 10px rgba(0,0,0,.04) !important;
+    padding:12px 10px !important;
+  }
+
+  .time-main{ font-size:30px !important; font-weight:900 !important; color:#9ca3af !important; }
+  .time-sub{ font-size:14px !important; color:#9ca3af !important; }
+  .floor{ display:none !important; }
+
+  .available-label, .unavailable-label{
+    margin-top:10px !important;
+    font-size:16px !important;
+    font-weight:900 !important;
+  }
+  .available-label{ color:var(--blue) !important; }
+  .unavailable-label{ color:#6b7280 !important; }
+
+  .reserve-btn{
+    margin-top:10px !important;
+    width:100% !important;
+    padding:10px 0 !important;
+    border-radius:10px !important;
+    background:#3b6a93 !important;
+    font-size:16px !important;
+    font-weight:900 !important;
+    text-align:center !important;
+    display:inline-block !important;
+  }
+
+  /* 小さい端末の保険 */
+  @media (max-width: 390px){
+    .day-label{ font-size:13px !important; }
+    .date-label{ font-size:12px !important; }
+  }
+  @media (max-width: 360px){
+    .room-times{ grid-template-columns:repeat(2,1fr) !important; }
+    .day-tabs .strip-btn{ width:26px !important; height:26px !important; }
+    .day-label{ font-size:12px !important; }
+    .date-label{ font-size:11px !important; }
+  }
+}
