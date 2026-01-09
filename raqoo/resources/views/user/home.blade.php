@@ -10,26 +10,6 @@
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
-    <style>
-        /* 検索フォームのカードスタイル */
-        .search-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 32px;
-        }
-
-        /* 検索結果の強調表示 */
-        /* 絞り込まれた結果全てに付くので、控えめに枠線だけ強調します */
-        .time-card.target-period {
-            background-color: #f0f9ff !important; /* ごく薄い青 */
-            border: 2px solid #3b82f6 !important; /* 青い枠線 */
-            position: relative;
-            z-index: 10;
-        }
-    </style>
 </head>
 
 <body>
