@@ -66,7 +66,8 @@
                         
                         <div class="md:col-span-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">日付</label>
-                            <input type="date" name="date" value="{{ $date ?? '' }}" 
+                            {{-- ▼▼▼ 修正箇所：id="dateInput" を追加しました ▼▼▼ --}}
+                            <input type="date" id="dateInput" name="date" value="{{ $date ?? '' }}" 
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
                         </div>
 
@@ -173,7 +174,6 @@
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
                 
-                // ★修正: 検索されていたらその範囲、されていなければ1〜6を表示する
                 $loopStart = $startPeriod ?? 1;
                 $loopEnd   = $endPeriod ?? 6;
             @endphp
@@ -186,7 +186,6 @@
                     </div>
 
                     <div class="room-times">
-                        {{-- ★修正: $loopStart から $loopEnd までループ --}}
                         @for ($period = $loopStart; $period <= $loopEnd; $period++)
                             @php
                                 $status = $room->getStatusForPeriod($displayDate, $period);
@@ -199,7 +198,6 @@
                                     6 => ['18:00', '19:30'],
                                 ];
 
-                                // 検索中ならハイライト（検索していれば変数はセットされている）
                                 $isTarget = isset($startPeriod) || isset($endPeriod);
                             @endphp
 
