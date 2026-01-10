@@ -6,20 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Raqoo</title>
     <link rel="stylesheet" href="{{ asset('user/home.css') }}" />
+    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}">
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <style>
+        /* 検索フォームのカードスタイル */
+        .search-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 32px;
+        }
+
+        /* 検索結果の強調表示 */
+        /* 絞り込まれた結果全てに付くので、控えめに枠線だけ強調します */
+        .time-card.target-period {
+            background-color: #f0f9ff !important; /* ごく薄い青 */
+            border: 2px solid #3b82f6 !important; /* 青い枠線 */
+            position: relative;
+            z-index: 10;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="main-content">
+    <div class="layout">
         {{-- ナビゲーション --}}
         <x-user.sidebar />
 
         {{-- 右：メインコンテンツ --}}
-        <div class="main-content">
+        <div class="content-area">
 
-            <!-- ヘッダー（ロゴ画像） -->
             <div class="header">
                 <div class="logo-wrapper">
                     <img src="{{ asset('user/images/raqoo-logo.png') }}" alt="raqoo logo" class="raqoo-logo">
@@ -40,112 +60,136 @@
                 </div>
             </div>
 
-            <!-- 検索フォーム -->
-            <form class="search-form">
-                <div class="form-row">
-                    <!-- 日付 -->
-                    <div class="form-group">
-                        <label for="dateInput">日付</label>
-                        <input type="date" id="dateInput" placeholder="yyyy/mm/dd">
+            <div class="max-w-4xl mx-auto mb-8">
+                <form action="{{ route('user.home.index') }}" method="GET" class="search-card">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                        
+                        <div class="md:col-span-4">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">日付</label>
+                            <input type="date" name="date" value="{{ $date ?? '' }}" 
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                        </div>
+
+                        <div class="md:col-span-4">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">利用時限 (開始〜終了)</label>
+                            <div class="flex items-center space-x-2">
+                                <select name="start_period" class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                                    <option value="">指定なし</option>
+                                    @for($i=1; $i<=6; $i++)
+                                        <option value="{{ $i }}" {{ ($startPeriod ?? '') == $i ? 'selected' : '' }}>{{ $i }}限</option>
+                                    @endfor
+                                </select>
+                                <span class="text-gray-400">〜</span>
+                                <select name="end_period" class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                                    <option value="">指定なし</option>
+                                    @for($i=1; $i<=6; $i++)
+                                        <option value="{{ $i }}" {{ ($endPeriod ?? '') == $i ? 'selected' : '' }}>{{ $i }}限</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">利用人数</label>
+                            <input type="number" name="people" placeholder="0" value="{{ $people ?? '' }}" 
+                                class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <button type="submit" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
+                                検索
+                            </button>
+                        </div>
                     </div>
+                </form>
+            </div>
 
-                    <!-- 何限～何限 -->
-                    <div class="form-group">
-                        <label for="periodInput">何限～何限利用するか</label>
-                        <input type="text" id="periodInput" placeholder="例: 1限 〜 3限">
-                    </div>
+            {{-- 中央エリア（元のデザイン） --}}
+            <div class="center-wrap">
 
-                    <!-- 利用人数 -->
-                    <div class="form-group">
-                        <label for="peopleInput">利用人数</label>
-                        <input type="text" id="peopleInput" placeholder="〇人">
-                    </div>
-                </div>
+                <div class="day-tabs">
+                    <button type="button" class="strip-btn strip-prev" aria-label="前日へ">
+                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
 
-                <div class="form-row-btn">
-                    <button type="submit" class="search-btn">検索</button>
-                </div>
-            </form>
-
-            <!-- ▼曜日ストリップ -->
-            <div class="day-tabs">
-                <!-- 左矢印（前日へ） -->
-                <button type="button" class="strip-btn strip-prev" aria-label="前日へ">
-                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </button>
-
-                @php
-                    $weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
-                    $baseDate = now();
-                @endphp
-
-                @for ($i = 0; $i < 7; $i++)
                     @php
-                        $d = $baseDate->copy()->addDays($i);
+                        $weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+                        $baseDate = now();
                     @endphp
-                    <div class="day-tab">
-                        <div class="day-label">{{ $weekdayLabels[$d->dayOfWeek] }}</div>
-                        <div class="date-label">{{ $d->format('m/d') }}</div>
-                    </div>
-                @endfor
 
-                <!-- 右矢印（翌日へ） -->
-                <button type="button" class="strip-btn strip-next" aria-label="翌日へ">
-                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </button>
+                    @for ($i = 0; $i < 7; $i++)
+                        @php $d = $baseDate->copy()->addDays($i); @endphp
+                        <div class="day-tab">
+                            <div class="day-label">{{ $weekdayLabels[$d->dayOfWeek] }}</div>
+                            <div class="date-label">{{ $d->format('m/d') }}</div>
+                        </div>
+                    @endfor
+
+                    <button type="button" class="strip-btn strip-next" aria-label="翌日へ">
+                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="date-display">
+                    @php
+                        $week = ['日', '月', '火', '水', '木', '金', '土'];
+                        $today = now();
+                    @endphp
+                    <span class="date-year" style="display:none;"></span>
+                    <span class="date-main">{{ $today->format('m/d') }}</span>
+                    <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
+                </div>
+
+                <div class="status-bar-2">
+                    <span class="status-line"></span>
+                    ･･･現在使用中
+                    <span class="status-dot"></span>
+                    ･･･利用可能
+                </div>
+
             </div>
+            {{-- ▲ここまで中央揃えブロック --}}
 
-        {{-- フラッシュメッセージ --}}
-        @if (session('success'))
-            <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
+            {{-- フラッシュメッセージ --}}
+            @if (session('success'))
+                <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {{ session('success') }}
+                </div>
+            @endif
 
-        @if (session('error'))
-            <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        <!-- ▼中央の大きい日付 -->
-        <div class="date-display">
-            @php
-                $week = ['日', '月', '火', '水', '木', '金', '土'];
-                $today = now();
-            @endphp
-            <span class="date-year" style="display:none;"></span>
-            <span class="date-main">{{ $today->format('m/d') }}</span>
-            <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
-        </div>
-
-        <div class="status-bar-2">
-            <span class="status-line"></span>
-            ･･･現在使用中
-            <span class="status-dot"></span>
-            ･･･利用可能
-        </div>
+            @if (session('error'))
+                <div class="alert alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             {{-- 教室カード --}}
             @php
-                // javascriptからの日付パラメータを取得（デフォルトは今日）
-                $selectedDate = request()->query('date', date('Y-m-d'));
+                $displayDate = $date ?? request()->query('date', date('Y-m-d'));
+                
+                // ★修正: 検索されていたらその範囲、されていなければ1〜6を表示する
+                $loopStart = $startPeriod ?? 1;
+                $loopEnd   = $endPeriod ?? 6;
             @endphp
 
             @foreach ($rooms as $room)
                 <div class="room-group" data-room-id="{{ $room->id }}">
-                    <div class="room-title">{{ $room->name }}</div>
-                    <div class="room-times">
-                        @for ($period = 1; $period <= 6; $period++)
-                            @php
-                                $status = $room->getStatusForPeriod($selectedDate, $period);
+                    <div class="room-title">
+                        {{ $room->name }}
+                        <span style="font-size:0.8em; font-weight:normal; margin-left:10px;">(定員:{{ $room->capacity }}人)</span>
+                    </div>
 
+                    <div class="room-times">
+                        {{-- ★修正: $loopStart から $loopEnd までループ --}}
+                        @for ($period = $loopStart; $period <= $loopEnd; $period++)
+                            @php
+                                $status = $room->getStatusForPeriod($displayDate, $period);
                                 $times = [
                                     1 => ['09:10', '10:40'],
                                     2 => ['10:50', '12:20'],
@@ -154,43 +198,44 @@
                                     5 => ['16:20', '17:50'],
                                     6 => ['18:00', '19:30'],
                                 ];
-                                // デバッグ用
-                                echo "<!-- Room: {$room->id}, Period: {$period}, Status: {$status} -->";
+
+                                // 検索中ならハイライト（検索していれば変数はセットされている）
+                                $isTarget = isset($startPeriod) || isset($endPeriod);
                             @endphp
 
-                            <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }}">
+                            <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }} {{ $isTarget ? 'target-period' : '' }}">
                                 <div class="time-main">{{ $times[$period][0] }}</div>
                                 <div class="time-sub">~{{ $times[$period][1] }}</div>
                                 <div class="floor">{{ $room->floor }}階</div>
 
-                                {{-- 利用可能ラベル --}}
-                                <div class="available-label"
-                                    style="{{ $status === 'available' ? '' : 'display: none;' }}">
-                                    利用可能
-                                </div>
+                                @if ($status === 'available')
+                                    <div class="available-label">利用可能</div>
 
-                                {{-- 利用不可ラベル --}}
-                                <div class="unavailable-label"
-                                    style="{{ $status === 'available' ? 'display: none;' : '' }}">
-                                    {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}
-                                </div>
+                                    @php
+                                        $nextPath = route('user.reservations.create', [
+                                            'room_id' => $room->id,
+                                            'date'    => $displayDate,
+                                            'period'  => $period,
+                                        ], false);
+                                    @endphp
 
-                                {{-- 予約ボタン --}}
-                                <a href="{{ route('user.reservations.create', ['room_id' => $room->id, 'date' => $selectedDate, 'period' => $period]) }}"
-                                    class="reserve-btn"
-                                    style="{{ $status === 'available' ? '' : 'display: none;' }}">
-                                    予約
-                                </a>
-
+                                    <a href="{{ route('user.precautions', ['next' => $nextPath]) }}" class="reserve-btn">
+                                        予約
+                                    </a>
+                                @else
+                                    <div class="unavailable-label">
+                                        {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}
+                                    </div>
+                                @endif
                             </div>
                         @endfor
                     </div>
                 </div>
             @endforeach
 
-        </div> {{-- /.main-content --}}
+        </div> {{-- /.content-area --}}
+    </div> {{-- /.layout --}}
 
-        <script src="{{ asset('user/home.js') }}"></script>
+    <script src="{{ asset('user/home.js') }}"></script>
 </body>
-
 </html>
