@@ -7,6 +7,8 @@ use App\Http\Controllers\User\ReservationController as UserReservationController
 use App\Http\Controllers\User\NotificationController as UserNotificationController;
 use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
 use App\Http\Controllers\Admin\LoginController as AdminLoginController;
+use App\Http\Controllers\User\TermsController;
+use App\Http\Controllers\User\PrecautionsController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
@@ -106,7 +108,17 @@ Route::get('/info', function () {
     return view('user.info');
 });
 
-// デフォルトルート
-Route::get('/', function () {
-    return redirect('/home');
-});
+// ✅ 利用規約（同意ボタン無し）
+Route::get('/terms', [TermsController::class, 'index'])
+    ->middleware('auth')
+    ->name('user.terms');
+
+// ✅ 予約前 注意事項（同意ボタンあり）
+Route::get('/precautions', [PrecautionsController::class, 'show'])
+    ->middleware('auth')
+    ->name('user.precautions');
+
+// ✅ 同意POST（次回スキップもここで保存）
+Route::post('/precautions/agree', [PrecautionsController::class, 'agree'])
+    ->middleware('auth')
+    ->name('user.precautions.agree');
