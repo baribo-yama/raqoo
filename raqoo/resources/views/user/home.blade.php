@@ -63,10 +63,10 @@
             <div class="max-w-4xl mx-auto mb-8">
                 <form action="{{ route('user.home.index') }}" method="GET" class="search-card">
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-                        
+
                         <div class="md:col-span-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">日付</label>
-                            <input type="date" name="date" value="{{ $date ?? '' }}" 
+                            <input type="date" name="date" value="{{ $date ?? '' }}"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
                         </div>
 
@@ -91,7 +91,7 @@
 
                         <div class="md:col-span-2">
                             <label class="block text-sm font-bold text-gray-700 mb-2">利用人数</label>
-                            <input type="number" name="people" placeholder="0" value="{{ $people ?? '' }}" 
+                            <input type="number" name="people" placeholder="0" value="{{ $people ?? '' }}"
                                 class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
                         </div>
 
@@ -172,7 +172,7 @@
             {{-- 教室カード --}}
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
-                
+
                 // ★修正: 検索されていたらその範囲、されていなければ1〜6を表示する
                 $loopStart = $startPeriod ?? 1;
                 $loopEnd   = $endPeriod ?? 6;
@@ -189,7 +189,7 @@
                         {{-- ★修正: $loopStart から $loopEnd までループ --}}
                         @for ($period = $loopStart; $period <= $loopEnd; $period++)
                             @php
-                                $status = $room->getStatusForPeriod($displayDate, $period);
+                                $status = $room->getStatusForPeriod($displayDate, $period, auth()->id()); // ログインユーザーを認識
                                 $times = [
                                     1 => ['09:10', '10:40'],
                                     2 => ['10:50', '12:20'],
@@ -203,7 +203,8 @@
                                 $isTarget = isset($startPeriod) || isset($endPeriod);
                             @endphp
 
-                            <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }} {{ $isTarget ? 'target-period' : '' }}">
+                            <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }} {{ $isTarget ? 'target-period' : '' }}"
+                                data-period="{{ $period }}">
                                 <div class="time-main">{{ $times[$period][0] }}</div>
                                 <div class="time-sub">~{{ $times[$period][1] }}</div>
                                 <div class="floor">{{ $room->floor }}階</div>
@@ -219,12 +220,17 @@
                                         ], false);
                                     @endphp
 
+                                    {{-- 予約ボタン --}}
                                     <a href="{{ route('user.precautions', ['next' => $nextPath]) }}" class="reserve-btn">
                                         予約
                                     </a>
+
                                 @else
                                     <div class="unavailable-label">
-                                        {{ $status === 'in_use' ? '利用中' : ($status === 'reserved' ? '予約済み' : '利用不可') }}
+                                        {{-- statusがin_useの場合は利用中と表示、そうじゃない場合→statusがreservedなら予約済み、そうでないなら利用不可 --}}
+                                        {{ $status === "pending" ? '申請中' :
+                                            ($status === 'pending' ? '申請中' :
+                                            ($status === 'reserved' ? '予約済み' : '利用不可')) }}
                                     </div>
                                 @endif
                             </div>

@@ -630,7 +630,7 @@ body.with-sidebar {
   body.with-sidebar {
     padding-left: 0;
   }
-  
+
   .layout {
     flex-direction: column;
   }
@@ -648,7 +648,7 @@ body.with-sidebar {
     box-shadow: 4px 0 14px rgba(0, 0, 0, 0.12);
     z-index: 1000;
   }
-  
+
   body.nav-open .navigation {
     transform: translateX(0);
   }
@@ -704,11 +704,11 @@ body.with-sidebar {
     min-width: 0 !important;
     background: transparent !important;
   }
-  
+
   .day-tab.active {
     background: #4C85B6 !important;
   }
-  
+
   .day-label, .date-label {
     color: #fff !important;
     line-height: 1 !important;
@@ -759,7 +759,7 @@ body.with-sidebar {
     flex-wrap: wrap !important;
     gap: 6px;
     padding: 0 8px;
-    background: #fff !important; 
+    background: #fff !important;
   }
   .day-tab {
     flex: 1 1 calc(50% - 8px) !important;
@@ -768,6 +768,6 @@ body.with-sidebar {
     background: #888 !important;
   }
   .day-tab.active { background: #4c85b6 !important; }
-  
+
   .day-tabs .strip-btn { display: none !important; } /* スマホは矢印なし */
 }
