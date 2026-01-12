@@ -221,7 +221,10 @@
                                     @endphp
 
                                     {{-- 予約ボタン --}}
-                                    <a href="{{ route('user.precautions', ['next' => $nextPath]) }}" class="reserve-btn">
+                                    <a href="{{ route('user.precautions', ['next' => $nextPath]) }}"
+                                       class="reserve-btn"
+                                       data-room-id="{{ $room->id }}"
+                                       data-period="{{ $period }}">
                                         予約
                                     </a>
 

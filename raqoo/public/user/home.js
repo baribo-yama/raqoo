@@ -26,6 +26,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 選択日付のステータスを取得してカードを更新
     updateRoomStatuses(toISO(d));
+
+    // 予約ボタンのリンクを更新
+    updateReserveButtonLinks(toISO(d));
+  }
+
+  // 予約ボタンのリンクを更新する関数
+  function updateReserveButtonLinks(date) {
+    document.querySelectorAll('.reserve-btn').forEach(btn => {
+      const roomId = btn.dataset.roomId;
+      const period = btn.dataset.period;
+
+      if (roomId && period) {
+        // 新しいnextパスを構築
+        const nextPath = `/reservations/create?room_id=${roomId}&date=${date}&period=${period}`;
+        const newHref = `/precautions?next=${encodeURIComponent(nextPath)}`;
+        btn.setAttribute('href', newHref);
+      } else {
+        // データ属性がない場合は、既存のhrefからnextパラメータを抽出して更新
+        const currentHref = btn.getAttribute('href');
+        if (!currentHref) return;
+
+        try {
+          const url = new URL(currentHref, window.location.origin);
+          const nextParam = url.searchParams.get('next');
+
+          if (nextParam) {
+            // nextパラメータのURLを解析
+            const nextUrl = new URL(nextParam, window.location.origin);
+
+            // dateパラメータを更新
+            nextUrl.searchParams.set('date', date);
+
+            // 新しいnextパラメータでURLを再構築
+            url.searchParams.set('next', nextUrl.pathname + nextUrl.search);
+            btn.setAttribute('href', url.pathname + url.search);
+          }
+        } catch (e) {
+          console.error('予約ボタンリンク更新エラー:', e);
+        }
+      }
+    });
   }
 
   // 教室ステータスをサーバーから取得して更新
