@@ -527,10 +527,16 @@ body.with-sidebar {
 
 /* ========== メインコンテンツ／教室カード ========== */
 .main-content {
-  padding-left: 60px;
+  padding-left: 220px; /* サイドバー幅(200px) + 余白 */
   padding-right: 16px;
-  max-width: 950px;
+  max-width: 100%;
   margin: 0 auto;
+}
+
+/* 内側の.main-contentのリセット */
+.main-content > .main-content {
+  padding-left: 60px;
+  max-width: 950px;
 }
 
 .room-groups {
@@ -683,8 +689,12 @@ body.with-sidebar {
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
-  body.with-sidebar {
-    padding-left: 0;
+  .main-content {
+    padding-left: 0; /* スマホではサイドバーのパディング不要 */
+  }
+
+  .main-content > .main-content {
+    padding-left: 16px;
   }
 
   .layout {
@@ -705,12 +715,16 @@ body.with-sidebar {
   }
 
   .header {
-    padding-top: 24px;
+    padding-top: 20px; /* ハンバーガーメニューボタンのスペース確保 */
   }
 
   .main-content {
     padding: 0 16px 28px;
     max-width: 100%;
+  }
+
+  .main-content > .main-content {
+    padding-top: 60px; /* 内側のコンテンツもボタンと被らないように */
   }
 
   .profile-box {
@@ -799,5 +813,50 @@ body.with-sidebar {
 
   .navigation ul li {
     height: 48px;
+  }
+}
+
+/* ========== 検索バー（予約一覧、利用履歴、お知らせ用） ========== */
+.content-header {
+  padding: 20px;
+  background: transparent;
+  margin-bottom: 20px;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 400px;
+  padding: 10px 15px;
+  background: #f5f6fa;
+  border-radius: 8px;
+  border: 1px solid #000;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #333;
+}
+
+.search-wrapper ion-icon {
+  font-size: 20px;
+  color: #6b7280;
+}
+
+/* スマホ画面での検索バー調整 */
+@media (max-width: 1024px) {
+  .content-header {
+    margin-top: 60px; /* ハンバーガーメニューボタンのスペースを確保 */
+  }
+}
+
+@media (max-width: 540px) {
+  .search-wrapper {
+    max-width: 100%;
   }
 }

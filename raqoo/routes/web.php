@@ -92,6 +92,15 @@ Route::get('/reservations-history', [UserReservationController::class, 'history'
 // ユーザー通知
 Route::get('/notifications', [UserNotificationController::class, 'index'])->name('user.notifications.index');
 
+// ユーザー利用規約
+Route::get('/terms', function () {
+    return view('user.precautions', [
+        'showAgree' => false,
+        'next' => null,
+        'startStep' => 1,
+    ]);
+})->name('user.terms');
+
 // ユーザーインフォメーション画面
 Route::get('/info', function () {
     return view('user.info');

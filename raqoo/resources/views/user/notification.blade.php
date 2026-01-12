@@ -11,26 +11,21 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
-<body class="with-sidebar">
+<body>
     <div class="main-content">
-        <!-- ナビゲーション -->
+        {{-- ナビゲーション --}}
         <x-user.sidebar></x-user.sidebar>
 
-        <!-- メインコンテンツ -->
-        <div class="topbar">
-            <div class="toggle">
-                <ion-icon name="menu-outline"></ion-icon>
-            </div>
-            <div class="search">
-                <label>
-                    <input type="text" placeholder="検索...">
+        {{-- 右：メインコンテンツ --}}
+        <div class="main-content">
+
+            <!-- 検索バー -->
+            <div class="content-header">
+                <div class="search-wrapper">
+                    <input type="text" placeholder="検索..." class="search-input">
                     <ion-icon name="search-outline"></ion-icon>
-                </label>
+                </div>
             </div>
-            <div class="user">
-                <img src="assets/customer01.jpg" alt="">
-            </div>
-        </div>
 
         <!-- お知らせ一覧 -->
         <div class="details">
@@ -74,31 +69,8 @@
         </div>
     </div>
 
-    <script>
-        // ナビゲーション切り替え
-        let list = document.querySelectorAll('.list');
-
-        function activeLink() {
-            list.forEach((item) => item.classList.remove('active'));
-            this.classList.add('active');
-        }
-        list.forEach((item) => item.addEventListener('click', activeLink));
-
-        // トグルメニュー
-        let toggle = document.querySelector('.toggle');
-        let navigation = document.querySelector('.navigation');
-        let main = document.querySelector('.main-content');
-        toggle.onclick = function() {
-            navigation.classList.toggle('active');
-            main.classList.toggle('active');
-        }
-    </script>
+        </div> {{-- /.main-content --}}
+    </div>
 </body>
-
-
-<!-- Ionicons for sidebar -->
-<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-<script src="{{ asset('user/notification.js') }}"></script>
 
 </html>

@@ -9,62 +9,22 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
-<body class="with-sidebar">
-    <div class="main-content">
-        <!-- ナビゲーション -->
-        <div class="navigation">
-            <ul>
-                <li class="list">
-                    <a href="{{ route('user.home.index') }}">
-                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                        <span class="title">ホーム</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="{{ route('user.reservations.index') }}">
-                        <span class="icon"><ion-icon name="calendar-outline"></ion-icon></span>
-                        <span class="title">予約一覧</span>
-                    </a>
-                </li>
-                <li class="list active">
-                    <a href="{{ route('user.reservations.history') }}">
-                        <span class="icon"><ion-icon name="time-outline"></ion-icon></span>
-                        <span class="title">利用履歴</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="{{ route('user.notifications.index') }}">
-                        <span class="icon"><ion-icon name="notifications-outline"></ion-icon></span>
-                        <span class="title">お知らせ</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <form method="POST" action="{{ route('logout') }}" style="margin: 0; width: 100%;">
-                        @csrf
-                        <button type="submit" style="background: none; border: none; padding: 0; width: 100%; text-align: left; display: block; color: inherit; font: inherit; cursor: pointer;">
-                            <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                            <span class="title">ログアウト</span>
-                        </button>
-                    </form>
-                </li>
-            </ul>
-        </div>
 
-        <!-- メインコンテンツ -->
-        <div class="topbar">
-            <div class="toggle">
-                <ion-icon name="menu-outline"></ion-icon>
-            </div>
-            <div class="search">
-                <label>
-                    <input type="text" placeholder="検索...">
+<body>
+    <div class="main-content">
+        {{-- ナビゲーション --}}
+        <x-user.sidebar />
+
+        {{-- 右：メインコンテンツ --}}
+        <div class="main-content">
+
+            <!-- 検索バー -->
+            <div class="content-header">
+                <div class="search-wrapper">
+                    <input type="text" placeholder="検索..." class="search-input">
                     <ion-icon name="search-outline"></ion-icon>
-                </label>
+                </div>
             </div>
-            <div class="user">
-                <img src="assets/customer01.jpg" alt="">
-            </div>
-        </div>
 
         <!-- 利用履歴 -->
         <div class="details">
@@ -170,23 +130,8 @@
         </div>
     </div>
 
-    <script>
-        // ナビゲーション切り替え
-        let list = document.querySelectorAll('.list');
-        function activeLink() {
-            list.forEach((item) => item.classList.remove('active'));
-            this.classList.add('active');
-        }
-        list.forEach((item) => item.addEventListener('click', activeLink));
-
-        // トグルメニュー
-        let toggle = document.querySelector('.toggle');
-        let navigation = document.querySelector('.navigation');
-        let main = document.querySelector('.main-content');
-        toggle.onclick = function() {
-            navigation.classList.toggle('active');
-            main.classList.toggle('active');
-        }
-    </script>
+        </div> {{-- /.main-content --}}
+    </div>
 </body>
+
 </html>
