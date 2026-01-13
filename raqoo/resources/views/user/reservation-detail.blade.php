@@ -3,80 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>予約詳細 - Raqoo</title>
-    <link rel="stylesheet" href="{{ asset('user/home.css') }}">
+    <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        .topbar {
+            height: 60px;
+            display: none;
+        }
+        .details {
+            width: 100%;
+            margin-left: 0;
+            padding: 24px;
+        }
+        .recentOrders {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .cardHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .cardHeader h2 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
-    <div class="main-content">
+    <div class="layout">
         <!-- ナビゲーション -->
-        <div class="navigation">
-            <ul>
-                <li class="list">
-                    <a href="{{ route('user.home.index') }}">
-                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                        <span class="title">ホーム</span>
-                    </a>
-                </li>
-                <li class="list active">
-                    <a href="{{ route('user.reservations.index') }}">
-                        <span class="icon"><ion-icon name="calendar-outline"></ion-icon></span>
-                        <span class="title">予約一覧</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="{{ route('user.reservations.history') }}">
-                        <span class="icon"><ion-icon name="time-outline"></ion-icon></span>
-                        <span class="title">利用履歴</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="{{ route('user.notifications.index') }}">
-                        <span class="icon"><ion-icon name="notifications-outline"></ion-icon></span>
-                        <span class="title">お知らせ</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <form method="POST" action="{{ route('logout') }}" style="margin: 0; width: 100%;">
-                        @csrf
-                        <button type="submit" style="background: none; border: none; padding: 0; width: 100%; text-align: left; display: block; color: inherit; font: inherit; cursor: pointer;">
-                            <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                            <span class="title">ログアウト</span>
-                        </button>
-                    </form>
-                </li>
-            </ul>
-        </div>
+        <x-user.sidebar />
 
         <!-- メインコンテンツ -->
-        <div class="topbar">
-            <div class="toggle">
-                <ion-icon name="menu-outline"></ion-icon>
-            </div>
-            <div class="search">
-                <label>
-                    <input type="text" placeholder="検索...">
-                    <ion-icon name="search-outline"></ion-icon>
-                </label>
-            </div>
-            <div class="user">
-                <img src="assets/customer01.jpg" alt="">
-            </div>
-        </div>
-
-        <!-- 予約詳細 -->
-        <div class="details">
-            <div class="recentOrders">
-                <div class="cardHeader">
-                    <h2>予約詳細</h2>
-                    <a href="{{ route('user.reservations.index') }}"
-                       class="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition duration-200">
-                        一覧に戻る
-                    </a>
+        <div class="content-area">
+            <!-- トップバー -->
+            <div class="topbar">
+                <div class="toggle">
+                    <ion-icon name="menu-outline"></ion-icon>
                 </div>
+                <div class="search">
+                    <label>
+                        <input type="text" placeholder="検索...">
+                        <ion-icon name="search-outline"></ion-icon>
+                    </label>
+                </div>
+                <div class="user">
+                    <img src="assets/customer01.jpg" alt="">
+                </div>
+            </div>
+
+            <!-- 予約詳細 -->
+            <div class="details">
+                <div class="recentOrders">
+                    <div class="cardHeader">
+                        <h2>予約詳細</h2>
+                        <a href="{{ route('user.reservations.index') }}"
+                           class="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition duration-200">
+                            一覧に戻る
+                        </a>
+                    </div>
 
                 <div class="bg-white p-6 rounded-lg shadow-lg">
                     <!-- ステータス表示 -->
@@ -234,10 +231,10 @@
         // トグルメニュー
         let toggle = document.querySelector('.toggle');
         let navigation = document.querySelector('.navigation');
-        let main = document.querySelector('.main-content');
+        let main = document.querySelector('.layout');
         toggle.onclick = function() {
             navigation.classList.toggle('active');
-            main.classList.toggle('active');
+            main.classList.toggle('nav-open');
         }
     </script>
 </body>
