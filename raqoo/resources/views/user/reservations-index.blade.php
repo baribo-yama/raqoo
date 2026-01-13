@@ -4,74 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>予約一覧 - Raqoo</title>
-    <link rel="stylesheet" href="{{ asset('user/home.css') }}">
+    <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
-<body class="with-sidebar">
-    <div class="main-content">
+<body>
+    <div class="layout">
         <!-- ナビゲーション -->
-        <div class="navigation">
-            <ul>
-                <li class="list">
-                    <a href="{{ route('user.home.index') }}">
-                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
-                        <span class="title">ホーム</span>
-                    </a>
-                </li>
-                <li class="list active">
-                    <a href="{{ route('user.reservations.index') }}">
-                        <span class="icon"><ion-icon name="calendar-outline"></ion-icon></span>
-                        <span class="title">予約一覧</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="{{ route('user.reservations.history') }}">
-                        <span class="icon"><ion-icon name="time-outline"></ion-icon></span>
-                        <span class="title">利用履歴</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <a href="{{ route('user.notifications.index') }}">
-                        <span class="icon"><ion-icon name="notifications-outline"></ion-icon></span>
-                        <span class="title">お知らせ</span>
-                    </a>
-                </li>
-                <li class="list">
-                    <form method="POST" action="{{ route('logout') }}" style="margin: 0; width: 100%;">
-                        @csrf
-                        <button type="submit"
-                            style="background: none; border: none; padding: 0; width: 100%; text-align: left; display: block; color: inherit; font: inherit; cursor: pointer;">
-                            <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
-                            <span class="title">ログアウト</span>
-                        </button>
-                    </form>
-                </li>
-            </ul>
-        </div>
+        <x-user.sidebar />
 
         <!-- メインコンテンツ -->
-        <div class="topbar">
-            <div class="toggle">
-                <ion-icon name="menu-outline"></ion-icon>
-            </div>
-            <div class="search">
-                <label>
-                    <input type="text" placeholder="検索...">
-                    <ion-icon name="search-outline"></ion-icon>
-                </label>
-            </div>
-            <div class="user">
-                <img src="assets/customer01.jpg" alt="">
-            </div>
-        </div>
-
-        <!-- 予約一覧 -->
-        <div class="details">
-            <div class="recentOrders">
+        <div class="content-area">
                 <div class="cardHeader">
                     <h2>予約一覧（未来分）</h2>
                 </div>
@@ -148,6 +97,10 @@
             </div>
         </div>
     </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- /.layout -->
 
     <script>
         // ナビゲーション切り替え
@@ -160,14 +113,14 @@
         list.forEach((item) => item.addEventListener('click', activeLink));
 
         // トグルメニュー
-        let toggle = document.querySelector('.toggle');
+        let toggle = document.querySelector('.nav-toggle');
         let navigation = document.querySelector('.navigation');
-        let main = document.querySelector('.main-content');
         toggle.onclick = function() {
             navigation.classList.toggle('active');
-            main.classList.toggle('active');
         }
     </script>
 </body>
+
+</html>
 
 </html>
