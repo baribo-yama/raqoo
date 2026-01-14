@@ -30,13 +30,7 @@
 
   {{-- ▼▼▼ 【重要】home.mobile.css と同じクラス名にする (.m-backdrop) ▼▼▼ --}}
   <div id="mobileOverlay" class="m-backdrop"></div>
-
-  {{-- ▼▼▼ 【重要】home.mobile.css と同じクラス名にする (.m-hamburger) ▼▼▼ --}}
-  {{-- ここを nav-toggle にしていたのが動かなかった最大の原因です --}}
-  <div class="m-hamburger" id="menuToggle">
-      <ion-icon name="menu-outline"></ion-icon>
-  </div>
-
+  
   <div class="layout">
     
     {{-- サイドバー（home.js がクラスを見て自動で制御します） --}}

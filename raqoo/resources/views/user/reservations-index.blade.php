@@ -71,11 +71,6 @@
                     {{-- ページタイトルとしてロゴまたはテキストを表示 --}}
                     <h1 class="header-title" style="font-size: 24px; font-weight: bold; color: #1c2b4a;">予約一覧</h1>
                 </div>
-
-                {{-- ▼▼▼ ハンバーガーボタン（ホームと全く同じもの） ▼▼▼ --}}
-                <button type="button" id="menuToggle" class="menu-toggle-btn">
-                    <ion-icon name="menu-outline"></ion-icon>
-                </button>
             </div>
 
             {{-- ▼▼▼ ここから予約一覧の中身 ▼▼▼ --}}

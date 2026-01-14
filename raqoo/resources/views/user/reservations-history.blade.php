@@ -61,11 +61,6 @@
                 <div class="logo-wrapper">
                     <h1 class="header-title" style="font-size: 24px; font-weight: bold; color: #1c2b4a;">利用履歴</h1>
                 </div>
-
-                {{-- ▼▼▼ ハンバーガーボタン（共通） ▼▼▼ --}}
-                <button type="button" id="menuToggle" class="menu-toggle-btn">
-                    <ion-icon name="menu-outline"></ion-icon>
-                </button>
             </div>
 
             {{-- ▼▼▼ 利用履歴リスト ▼▼▼ --}}
