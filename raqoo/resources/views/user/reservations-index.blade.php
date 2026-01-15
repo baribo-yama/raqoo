@@ -7,8 +7,8 @@
     <title>予約一覧 - Raqoo</title>
     
     {{-- ▼▼▼ ホームと同じCSSを読み込む（これでデザイン統一） ▼▼▼ --}}
-    <link rel="stylesheet" href="{{ asset('user/home.css') }}">
-    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}">
+    <link rel="stylesheet" href="{{ asset('user/home.css') }}?v=999">
+    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}?v=999">
     
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -54,8 +54,8 @@
 </head>
 
 <body>
-    {{-- ▼▼▼ スマホ用オーバーレイ（必須） ▼▼▼ --}}
-    <div id="mobileOverlay" class="mobile-overlay"></div>
+    {{-- ▼▼▼ 修正箇所：クラス名を m-backdrop に変更しました ▼▼▼ --}}
+    <div id="mobileOverlay" class="m-backdrop"></div>
 
     <div class="layout">
         
@@ -89,7 +89,7 @@
             <div class="reservations-list">
                 @if ($reservations->count() > 0)
                     @foreach ($reservations as $reservation)
-                        <div class="reservation-card cursor-pointer" onclick="location.href='{{ route('user.reservations.show', $reservation->id) }}'">
+                      <a href="{{ route('user.reservations.show', $reservation->id) }}" class="reservation-card block"></a>
                             <div class="flex justify-between items-start">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between mb-3">
