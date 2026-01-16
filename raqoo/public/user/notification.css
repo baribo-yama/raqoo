@@ -1,144 +1,213 @@
+@charset "utf-8";
+
 /* ===========================
-   Notifications Minimal CSS
+   Base & Layout
    =========================== */
-
-body{
-  margin: 0;
-  background: #f3f4f8;
-  font-family: 'Segoe UI','Meiryo',sans-serif;
+:root {
+    --primary-blue: #1a2b4b;
+    --bg-gray: #f5f6fa;
+    --text-dark: #333;
+    --text-gray: #666;
 }
 
-/* ---------- Topbar（検索＋ユーザー） ---------- */
-.topbar{
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  background: #f3f4f8;
+body {
+    margin: 0;
+    background: var(--bg-gray);
+    font-family: 'Segoe UI', 'Meiryo', sans-serif;
+    color: var(--text-dark);
 }
 
-.topbar .search{
-  flex: 1;
-  min-width: 0;
-}
-.topbar .search label{
-  position: relative;
-  display: block;
-}
-.topbar .search input{
-  width: 100%;
-  height: 40px;
-  border-radius: 12px;
-  padding: 0 40px 0 12px;
-  border: 1px solid rgba(0,0,0,0.08);
-  background: #fff;
-  outline: none;
-}
-.topbar .search ion-icon{
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-  opacity: 0.65;
+.main-content {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: var(--bg-gray);
+    transition: 0.5s;
+    /* 上部の余白調整 */
+    padding-top: 40px; 
 }
 
-.topbar .user img{
-  width: 40px;
-  height: 40px;
-  border-radius: 9999px;
-  object-fit: cover;
+/* ===========================
+   Content Container
+   =========================== */
+.content-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
 }
 
-/* ハンバーガーが topbar に埋もれないように */
-.toggle{ z-index: 60; }
-
-/* スマホ：左上の三本線ぶんだけ席を空ける（被り防止） */
-@media (max-width: 560px){
-  .topbar{ padding-left: 68px; }
+/* ===========================
+   Page Title (Top)
+   =========================== */
+.page-title-area {
+    text-align: center;
+    margin-bottom: 30px; /* 検索窓との間隔 */
 }
 
-/* ---------- お知らせカード領域（home.css由来のクラス用） ---------- */
-.details{
-  padding: 22px 22px 32px;
-}
-.recentOrders{
-  max-width: 980px;
-  margin: 0 auto;
-  border-radius: 14px;
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    display: inline-block;
+    margin: 0;
 }
 
-/* Tablet */
-@media (min-width: 561px) and (max-width: 1024px){
-  .details{ padding: 18px 18px 28px; }
-  .recentOrders{ max-width: 900px; }
-  .cardHeader h2{ font-size: 20px; }
+/* ===========================
+   Filter/Search Card
+   =========================== */
+.filter-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 30px 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-/* Mobile */
-@media (max-width: 560px){
-  .details{ padding: 14px 12px 22px; }
-  .recentOrders{ width: 100%; }
+.search-box-wrapper {
+    width: 100%;
+    max-width: 600px;
+}
+.search-label {
+    display: block;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+.search-input-group {
+    display: flex;
+    gap: 10px;
+}
+.custom-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    font-size: 15px;
+    transition: 0.3s;
+    background: #f9f9f9;
+}
+.custom-input:focus {
+    background: #fff;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(26, 43, 75, 0.1);
+}
+.search-btn {
+    background: #2d3748;
+    color: #fff;
+    border: none;
+    padding: 0 28px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.search-btn:hover {
+    background: #1a202c;
+}
 
-  .cardHeader{ padding: 14px 14px 10px; }
-  .cardHeader h2{ font-size: 18px; }
+/* ===========================
+   Notification List
+   =========================== */
+.notification-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    display: flex;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+.notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
 
-  .recentOrders .bg-white{
-    padding: 12px !important;
-    border-radius: 12px !important;
-  }
-  .recentOrders p{
+/* 左側：時刻エリア */
+.card-left {
+    background: #edf2f7;
+    width: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 5px;
+    border-right: 1px solid #e2e8f0;
+}
+.time-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: #4a5568;
+    line-height: 1;
+}
+.date-sub {
+    font-size: 10px;
+    color: #718096;
+    margin-top: 4px;
+}
+
+/* 右側：内容エリア */
+.card-right {
+    flex: 1;
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.notif-message {
     font-size: 14px;
-    line-height: 1.55;
-    word-break: break-word;
-  }
+    color: #2d3748;
+    line-height: 1.6;
+    margin-bottom: 8px;
 }
-/* === Mobile: ハンバーガーが検索に被るのを強制回避 === */
-@media (max-width: 560px){
-
-  /* ハンバーガーの位置を固定（念のため） */
-  .toggle{
-    position: fixed !important;
-    left: 12px;
-    top: 12px;
-    z-index: 9999;
-  }
-
-  /* 検索ブロック自体を右にずらす（これが決定打） */
-  .topbar .search{
-    margin-left: 64px; /* ←toggle(約44px)+余白 */
-  }
-
-  /* ついでにクリックしやすいように */
-  .topbar{
-    padding-top: 12px;
-  }
+.notif-footer {
+    display: flex;
+    justify-content: flex-end;
 }
-/* =========================
-   Mobile Hamburger Overlap FIX (final)
-   ========================= */
-@media (max-width: 560px){
+.status-badge {
+    background: #4299e1;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+}
 
-  /* ① ハンバーガーになりがちな要素をまとめて固定（class違いでも拾う） */
-  :is(.toggle, #menuToggle, .m-hamburger, .hamburger, .menu-toggle, .sidebar-toggle, .nav-toggle){
-    position: fixed !important;
-    left: 12px !important;
-    top: 12px !important;
-    z-index: 2147483647 !important; /* 何よりも前に出す */
-  }
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #aaa;
+}
 
-  /* ② 検索ブロック自体を右に逃がす（topbarの中でも外でも効くように） */
-  :is(.topbar .search, .search){
-    margin-left: 72px !important;  /* ハンバーガー(44px)＋余白 */
-  }
+/* ===========================
+   Responsive
+   =========================== */
+@media (max-width: 991px) {
+    /* サイドバーがある場合、少しコンテンツを下げる */
+    .main-content {
+        padding-top: 60px; 
+    }
 
-  /* ③ もし検索inputがabsolute等で浮いてるなら、それも抑える */
-  .search{
-    position: relative !important;
-    z-index: 1 !important;
-  }
+    .content-container {
+        padding: 0 15px 40px;
+    }
+    
+    .filter-card {
+        padding: 20px;
+        flex-direction: column;
+    }
+    
+    .search-input-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .search-btn {
+        width: 100%;
+        padding: 12px;
+    }
 }
