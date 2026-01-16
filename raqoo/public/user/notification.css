@@ -1,30 +1,36 @@
 @charset "utf-8";
 
 /* ===========================
-   Base & Layout
+   Base & Variables
    =========================== */
 :root {
     --primary-blue: #1a2b4b;
     --bg-gray: #f5f6fa;
     --text-dark: #333;
     --text-gray: #666;
+    --sidebar-width: 260px; /* プロジェクトに合わせて調整 */
 }
 
-body {
+body.notification-page {
     margin: 0;
     background: var(--bg-gray);
     font-family: 'Segoe UI', 'Meiryo', sans-serif;
     color: var(--text-dark);
 }
 
+/* デスクトップ用レイアウト調整 */
 .main-content {
     position: relative;
     width: 100%;
     min-height: 100vh;
     background: var(--bg-gray);
-    transition: 0.5s;
-    /* 上部の余白調整 */
-    padding-top: 40px; 
+    transition: 0.3s;
+    padding-top: 40px;
+    
+    /* デスクトップではサイドバーの分だけ右にずらす */
+    /* ※home.cssの仕様に合わせて調整 */
+    padding-left: 300px; 
+    box-sizing: border-box;
 }
 
 /* ===========================
@@ -32,28 +38,29 @@ body {
    =========================== */
 .content-container {
     max-width: 900px;
-    margin: 0 auto;
-    padding: 0 20px 40px;
+    margin: 0 auto; /* 中央寄せ */
+    padding: 0 40px 40px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* ===========================
-   Page Title (Top)
+   Page Title
    =========================== */
 .page-title-area {
     text-align: center;
-    margin-bottom: 30px; /* 検索窓との間隔 */
+    margin-bottom: 30px;
 }
 
 .page-title {
     font-size: 28px;
     font-weight: bold;
     color: #333;
-    display: inline-block;
     margin: 0;
 }
 
 /* ===========================
-   Filter/Search Card
+   Filter/Search
    =========================== */
 .filter-card {
     background: #fff;
@@ -80,6 +87,7 @@ body {
 .search-input-group {
     display: flex;
     gap: 10px;
+    width: 100%;
 }
 .custom-input {
     flex: 1;
@@ -113,10 +121,16 @@ body {
 /* ===========================
    Notification List
    =========================== */
+/* 指摘対応: 明示的にスタイル定義 */
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* space-y-4 相当 */
+}
+
 .notification-card {
     background: #fff;
     border-radius: 12px;
-    padding: 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.04);
     display: flex;
     overflow: hidden;
@@ -127,10 +141,10 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* 左側：時刻エリア */
 .card-left {
     background: #edf2f7;
     width: 70px;
+    min-width: 70px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -150,7 +164,6 @@ body {
     margin-top: 4px;
 }
 
-/* 右側：内容エリア */
 .card-right {
     flex: 1;
     padding: 15px 20px;
@@ -183,19 +196,34 @@ body {
     color: #aaa;
 }
 
-/* ===========================
-   Responsive
-   =========================== */
-@media (max-width: 991px) {
-    /* サイドバーがある場合、少しコンテンツを下げる */
-    .main-content {
-        padding-top: 60px; 
-    }
+/* ページネーション用ラッパー */
+.pagination-wrapper {
+    margin-top: 32px;
+    display: flex;
+    justify-content: center;
+}
 
-    .content-container {
-        padding: 0 15px 40px;
+/* ===========================
+   Responsive (Standardized)
+   =========================== */
+
+/* Tablet/Mobile (1024px以下) */
+/* 指摘対応: 991pxから1024pxへ変更 */
+@media (max-width: 1024px) {
+    .main-content {
+        /* ハンバーガーメニューが出るため左余白を解除 */
+        padding-left: 0;
+        /* 指摘対応: padding-topを60pxから20pxへ減らす */
+        padding-top: 20px; 
     }
     
+    .content-container {
+        padding: 0 20px 40px;
+    }
+}
+
+/* Small Tablet (720px以下) - 追加 */
+@media (max-width: 720px) {
     .filter-card {
         padding: 20px;
         flex-direction: column;
@@ -203,11 +231,35 @@ body {
     
     .search-input-group {
         flex-direction: column;
-        width: 100%;
     }
     
     .search-btn {
         width: 100%;
         padding: 12px;
+    }
+}
+
+/* Mobile (560px以下) - 追加 */
+@media (max-width: 560px) {
+    .page-title {
+        font-size: 24px;
+    }
+    .content-container {
+        padding: 0 16px 30px;
+    }
+    .notification-card {
+        flex-direction: column;
+    }
+    .card-left {
+        width: 100%;
+        flex-direction: row;
+        gap: 10px;
+        padding: 8px;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .date-sub {
+        margin-top: 0;
+        margin-left: 5px;
     }
 }
