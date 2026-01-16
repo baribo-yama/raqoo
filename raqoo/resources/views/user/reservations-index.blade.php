@@ -11,7 +11,7 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
-<body>
+<body class="with-sidebar">
     <div class="main-content">
         <!-- ナビゲーション -->
         <div class="navigation">

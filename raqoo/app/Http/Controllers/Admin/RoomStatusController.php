@@ -41,4 +41,18 @@ class RoomStatusController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+
+    public function getStatus(Request $request)
+    {
+        $date = $request->query('date');
+
+        if (!$date) {
+            return response()->json(['error' => '日付が指定されていません'], 400);
+        }
+
+        $statuses = RoomStatus::where('date', $date)->get();
+
+        return response()->json($statuses);
+    }
 }
