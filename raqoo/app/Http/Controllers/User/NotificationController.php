@@ -16,20 +16,15 @@ class NotificationController extends Controller
 
     public function index()
     {
-        // 通知がない場合は空のコレクションを渡す
-        // 実際のデータベースから取得する場合は以下のコメントアウトを解除
-        /*
-        $notifications = Notification::where(function($query) {
-            $query->whereNull('user_id') // 全体通知
-                  ->orWhere('user_id', Auth::id()); // 個人宛通知
-        })
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
-        */
-        
-        // 現在はサンプルデータをビューで表示しているため、空を渡す
-        $notifications = collect();
+        // 通知一覧を表示する際にすべて既読にする
+        Notification::where('user_id', Auth::id())->where('is_read', false)->update(['is_read' => true]);
 
+        $notifications = Notification::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10); // 通知を10件ずつ取り出して、ページに分割して返す・
+
+        // compact関数は['notifications' => $notifications]の短縮版
+        // これをやるとblade側では$notificationsという変数名で受け取れる
         return view('user.notification', compact('notifications'));
     }
 }
