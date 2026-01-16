@@ -27,9 +27,9 @@ body.notification-page {
     transition: 0.3s;
     padding-top: 40px;
     
-    /* デスクトップではサイドバーの分だけ右にずらす */
-    /* ※home.cssの仕様に合わせて調整 */
-    padding-left: 300px; 
+    /* 【修正箇所】サイドバーによるズレを防止するため0に設定 */
+    padding-left: 0; 
+    
     box-sizing: border-box;
 }
 
