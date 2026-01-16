@@ -1,215 +1,144 @@
-body {
+/* ===========================
+   Notifications Minimal CSS
+   =========================== */
+
+body{
   margin: 0;
   background: #f3f4f8;
-  font-family: 'Segoe UI', 'Meiryo', sans-serif;
+  font-family: 'Segoe UI','Meiryo',sans-serif;
 }
 
-.app-container {
-  display: flex;
-  height: 100vh;
-}
-
-/* サイドバー */
-.navigation {
-  width: 200px;
-  height: 100vh;
-  background-color: #1c2b4a;
-  color: white;
-  padding-top: 10px;
-  z-index: 10;
-}
-
-.navigation::before {
-  content: "教室管理";
-  display: block;
-  font-size: 16px;
-  font-weight: bold;
-  color: white;
-  padding: 12px 14px 6px;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-  margin-bottom: 6px;
-}
-
-.navigation ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.navigation ul li {
+/* ---------- Topbar（検索＋ユーザー） ---------- */
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 40;
   display: flex;
   align-items: center;
-  height: 56px;
-  padding-left: 14px;
-  transition: background-color 0.3s;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f3f4f8;
 }
 
-.navigation ul li:hover {
-  background-color: #256fa1;
-}
-
-.navigation ul li.active {
-  background-color: #1f4e78;
-}
-
-.navigation ul li.active a {
-  color: white;
-}
-
-.navigation ul li a {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: white;
-  font-weight: bold;
-  width: 100%;
-  height: 100%;
-}
-
-.icon {
-  font-size: 20px;
-  width: 32px;
-  text-align: center;
-}
-
-.title {
-  font-size: 15px;
-  margin-left: 8px;
-  white-space: nowrap;
-  opacity: 1;
-  transition: none;
-}
-
-/* --- メインパネル --- */
-.notice-panel {
-  background: #f4f6fb;
+.topbar .search{
   flex: 1;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
   min-width: 0;
-  height: 100vh;
 }
-
-/* お知らせリスト */
-.notice-list {
-  width: 230px;
-  min-width: 230px;
-  background: #fff;
-  border-right: 1.5px solid #e3e6ee;
-  min-height: 100vh;
-  box-shadow: 2px 0 8px #e0e7ef13;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-}
-.notice-list-header {
-  font-size: 21px;
-  font-weight: bold;
-  color: #15325d;
-  letter-spacing: 1.1px;
-  background: #fff;
-  padding: 23px 0 16px 32px;
-  border-bottom: 2.5px solid #e6eaf6;
-}
-
-/* 通知リストのカード感とシャドウUP */
-.notice-list-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  padding: 15px 11px 15px 15px;
-  margin: 10px 10px;
-  background: #f8faff;
-  border-radius: 11px;
-  box-shadow: 0 3px 13px #d0daee22;
-  border: 1.7px solid transparent;
-  cursor: pointer;
-  transition: background 0.18s, border 0.18s, box-shadow 0.17s;
-  min-height: 54px;
+.topbar .search label{
   position: relative;
-  z-index: 1;
+  display: block;
 }
-.notice-list-item.active,
-.notice-list-item:hover {
-  background: #e5f1ff;
-  border: 1.7px solid #4aa3f8;
-  box-shadow: 0 6px 20px #96c7fa18;
-}
-
-.notice-list-title {
-  font-weight: 700;
-  font-size: 15.2px;
-  line-height: 1.1;
-  margin-bottom: 1px;
-  color: #254275;
-  letter-spacing: 0.03em;
-}
-.notice-list-message {
-  font-size: 13.1px;
-  color: #51739c;
-  line-height: 1.24;
-}
-
-.notice-avatar {
-  min-width: 39px;
-  height: 39px;
-  background: linear-gradient(120deg, #e0ebfa 0%, #f7faff 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  color: #4771aa;
-  box-shadow: 0 2px 7px #e0e8f926;
-  margin-top: 0;
-  margin-right: 6px;
-  border: 1px solid #e3eaf4;
-}
-
-/* 詳細カード */
-.notice-detail {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  min-width: 0;
-  min-height: 100vh;
-  padding: 46px 0 0 52px;
-  background: transparent;
-}
-.notice-detail-card {
+.topbar .search input{
+  width: 100%;
+  height: 40px;
+  border-radius: 12px;
+  padding: 0 40px 0 12px;
+  border: 1px solid rgba(0,0,0,0.08);
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 28px #b3c3dd1c;
-  border: 1.8px solid #e4e8f2;
-  padding: 44px 42px 38px 38px;
-  min-width: 440px;
-  max-width: 700px;
-  min-height: 140px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 8px;
+  outline: none;
 }
-.notice-detail-header {
-  font-size: 19px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  margin-bottom: 22px;
-  color: #2356a0;
+.topbar .search ion-icon{
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  opacity: 0.65;
 }
-.notice-detail-header i {
-  font-size: 34px;
-  color: #61a4ea;
-  filter: drop-shadow(0 1px 0 #eaf6ff);
+
+.topbar .user img{
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  object-fit: cover;
 }
-.notice-detail-message {
-  font-size: 16.3px;
-  color: #232f40;
-  line-height: 1.55;
-  font-weight: 500;
+
+/* ハンバーガーが topbar に埋もれないように */
+.toggle{ z-index: 60; }
+
+/* スマホ：左上の三本線ぶんだけ席を空ける（被り防止） */
+@media (max-width: 560px){
+  .topbar{ padding-left: 68px; }
+}
+
+/* ---------- お知らせカード領域（home.css由来のクラス用） ---------- */
+.details{
+  padding: 22px 22px 32px;
+}
+.recentOrders{
+  max-width: 980px;
+  margin: 0 auto;
+  border-radius: 14px;
+}
+
+/* Tablet */
+@media (min-width: 561px) and (max-width: 1024px){
+  .details{ padding: 18px 18px 28px; }
+  .recentOrders{ max-width: 900px; }
+  .cardHeader h2{ font-size: 20px; }
+}
+
+/* Mobile */
+@media (max-width: 560px){
+  .details{ padding: 14px 12px 22px; }
+  .recentOrders{ width: 100%; }
+
+  .cardHeader{ padding: 14px 14px 10px; }
+  .cardHeader h2{ font-size: 18px; }
+
+  .recentOrders .bg-white{
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+  .recentOrders p{
+    font-size: 14px;
+    line-height: 1.55;
+    word-break: break-word;
+  }
+}
+/* === Mobile: ハンバーガーが検索に被るのを強制回避 === */
+@media (max-width: 560px){
+
+  /* ハンバーガーの位置を固定（念のため） */
+  .toggle{
+    position: fixed !important;
+    left: 12px;
+    top: 12px;
+    z-index: 9999;
+  }
+
+  /* 検索ブロック自体を右にずらす（これが決定打） */
+  .topbar .search{
+    margin-left: 64px; /* ←toggle(約44px)+余白 */
+  }
+
+  /* ついでにクリックしやすいように */
+  .topbar{
+    padding-top: 12px;
+  }
+}
+/* =========================
+   Mobile Hamburger Overlap FIX (final)
+   ========================= */
+@media (max-width: 560px){
+
+  /* ① ハンバーガーになりがちな要素をまとめて固定（class違いでも拾う） */
+  :is(.toggle, #menuToggle, .m-hamburger, .hamburger, .menu-toggle, .sidebar-toggle, .nav-toggle){
+    position: fixed !important;
+    left: 12px !important;
+    top: 12px !important;
+    z-index: 2147483647 !important; /* 何よりも前に出す */
+  }
+
+  /* ② 検索ブロック自体を右に逃がす（topbarの中でも外でも効くように） */
+  :is(.topbar .search, .search){
+    margin-left: 72px !important;  /* ハンバーガー(44px)＋余白 */
+  }
+
+  /* ③ もし検索inputがabsolute等で浮いてるなら、それも抑える */
+  .search{
+    position: relative !important;
+    z-index: 1 !important;
+  }
 }
