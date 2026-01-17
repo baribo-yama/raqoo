@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 reserveBtn.style.display = '';
               }
             } else {
-              // 利用不可な場合
+              // 利用不可な場合（pending, reserved, in_use, unavailableすべて）
               if (availableLabel) {
                 // 利用可能ラベルを非表示
                 availableLabel.style.display = 'none';
@@ -95,7 +95,10 @@ document.addEventListener("DOMContentLoaded", () => {
               if (unavailableLabel) {
                 // 利用不可、そのほかラベルをステータスによって表示
                 unavailableLabel.style.display = '';
-                unavailableLabel.textContent = status === 'in_use' ? '利用中' : (status === 'reserved' ? '予約済み' : '利用不可');
+                unavailableLabel.textContent =
+                  status === 'pending' ? '申請中' :
+                  status === 'in_use' ? '利用中' :
+                  status === 'reserved' ? '予約済み' : '利用不可';
               }
               if (reserveBtn) {
                 reserveBtn.style.display = 'none';
