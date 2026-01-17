@@ -23,16 +23,22 @@ class ReservationController extends Controller
     // 予約申請フォーム表示(MVP版)
     public function create(Request $request)
     {
-        // デバッグ用　room_idとか取得できているか
-        // dd([
-        //     'room_id' => $request->room_id,
-        //     'date' => $request->date,
-        //     'period' => $request->period,
-        //     'selectedRoom' => Room::find($request->room_id)
-        // ]);
-
+        // デバッグ用：受け取った値を確認
+        Log::info('予約フォーム表示', [
+            'room_id' => $request->room_id,
+            'date' => $request->date,
+            'period' => $request->period,
+            'all_params' => $request->all(),
+        ]);
 
         $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
+
+        // dateがnullまたは空の場合はエラー
+        if (!$request->date) {
+            return redirect()->route('user.home.index')
+                ->with('error', '日付が指定されていません。もう一度選択してください。');
+        }
+
         $selectedDate = $request->date;
         $selectedPeriod = $request->period;
 
@@ -41,6 +47,7 @@ class ReservationController extends Controller
             return redirect()->route('user.home.index')
                 ->with('error', '教室がみつかりません。もう一度選択してください。');
         }
+
         return view('user.reservation-form', compact('selectedRoom', 'selectedDate', 'selectedPeriod'));
     }
 
@@ -57,11 +64,11 @@ class ReservationController extends Controller
 
         $selectedRoom = Room::find($validated['room_id']);
 
-        // 重複予約チェック
+        // 重複予約チェック（承認済みの予約のみチェック）
         $existing = Reservation::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
             ->where('period', $validated['period'])
-            ->whereIn('status', ['pending', 'approved'])
+            ->where('status', 'approved')
             ->exists();
 
         if ($existing) {
@@ -111,11 +118,11 @@ class ReservationController extends Controller
             'members' => 'nullable|string',
         ]);
 
-        // 重複予約チェック
+        // 重複予約チェック（承認済みの予約のみチェック）
         $existing = Reservation::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
             ->where('period', $validated['period'])
-            ->whereIn('status', ['pending', 'approved'])
+            ->where('status', 'approved')
             ->exists();
 
         // storeでのチェック：データ整合性保証
