@@ -8,20 +8,35 @@ document.addEventListener("DOMContentLoaded", () => {
   // DOM
   const mainEl = document.querySelector(".date-main");
   const wdayEl = document.querySelector(".date-weekday");
-  const dateInput = document.querySelector("#dateInput");
+  const dateInput = document.querySelector("#dateInput"); // Blade修正によりID取得可能
 
   const tabs = document.querySelectorAll(".day-tabs .day-tab");
   const prevBtn = document.querySelector(".strip-prev");
   const nextBtn = document.querySelector(".strip-next");
 
-  // 日付
-  let selectedDate = new Date();
+  // --- ▼▼▼ 日付の初期化（修正箇所） ▼▼▼ ---
+  let selectedDate;
+  
+  // 検索後でinputに値が入っている場合はそれを採用
+  if (dateInput && dateInput.value) {
+    const [year, month, day] = dateInput.value.split('-').map(Number);
+    // 月は0始まりなので -1
+    selectedDate = new Date(year, month - 1, day);
+  } else {
+    // 値がない場合は今日
+    selectedDate = new Date();
+  }
+
+  // カレンダー開始日（選択日から曜日分戻す）
   let startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
+  // --- ▲▲▲ 修正箇所ここまで ▲▲▲ ---
 
   // 中央の日付更新
   function updateCenterDisplay(d) {
     mainEl.textContent = toMMDD(d);
     wdayEl.textContent = `（${jaWeek[d.getDay()]}）`;
+    
+    // 表示とinput値を同期
     if (dateInput) dateInput.value = toISO(d);
 
     // 選択日付のステータスを取得してカードを更新
@@ -170,6 +185,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderStrip();
   });
-
 
 });

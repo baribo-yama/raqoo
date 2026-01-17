@@ -64,11 +64,11 @@ class ReservationController extends Controller
 
         $selectedRoom = Room::find($validated['room_id']);
 
-        // 重複予約チェック
+        // 重複予約チェック（承認済みの予約のみチェック）
         $existing = Reservation::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
             ->where('period', $validated['period'])
-            ->whereIn('status', ['pending', 'approved'])
+            ->where('status', 'approved')
             ->exists();
 
         if ($existing) {
@@ -118,11 +118,11 @@ class ReservationController extends Controller
             'members' => 'nullable|string',
         ]);
 
-        // 重複予約チェック
+        // 重複予約チェック（承認済みの予約のみチェック）
         $existing = Reservation::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
             ->where('period', $validated['period'])
-            ->whereIn('status', ['pending', 'approved'])
+            ->where('status', 'approved')
             ->exists();
 
         // storeでのチェック：データ整合性保証
