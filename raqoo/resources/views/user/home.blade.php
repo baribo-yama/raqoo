@@ -208,10 +208,11 @@
                                 <div class="time-sub">~{{ $times[$period][1] }}</div>
                                 <div class="floor">{{ $room->floor }}階</div>
 
-                                {{-- ▼▼▼ 修正箇所：常にHTMLを出力し、styleで表示・非表示を切り替える ▼▼▼ --}}
+                                {{-- ▼▼▼ 修正箇所：常にHTMLを出力し、@if でstyle属性そのものを出力制御する ▼▼▼ --}}
 
                                 {{-- 1. 利用可能ラベル --}}
-                                <div class="available-label" style="{{ $status === 'available' ? '' : 'display: none;' }}">
+                                <div class="available-label" 
+                                     @if($status !== 'available') style="display: none;" @endif>
                                     利用可能
                                 </div>
 
@@ -228,15 +229,22 @@
                                    class="reserve-btn"
                                    data-room-id="{{ $room->id }}"
                                    data-period="{{ $period }}"
-                                   style="{{ $status === 'available' ? '' : 'display: none;' }}">
+                                   @if($status !== 'available') style="display: none;" @endif>
                                     予約
                                 </a>
 
                                 {{-- 3. 利用不可ラベル --}}
-                                <div class="unavailable-label" style="{{ $status !== 'available' ? '' : 'display: none;' }}">
-                                    {{ $status === 'pending'
-                                        ? '申請中'
-                                        : ($status === 'reserved' ? '予約済み' : '利用不可') }}
+                                <div class="unavailable-label" 
+                                     @if($status === 'available') style="display: none;" @endif>
+                                    @if($status === 'pending')
+                                        申請中
+                                    @elseif($status === 'reserved')
+                                        予約済み
+                                    @elseif($status === 'in_use')
+                                        利用中
+                                    @else
+                                        利用不可
+                                    @endif
                                 </div>
                                 {{-- ▲▲▲ 修正箇所ここまで ▲▲▲ --}}
                                 
