@@ -43,11 +43,10 @@
             <div class="max-w-4xl mx-auto mb-8">
                 <form action="{{ route('user.home.index') }}" method="GET" class="search-card">
                     
-                    {{-- ▼▼▼ 追加：検索しても階数指定を維持するための隠しフィールド ▼▼▼ --}}
+                    {{-- 検索しても階数指定を維持するための隠しフィールド --}}
                     @if(request('floor'))
                         <input type="hidden" name="floor" value="{{ request('floor') }}">
                     @endif
-                    {{-- ▲▲▲ 追加ここまで ▲▲▲ --}}
 
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
                         
@@ -91,7 +90,7 @@
                 </form>
             </div>
 
-            {{-- 中央エリア（元のデザイン） --}}
+            {{-- 中央エリア --}}
             <div class="center-wrap">
 
                 <div class="day-tabs">
@@ -141,9 +140,7 @@
                 </div>
 
             </div>
-            {{-- ▲ここまで中央揃えブロック --}}
 
-            {{-- フラッシュメッセージ --}}
             @if (session('success'))
                 <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                     {{ session('success') }}
@@ -156,17 +153,17 @@
                 </div>
             @endif
 
-            {{-- ▼▼▼ デザイン刷新：階数フィルター（タブUI） ▼▼▼ --}}
+            {{-- ▼▼▼ 階数フィルター（タブUI） ▼▼▼ --}}
             <div class="floor-filter-container">
                 <div class="floor-filter-label">階数で絞り込み</div>
                 <div class="floor-filter-list">
-                    {{-- 「すべて」ボタン：厳密比較(===)に修正 --}}
-                    <a href="{{ request()->fullUrlWithQuery(['floor' => null]) }}" 
-                       class="floor-chip {{ request()->query('floor') === null ? 'active' : '' }}">
+                    {{-- 「すべて」ボタン：修正 (fullUrlWithoutQueryを使用し、空文字判定に対応) --}}
+                    <a href="{{ request()->fullUrlWithoutQuery('floor') }}" 
+                       class="floor-chip {{ (request()->query('floor') ?? '') === '' ? 'active' : '' }}">
                         すべて
                     </a>
 
-                    {{-- 1階〜5階ボタン：数値を文字列にキャストして厳密比較 --}}
+                    {{-- 1階〜5階ボタン --}}
                     @for($f = 1; $f <= 5; $f++)
                         <a href="{{ request()->fullUrlWithQuery(['floor' => $f]) }}" 
                            class="floor-chip {{ request()->query('floor') === (string)$f ? 'active' : '' }}">
@@ -180,7 +177,6 @@
             {{-- 教室カード --}}
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
-
                 $loopStart = $startPeriod ?? 1;
                 $loopEnd   = $endPeriod ?? 6;
             @endphp
@@ -204,7 +200,6 @@
                                     5 => ['16:20', '17:50'],
                                     6 => ['18:00', '19:30'],
                                 ];
-
                                 $isTarget = isset($startPeriod) || isset($endPeriod);
                             @endphp
 
@@ -233,7 +228,6 @@
                                     </a>
 
                                 @else
-                                    {{-- Copilot指摘修正：重複していたpendingチェックを削除して整理 --}}
                                     <div class="unavailable-label">
                                         {{ $status === 'pending'
                                             ? '申請中'
@@ -245,11 +239,10 @@
                     </div>
                 </div>
 
-                {{-- ▼▼▼ 修正：Tailwindクラスで最大幅を指定し、インラインスタイルを排除 ▼▼▼ --}}
+                {{-- 教室間の区切り線（スマホのみ表示） --}}
                 @if (!$loop->last)
                     <div class="w-full mx-auto my-8 border-b-2 border-gray-400 md:hidden max-w-[720px]"></div>
                 @endif
-                {{-- ▲▲▲ 修正ここまで ▲▲▲ --}}
 
             @endforeach
 
