@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * 予約申請したユーザーに見せるもの
      */
     public function up(): void
     {
