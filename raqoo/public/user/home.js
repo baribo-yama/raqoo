@@ -36,11 +36,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 教室ステータスをサーバーから取得して更新
   function updateRoomStatuses(date) {
-    // --- Copilot修正反映：インデントの修正 ---
+    // --- ステータス表示のリセット処理 ---
     // 通信待ちの間、一旦すべて「利用可能」表示にリセットする
     document.querySelectorAll('.room-group').forEach((roomGroup) => {
       roomGroup.querySelectorAll('.time-card').forEach((card) => {
-        card.className = 'time-card available';
+        // ★修正1：classNameでの全上書きをやめ、classListを使って target-period を保持する
+        card.classList.remove('unavailable');
+        card.classList.add('available');
+
         const availableLabel = card.querySelector('.available-label');
         const unavailableLabel = card.querySelector('.unavailable-label');
         const reserveBtn = card.querySelector('.reserve-btn');
@@ -70,7 +73,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const status = statusData ? statusData.status : 'available';
 
-            card.className = status === 'available' ? 'time-card available' : 'time-card unavailable';
+            // ★修正2：ここもclassListを使って target-period を保持する
+            card.classList.remove('available', 'unavailable');
+            if (status === 'available') {
+              card.classList.add('available');
+            } else {
+              card.classList.add('unavailable');
+            }
 
             const availableLabel = card.querySelector('.available-label');
             const unavailableLabel = card.querySelector('.unavailable-label');
