@@ -160,16 +160,16 @@
             <div class="floor-filter-container">
                 <div class="floor-filter-label">階数で絞り込み</div>
                 <div class="floor-filter-list">
-                    {{-- 「すべて」ボタン --}}
+                    {{-- 「すべて」ボタン：厳密比較(===)に修正 --}}
                     <a href="{{ request()->fullUrlWithQuery(['floor' => null]) }}" 
-                       class="floor-chip {{ request('floor') == null ? 'active' : '' }}">
+                       class="floor-chip {{ request()->query('floor') === null ? 'active' : '' }}">
                         すべて
                     </a>
 
-                    {{-- 1階〜5階ボタン --}}
+                    {{-- 1階〜5階ボタン：数値を文字列にキャストして厳密比較 --}}
                     @for($f = 1; $f <= 5; $f++)
                         <a href="{{ request()->fullUrlWithQuery(['floor' => $f]) }}" 
-                           class="floor-chip {{ request('floor') == $f ? 'active' : '' }}">
+                           class="floor-chip {{ request()->query('floor') === (string)$f ? 'active' : '' }}">
                             {{ $f }}F
                         </a>
                     @endfor
@@ -181,7 +181,6 @@
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
 
-                // 検索されていたらその範囲、されていなければ1〜6を表示する
                 $loopStart = $startPeriod ?? 1;
                 $loopEnd   = $endPeriod ?? 6;
             @endphp
@@ -234,10 +233,11 @@
                                     </a>
 
                                 @else
+                                    {{-- Copilot指摘修正：重複していたpendingチェックを削除して整理 --}}
                                     <div class="unavailable-label">
-                                        {{ $status === "pending" ? '申請中' :
-                                            ($status === 'pending' ? '申請中' :
-                                            ($status === 'reserved' ? '予約済み' : '利用不可')) }}
+                                        {{ $status === 'pending'
+                                            ? '申請中'
+                                            : ($status === 'reserved' ? '予約済み' : '利用不可') }}
                                     </div>
                                 @endif
                             </div>
@@ -245,10 +245,9 @@
                     </div>
                 </div>
 
-                {{-- ▼▼▼ 修正：教室間の区切り線（スマホのみ表示） ▼▼▼ --}}
+                {{-- ▼▼▼ 修正：Tailwindクラスで最大幅を指定し、インラインスタイルを排除 ▼▼▼ --}}
                 @if (!$loop->last)
-                    {{-- md:hidden を追加：768px以上の画面（PC・タブレット）では非表示になります --}}
-                    <div class="w-full mx-auto my-8 border-b-2 border-gray-400 md:hidden" style="max-width: 720px;"></div>
+                    <div class="w-full mx-auto my-8 border-b-2 border-gray-400 md:hidden max-w-[720px]"></div>
                 @endif
                 {{-- ▲▲▲ 修正ここまで ▲▲▲ --}}
 
