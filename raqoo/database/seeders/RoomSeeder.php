@@ -3,8 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Room;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Room;
 
 class RoomSeeder extends Seeder
 {
@@ -13,101 +14,36 @@ class RoomSeeder extends Seeder
      */
     public function run(): void
     {
-        // 念のためデータを空にしてから追加（重複エラー防止）
-        Schema::disableForeignKeyConstraints();
-        Room::truncate();
-        Schema::enableForeignKeyConstraints();
+        // ★修正: 本番環境での誤爆防止のため、ローカル環境のみリセットを実行 (Copilot指摘対応)
+        if (app()->isLocal()) {
+            Schema::disableForeignKeyConstraints();
+            Room::truncate();
+            Schema::enableForeignKeyConstraints();
+        }
 
-        Room::insert([
-            // --- 1階 ---
-            [
-                'name' => '101教室',
-                'floor' => 1,
-                'capacity' => 30,
-                'equipment' => 'プロジェクター, ホワイトボード',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => '102教室',
-                'floor' => 1,
-                'capacity' => 25,
-                'equipment' => 'ホワイトボード',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+        // 5階層分の部屋データを作成
+        $rooms = [];
+        for ($floor = 1; $floor <= 5; $floor++) {
+            // 各階に2部屋ずつ (例: 101, 102)
+            for ($num = 1; $num <= 2; $num++) {
+                $roomNumber = $floor . sprintf('%02d', $num); // 101, 102...
+                
+                // 101, 201... は30人・プロジェクターあり
+                // 102, 202... は25人・ホワイトボードのみ
+                $isRoom1 = ($num === 1);
 
-            // --- 2階 ---
-            [
-                'name' => '201教室',
-                'floor' => 2,
-                'capacity' => 30,
-                'equipment' => 'プロジェクター, ホワイトボード',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => '202教室',
-                'floor' => 2,
-                'capacity' => 25,
-                'equipment' => 'ホワイトボード',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+                $rooms[] = [
+                    'name'       => $roomNumber . '教室',
+                    'capacity'   => $isRoom1 ? 30 : 25,
+                    'floor'      => $floor,
+                    'equipment'  => $isRoom1 ? 'プロジェクター, ホワイトボード' : 'ホワイトボード',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+        }
 
-            // --- 3階 ---
-            [
-                'name' => '301教室',
-                'floor' => 3,
-                'capacity' => 30,
-                'equipment' => 'プロジェクター, ホワイトボード',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => '302教室',
-                'floor' => 3,
-                'capacity' => 25,
-                'equipment' => 'ホワイトボード',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-
-            // --- 4階 ---
-            [
-                'name' => '401教室',
-                'floor' => 4,
-                'capacity' => 30,
-                'equipment' => 'プロジェクター, ホワイトボード',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => '402教室',
-                'floor' => 4,
-                'capacity' => 25,
-                'equipment' => 'ホワイトボード',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-
-            // --- 5階 ---
-            [
-                'name' => '501教室',
-                'floor' => 5,
-                'capacity' => 30,
-                'equipment' => 'プロジェクター, ホワイトボード',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => '502教室',
-                'floor' => 5,
-                'capacity' => 25,
-                'equipment' => 'ホワイトボード',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        // 一括挿入
+        DB::table('rooms')->insert($rooms);
     }
 }
