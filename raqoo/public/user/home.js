@@ -53,7 +53,20 @@ document.addEventListener("DOMContentLoaded", () => {
           availableLabel.textContent = '利用可能';
         }
         if (unavailableLabel) unavailableLabel.style.display = 'none';
-        if (reserveBtn) reserveBtn.style.display = '';
+        
+        if (reserveBtn) {
+          reserveBtn.style.display = '';
+
+          // ★修正3：予約ボタンのリンク先（href）に含まれる日付を、新しい日付に書き換える
+          let href = reserveBtn.getAttribute('href');
+          if (href) {
+            // URLエンコードされた日付 (date%3DYYYY-MM-DD) と 通常の日付 (date=YYYY-MM-DD) の両方を置換
+            // ※ Laravelの route() で生成されたURLは通常エンコードされています
+            href = href.replace(/date%3D\d{4}-\d{2}-\d{2}/g, `date%3D${date}`);
+            href = href.replace(/date=\d{4}-\d{2}-\d{2}/g, `date=${date}`);
+            reserveBtn.setAttribute('href', href);
+          }
+        }
       });
     });
     // --- リセット処理ここまで ---
