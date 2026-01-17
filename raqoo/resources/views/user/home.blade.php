@@ -157,7 +157,7 @@
             <div class="floor-filter-container">
                 <div class="floor-filter-label">階数で絞り込み</div>
                 <div class="floor-filter-list">
-                    {{-- 「すべて」ボタン --}}
+                    {{-- 「すべて」ボタン: floor クエリのみを fullUrlWithoutQuery('floor') で外し、floor が未指定（空）のとき active 扱いとする --}}
                     <a href="{{ request()->fullUrlWithoutQuery('floor') }}" 
                        class="floor-chip {{ (request()->query('floor') ?? '') === '' ? 'active' : '' }}">
                         すべて
