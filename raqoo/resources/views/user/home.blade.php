@@ -10,26 +10,6 @@
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
-    <style>
-        /* 検索フォームのカードスタイル */
-        .search-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 32px;
-        }
-
-        /* 検索結果の強調表示 */
-        /* 絞り込まれた結果全てに付くので、控えめに枠線だけ強調します */
-        .time-card.target-period {
-            background-color: #f0f9ff !important; /* ごく薄い青 */
-            border: 2px solid #3b82f6 !important; /* 青い枠線 */
-            position: relative;
-            z-index: 10;
-        }
-    </style>
 </head>
 
 <body>
@@ -55,8 +35,8 @@
                     </svg>
                 </div>
                 <div class="profile-detail">
-                    <div class="profile-id">学籍番号 ○○○○○○</div>
-                    <div class="profile-name">名前〇〇〇〇</div>
+                    <div class="profile-id">学籍番号 {{ Auth::user()->student_id ?? '未設定' }}</div>
+                    <div class="profile-name">{{ Auth::user()->name ?? 'ゲスト' }}</div>
                 </div>
             </div>
 
@@ -66,7 +46,8 @@
 
                         <div class="md:col-span-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">日付</label>
-                            <input type="date" name="date" value="{{ $date ?? '' }}"
+                            {{-- ▼▼▼ 修正箇所：id="dateInput" を追加しました ▼▼▼ --}}
+                            <input type="date" id="dateInput" name="date" value="{{ $date ?? '' }}" 
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
                         </div>
 
@@ -186,7 +167,6 @@
                     </div>
 
                     <div class="room-times">
-                        {{-- ★修正: $loopStart から $loopEnd までループ --}}
                         @for ($period = $loopStart; $period <= $loopEnd; $period++)
                             @php
                                 $status = $room->getStatusForPeriod($displayDate, $period, auth()->id()); // ログインユーザーを認識
@@ -199,7 +179,6 @@
                                     6 => ['18:00', '19:30'],
                                 ];
 
-                                // 検索中ならハイライト（検索していれば変数はセットされている）
                                 $isTarget = isset($startPeriod) || isset($endPeriod);
                             @endphp
 

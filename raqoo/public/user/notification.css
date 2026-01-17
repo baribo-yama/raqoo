@@ -1,215 +1,265 @@
-body {
-  margin: 0;
-  background: #f3f4f8;
-  font-family: 'Segoe UI', 'Meiryo', sans-serif;
+@charset "utf-8";
+
+/* ===========================
+   Base & Variables
+   =========================== */
+:root {
+    --primary-blue: #1a2b4b;
+    --bg-gray: #f5f6fa;
+    --text-dark: #333;
+    --text-gray: #666;
+    --sidebar-width: 260px; /* プロジェクトに合わせて調整 */
 }
 
-.app-container {
-  display: flex;
-  height: 100vh;
+body.notification-page {
+    margin: 0;
+    background: var(--bg-gray);
+    font-family: 'Segoe UI', 'Meiryo', sans-serif;
+    color: var(--text-dark);
 }
 
-/* サイドバー */
-.navigation {
-  width: 200px;
-  height: 100vh;
-  background-color: #1c2b4a;
-  color: white;
-  padding-top: 10px;
-  z-index: 10;
+/* デスクトップ用レイアウト調整 */
+.main-content {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: var(--bg-gray);
+    transition: 0.3s;
+    padding-top: 40px;
+    
+    /* 【修正箇所】サイドバーによるズレを防止するため0に設定 */
+    padding-left: 0; 
+    
+    box-sizing: border-box;
 }
 
-.navigation::before {
-  content: "教室管理";
-  display: block;
-  font-size: 16px;
-  font-weight: bold;
-  color: white;
-  padding: 12px 14px 6px;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-  margin-bottom: 6px;
+/* ===========================
+   Content Container
+   =========================== */
+.content-container {
+    max-width: 900px;
+    margin: 0 auto; /* 中央寄せ */
+    padding: 0 40px 40px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.navigation ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* ===========================
+   Page Title
+   =========================== */
+.page-title-area {
+    text-align: center;
+    margin-bottom: 30px;
 }
 
-.navigation ul li {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding-left: 14px;
-  transition: background-color 0.3s;
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
 }
 
-.navigation ul li:hover {
-  background-color: #256fa1;
+/* ===========================
+   Filter/Search
+   =========================== */
+.filter-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 30px 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.navigation ul li.active {
-  background-color: #1f4e78;
+.search-box-wrapper {
+    width: 100%;
+    max-width: 600px;
+}
+.search-label {
+    display: block;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+.search-input-group {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+.custom-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    font-size: 15px;
+    transition: 0.3s;
+    background: #f9f9f9;
+}
+.custom-input:focus {
+    background: #fff;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(26, 43, 75, 0.1);
+}
+.search-btn {
+    background: #2d3748;
+    color: #fff;
+    border: none;
+    padding: 0 28px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.search-btn:hover {
+    background: #1a202c;
 }
 
-.navigation ul li.active a {
-  color: white;
+/* ===========================
+   Notification List
+   =========================== */
+/* 指摘対応: 明示的にスタイル定義 */
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* space-y-4 相当 */
 }
 
-.navigation ul li a {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: white;
-  font-weight: bold;
-  width: 100%;
-  height: 100%;
+.notification-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    display: flex;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+.notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-.icon {
-  font-size: 20px;
-  width: 32px;
-  text-align: center;
+.card-left {
+    background: #edf2f7;
+    width: 70px;
+    min-width: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 5px;
+    border-right: 1px solid #e2e8f0;
+}
+.time-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: #4a5568;
+    line-height: 1;
+}
+.date-sub {
+    font-size: 10px;
+    color: #718096;
+    margin-top: 4px;
 }
 
-.title {
-  font-size: 15px;
-  margin-left: 8px;
-  white-space: nowrap;
-  opacity: 1;
-  transition: none;
+.card-right {
+    flex: 1;
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.notif-message {
+    font-size: 14px;
+    color: #2d3748;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+.notif-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+.status-badge {
+    background: #4299e1;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: bold;
 }
 
-/* --- メインパネル --- */
-.notice-panel {
-  background: #f4f6fb;
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  min-width: 0;
-  height: 100vh;
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #aaa;
 }
 
-/* お知らせリスト */
-.notice-list {
-  width: 230px;
-  min-width: 230px;
-  background: #fff;
-  border-right: 1.5px solid #e3e6ee;
-  min-height: 100vh;
-  box-shadow: 2px 0 8px #e0e7ef13;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-}
-.notice-list-header {
-  font-size: 21px;
-  font-weight: bold;
-  color: #15325d;
-  letter-spacing: 1.1px;
-  background: #fff;
-  padding: 23px 0 16px 32px;
-  border-bottom: 2.5px solid #e6eaf6;
+/* ページネーション用ラッパー */
+.pagination-wrapper {
+    margin-top: 32px;
+    display: flex;
+    justify-content: center;
 }
 
-/* 通知リストのカード感とシャドウUP */
-.notice-list-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  padding: 15px 11px 15px 15px;
-  margin: 10px 10px;
-  background: #f8faff;
-  border-radius: 11px;
-  box-shadow: 0 3px 13px #d0daee22;
-  border: 1.7px solid transparent;
-  cursor: pointer;
-  transition: background 0.18s, border 0.18s, box-shadow 0.17s;
-  min-height: 54px;
-  position: relative;
-  z-index: 1;
-}
-.notice-list-item.active,
-.notice-list-item:hover {
-  background: #e5f1ff;
-  border: 1.7px solid #4aa3f8;
-  box-shadow: 0 6px 20px #96c7fa18;
+/* ===========================
+   Responsive (Standardized)
+   =========================== */
+
+/* Tablet/Mobile (1024px以下) */
+/* 指摘対応: 991pxから1024pxへ変更 */
+@media (max-width: 1024px) {
+    .main-content {
+        /* ハンバーガーメニューが出るため左余白を解除 */
+        padding-left: 0;
+        /* 指摘対応: padding-topを60pxから20pxへ減らす */
+        padding-top: 20px; 
+    }
+    
+    .content-container {
+        padding: 0 20px 40px;
+    }
 }
 
-.notice-list-title {
-  font-weight: 700;
-  font-size: 15.2px;
-  line-height: 1.1;
-  margin-bottom: 1px;
-  color: #254275;
-  letter-spacing: 0.03em;
-}
-.notice-list-message {
-  font-size: 13.1px;
-  color: #51739c;
-  line-height: 1.24;
-}
-
-.notice-avatar {
-  min-width: 39px;
-  height: 39px;
-  background: linear-gradient(120deg, #e0ebfa 0%, #f7faff 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  color: #4771aa;
-  box-shadow: 0 2px 7px #e0e8f926;
-  margin-top: 0;
-  margin-right: 6px;
-  border: 1px solid #e3eaf4;
+/* Small Tablet (720px以下) - 追加 */
+@media (max-width: 720px) {
+    .filter-card {
+        padding: 20px;
+        flex-direction: column;
+    }
+    
+    .search-input-group {
+        flex-direction: column;
+    }
+    
+    .search-btn {
+        width: 100%;
+        padding: 12px;
+    }
 }
 
-/* 詳細カード */
-.notice-detail {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  min-width: 0;
-  min-height: 100vh;
-  padding: 46px 0 0 52px;
-  background: transparent;
-}
-.notice-detail-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 28px #b3c3dd1c;
-  border: 1.8px solid #e4e8f2;
-  padding: 44px 42px 38px 38px;
-  min-width: 440px;
-  max-width: 700px;
-  min-height: 140px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 8px;
-}
-.notice-detail-header {
-  font-size: 19px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  margin-bottom: 22px;
-  color: #2356a0;
-}
-.notice-detail-header i {
-  font-size: 34px;
-  color: #61a4ea;
-  filter: drop-shadow(0 1px 0 #eaf6ff);
-}
-.notice-detail-message {
-  font-size: 16.3px;
-  color: #232f40;
-  line-height: 1.55;
-  font-weight: 500;
+/* Mobile (560px以下) - 追加 */
+@media (max-width: 560px) {
+    .page-title {
+        font-size: 24px;
+    }
+    .content-container {
+        padding: 0 16px 30px;
+    }
+    .notification-card {
+        flex-direction: column;
+    }
+    .card-left {
+        width: 100%;
+        flex-direction: row;
+        gap: 10px;
+        padding: 8px;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .date-sub {
+        margin-top: 0;
+        margin-left: 5px;
+    }
 }
