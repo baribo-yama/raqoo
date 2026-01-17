@@ -157,7 +157,7 @@
             <div class="floor-filter-container">
                 <div class="floor-filter-label">階数で絞り込み</div>
                 <div class="floor-filter-list">
-                    {{-- 「すべて」ボタン：修正 (fullUrlWithoutQueryを使用し、空文字判定に対応) --}}
+                    {{-- 「すべて」ボタン --}}
                     <a href="{{ request()->fullUrlWithoutQuery('floor') }}" 
                        class="floor-chip {{ (request()->query('floor') ?? '') === '' ? 'active' : '' }}">
                         すべて
@@ -172,8 +172,7 @@
                     @endfor
                 </div>
             </div>
-            {{-- ▲▲▲ 変更ここまで ▲▲▲ --}}
-
+            
             {{-- 教室カード --}}
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
@@ -209,31 +208,38 @@
                                 <div class="time-sub">~{{ $times[$period][1] }}</div>
                                 <div class="floor">{{ $room->floor }}階</div>
 
-                                @if ($status === 'available')
-                                    <div class="available-label">利用可能</div>
+                                {{-- ▼▼▼ 修正箇所：常にHTMLを出力し、styleで表示・非表示を切り替える ▼▼▼ --}}
 
-                                    @php
-                                        $nextPath = route('user.reservations.create', [
-                                            'room_id' => $room->id,
-                                            'date'    => $displayDate,
-                                            'period'  => $period,
-                                        ], false);
-                                    @endphp
+                                {{-- 1. 利用可能ラベル --}}
+                                <div class="available-label" style="{{ $status === 'available' ? '' : 'display: none;' }}">
+                                    利用可能
+                                </div>
 
-                                    <a href="{{ route('user.precautions', ['next' => $nextPath]) }}"
-                                       class="reserve-btn"
-                                       data-room-id="{{ $room->id }}"
-                                       data-period="{{ $period }}">
-                                        予約
-                                    </a>
+                                @php
+                                    $nextPath = route('user.reservations.create', [
+                                        'room_id' => $room->id,
+                                        'date'    => $displayDate,
+                                        'period'  => $period,
+                                    ], false);
+                                @endphp
 
-                                @else
-                                    <div class="unavailable-label">
-                                        {{ $status === 'pending'
-                                            ? '申請中'
-                                            : ($status === 'reserved' ? '予約済み' : '利用不可') }}
-                                    </div>
-                                @endif
+                                {{-- 2. 予約ボタン --}}
+                                <a href="{{ route('user.precautions', ['next' => $nextPath]) }}"
+                                   class="reserve-btn"
+                                   data-room-id="{{ $room->id }}"
+                                   data-period="{{ $period }}"
+                                   style="{{ $status === 'available' ? '' : 'display: none;' }}">
+                                    予約
+                                </a>
+
+                                {{-- 3. 利用不可ラベル --}}
+                                <div class="unavailable-label" style="{{ $status !== 'available' ? '' : 'display: none;' }}">
+                                    {{ $status === 'pending'
+                                        ? '申請中'
+                                        : ($status === 'reserved' ? '予約済み' : '利用不可') }}
+                                </div>
+                                {{-- ▲▲▲ 修正箇所ここまで ▲▲▲ --}}
+                                
                             </div>
                         @endfor
                     </div>
