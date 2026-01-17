@@ -43,8 +43,25 @@ document.addEventListener("DOMContentLoaded", () => {
     updateRoomStatuses(toISO(d));
   }
 
+  
+
   // 教室ステータスをサーバーから取得して更新
   function updateRoomStatuses(date) {
+    document.querySelectorAll('.room-group').forEach((roomGroup) => {
+    roomGroup.querySelectorAll('.time-card').forEach((card) => {
+      card.className = 'time-card available';
+      const availableLabel = card.querySelector('.available-label');
+      const unavailableLabel = card.querySelector('.unavailable-label');
+      const reserveBtn = card.querySelector('.reserve-btn');
+
+      if (availableLabel) {
+          availableLabel.style.display = '';
+          availableLabel.textContent = '利用可能';
+      }
+      if (unavailableLabel) unavailableLabel.style.display = 'none';
+      if (reserveBtn) reserveBtn.style.display = '';
+    });
+  });
     fetch(`/user/room-status?date=${date}`)
       .then(response => response.json())
       .then(data => {
