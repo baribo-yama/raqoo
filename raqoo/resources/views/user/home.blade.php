@@ -42,11 +42,17 @@
 
             <div class="max-w-4xl mx-auto mb-8">
                 <form action="{{ route('user.home.index') }}" method="GET" class="search-card">
+                    
+                    {{-- ▼▼▼ 追加：検索しても階数指定を維持するための隠しフィールド ▼▼▼ --}}
+                    @if(request('floor'))
+                        <input type="hidden" name="floor" value="{{ request('floor') }}">
+                    @endif
+                    {{-- ▲▲▲ 追加ここまで ▲▲▲ --}}
+
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
                         
                         <div class="md:col-span-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">日付</label>
-                            {{-- ▼▼▼ 修正箇所：id="dateInput" を追加しました ▼▼▼ --}}
                             <input type="date" id="dateInput" name="date" value="{{ $date ?? '' }}" 
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
                         </div>
@@ -150,6 +156,27 @@
                 </div>
             @endif
 
+            {{-- ▼▼▼ デザイン刷新：階数フィルター（タブUI） ▼▼▼ --}}
+            <div class="floor-filter-container">
+                <div class="floor-filter-label">階数で絞り込み</div>
+                <div class="floor-filter-list">
+                    {{-- 「すべて」ボタン --}}
+                    <a href="{{ request()->fullUrlWithQuery(['floor' => null]) }}" 
+                       class="floor-chip {{ request('floor') == null ? 'active' : '' }}">
+                        すべて
+                    </a>
+
+                    {{-- 1階〜5階ボタン --}}
+                    @for($f = 1; $f <= 5; $f++)
+                        <a href="{{ request()->fullUrlWithQuery(['floor' => $f]) }}" 
+                           class="floor-chip {{ request('floor') == $f ? 'active' : '' }}">
+                            {{ $f }}F
+                        </a>
+                    @endfor
+                </div>
+            </div>
+            {{-- ▲▲▲ 変更ここまで ▲▲▲ --}}
+
             {{-- 教室カード --}}
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
@@ -209,6 +236,13 @@
                         @endfor
                     </div>
                 </div>
+
+                {{-- ▼▼▼ 追加：教室間の区切り線（最後の教室以外に表示） ▼▼▼ --}}
+                @if (!$loop->last)
+                    <div class="w-full mx-auto my-8 border-b-2 border-dashed border-gray-300" style="max-width: 720px;"></div>
+                @endif
+                {{-- ▲▲▲ 追加ここまで ▲▲▲ --}}
+
             @endforeach
 
         </div> {{-- /.content-area --}}
