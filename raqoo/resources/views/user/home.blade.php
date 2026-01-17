@@ -50,7 +50,7 @@
                     {{-- ▲▲▲ 追加ここまで ▲▲▲ --}}
 
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-
+                        
                         <div class="md:col-span-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">日付</label>
                             <input type="date" id="dateInput" name="date" value="{{ $date ?? '' }}" 
@@ -78,7 +78,7 @@
 
                         <div class="md:col-span-2">
                             <label class="block text-sm font-bold text-gray-700 mb-2">利用人数</label>
-                            <input type="number" name="people" placeholder="0" value="{{ $people ?? '' }}"
+                            <input type="number" name="people" placeholder="0" value="{{ $people ?? '' }}" 
                                 class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
                         </div>
 
@@ -181,7 +181,7 @@
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
 
-                // ★修正: 検索されていたらその範囲、されていなければ1〜6を表示する
+                // 検索されていたらその範囲、されていなければ1〜6を表示する
                 $loopStart = $startPeriod ?? 1;
                 $loopEnd   = $endPeriod ?? 6;
             @endphp
@@ -196,7 +196,7 @@
                     <div class="room-times">
                         @for ($period = $loopStart; $period <= $loopEnd; $period++)
                             @php
-                                $status = $room->getStatusForPeriod($displayDate, $period, auth()->id()); // ログインユーザーを認識
+                                $status = $room->getStatusForPeriod($displayDate, $period, auth()->id());
                                 $times = [
                                     1 => ['09:10', '10:40'],
                                     2 => ['10:50', '12:20'],
@@ -226,7 +226,6 @@
                                         ], false);
                                     @endphp
 
-                                    {{-- 予約ボタン --}}
                                     <a href="{{ route('user.precautions', ['next' => $nextPath]) }}"
                                        class="reserve-btn"
                                        data-room-id="{{ $room->id }}"
@@ -236,7 +235,6 @@
 
                                 @else
                                     <div class="unavailable-label">
-                                        {{-- statusがin_useの場合は利用中と表示、そうじゃない場合→statusがreservedなら予約済み、そうでないなら利用不可 --}}
                                         {{ $status === "pending" ? '申請中' :
                                             ($status === 'pending' ? '申請中' :
                                             ($status === 'reserved' ? '予約済み' : '利用不可')) }}
@@ -247,11 +245,12 @@
                     </div>
                 </div>
 
-                {{-- ▼▼▼ 追加：教室間の区切り線（最後の教室以外に表示） ▼▼▼ --}}
+                {{-- ▼▼▼ 修正：教室間の区切り線（スマホのみ表示） ▼▼▼ --}}
                 @if (!$loop->last)
-                    <div class="w-full mx-auto my-8 border-b-2 border-dashed border-gray-300" style="max-width: 720px;"></div>
+                    {{-- md:hidden を追加：768px以上の画面（PC・タブレット）では非表示になります --}}
+                    <div class="w-full mx-auto my-8 border-b-2 border-gray-400 md:hidden" style="max-width: 720px;"></div>
                 @endif
-                {{-- ▲▲▲ 追加ここまで ▲▲▲ --}}
+                {{-- ▲▲▲ 修正ここまで ▲▲▲ --}}
 
             @endforeach
 
