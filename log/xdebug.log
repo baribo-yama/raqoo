@@ -3378,3 +3378,27 @@
 [46] [Step Debug] ERR: Could not connect to debugging client. Tried: host.docker.internal:9012 (through xdebug.client_host/xdebug.client_port).
 [46] Log closed at 2026-01-16 04:49:49.023408
 
+[17] Log opened at 2026-01-17 07:40:45.562370
+[17] [Config] INFO: Control socket set up successfully: '@xdebug-ctrl.17'
+[17] [Step Debug] INFO: Connecting to configured address/port: host.docker.internal:9012.
+[17] [Step Debug] WARN: Creating socket for 'host.docker.internal:9012', poll success, but error: Operation now in progress (29).
+[17] [Step Debug] WARN: Creating socket for 'host.docker.internal:9012', connect: Network is unreachable.
+[17] [Step Debug] ERR: Could not connect to debugging client. Tried: host.docker.internal:9012 (through xdebug.client_host/xdebug.client_port).
+[17] Log closed at 2026-01-17 07:40:45.824200
+
+[19] Log opened at 2026-01-17 07:41:30.391306
+[19] [Config] INFO: Control socket set up successfully: '@xdebug-ctrl.19'
+[19] [Step Debug] INFO: Connecting to configured address/port: host.docker.internal:9012.
+[19] [Step Debug] WARN: Creating socket for 'host.docker.internal:9012', poll success, but error: Operation now in progress (29).
+[19] [Step Debug] WARN: Creating socket for 'host.docker.internal:9012', connect: Network is unreachable.
+[19] [Step Debug] ERR: Could not connect to debugging client. Tried: host.docker.internal:9012 (through xdebug.client_host/xdebug.client_port).
+[19] Log closed at 2026-01-17 07:41:33.551253
+
+[21] Log opened at 2026-01-17 07:41:42.059314
+[21] [Config] INFO: Control socket set up successfully: '@xdebug-ctrl.21'
+[21] [Step Debug] INFO: Connecting to configured address/port: host.docker.internal:9012.
+[21] [Step Debug] WARN: Creating socket for 'host.docker.internal:9012', poll success, but error: Operation now in progress (29).
+[21] [Step Debug] WARN: Creating socket for 'host.docker.internal:9012', connect: Network is unreachable.
+[21] [Step Debug] ERR: Could not connect to debugging client. Tried: host.docker.internal:9012 (through xdebug.client_host/xdebug.client_port).
+[21] Log closed at 2026-01-17 07:41:44.242868
+

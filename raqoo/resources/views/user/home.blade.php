@@ -42,11 +42,16 @@
 
             <div class="max-w-4xl mx-auto mb-8">
                 <form action="{{ route('user.home.index') }}" method="GET" class="search-card">
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                    
+                    {{-- 検索しても階数指定を維持するための隠しフィールド --}}
+                    @if(request('floor'))
+                        <input type="hidden" name="floor" value="{{ request('floor') }}">
+                    @endif
 
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                        
                         <div class="md:col-span-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">日付</label>
-                            {{-- ▼▼▼ 修正箇所：id="dateInput" を追加しました ▼▼▼ --}}
                             <input type="date" id="dateInput" name="date" value="{{ $date ?? '' }}" 
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
                         </div>
@@ -72,7 +77,7 @@
 
                         <div class="md:col-span-2">
                             <label class="block text-sm font-bold text-gray-700 mb-2">利用人数</label>
-                            <input type="number" name="people" placeholder="0" value="{{ $people ?? '' }}"
+                            <input type="number" name="people" placeholder="0" value="{{ $people ?? '' }}" 
                                 class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
                         </div>
 
@@ -85,7 +90,7 @@
                 </form>
             </div>
 
-            {{-- 中央エリア（元のデザイン） --}}
+            {{-- 中央エリア --}}
             <div class="center-wrap">
 
                 <div class="day-tabs">
@@ -135,9 +140,7 @@
                 </div>
 
             </div>
-            {{-- ▲ここまで中央揃えブロック --}}
 
-            {{-- フラッシュメッセージ --}}
             @if (session('success'))
                 <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                     {{ session('success') }}
@@ -150,11 +153,30 @@
                 </div>
             @endif
 
+            {{-- ▼▼▼ 階数フィルター（タブUI） ▼▼▼ --}}
+            <div class="floor-filter-container">
+                <div class="floor-filter-label">階数で絞り込み</div>
+                <div class="floor-filter-list">
+                    {{-- 「すべて」ボタン：修正 (fullUrlWithoutQueryを使用し、空文字判定に対応) --}}
+                    <a href="{{ request()->fullUrlWithoutQuery('floor') }}" 
+                       class="floor-chip {{ (request()->query('floor') ?? '') === '' ? 'active' : '' }}">
+                        すべて
+                    </a>
+
+                    {{-- 1階〜5階ボタン --}}
+                    @for($f = 1; $f <= 5; $f++)
+                        <a href="{{ request()->fullUrlWithQuery(['floor' => $f]) }}" 
+                           class="floor-chip {{ request()->query('floor') === (string)$f ? 'active' : '' }}">
+                            {{ $f }}F
+                        </a>
+                    @endfor
+                </div>
+            </div>
+            {{-- ▲▲▲ 変更ここまで ▲▲▲ --}}
+
             {{-- 教室カード --}}
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
-
-                // ★修正: 検索されていたらその範囲、されていなければ1〜6を表示する
                 $loopStart = $startPeriod ?? 1;
                 $loopEnd   = $endPeriod ?? 6;
             @endphp
@@ -169,7 +191,7 @@
                     <div class="room-times">
                         @for ($period = $loopStart; $period <= $loopEnd; $period++)
                             @php
-                                $status = $room->getStatusForPeriod($displayDate, $period, auth()->id()); // ログインユーザーを認識
+                                $status = $room->getStatusForPeriod($displayDate, $period, auth()->id());
                                 $times = [
                                     1 => ['09:10', '10:40'],
                                     2 => ['10:50', '12:20'],
@@ -178,7 +200,6 @@
                                     5 => ['16:20', '17:50'],
                                     6 => ['18:00', '19:30'],
                                 ];
-
                                 $isTarget = isset($startPeriod) || isset($endPeriod);
                             @endphp
 
@@ -199,7 +220,6 @@
                                         ], false);
                                     @endphp
 
-                                    {{-- 予約ボタン --}}
                                     <a href="{{ route('user.precautions', ['next' => $nextPath]) }}"
                                        class="reserve-btn"
                                        data-room-id="{{ $room->id }}"
@@ -209,16 +229,21 @@
 
                                 @else
                                     <div class="unavailable-label">
-                                        {{-- statusがin_useの場合は利用中と表示、そうじゃない場合→statusがreservedなら予約済み、そうでないなら利用不可 --}}
-                                        {{ $status === "pending" ? '申請中' :
-                                            ($status === 'pending' ? '申請中' :
-                                            ($status === 'reserved' ? '予約済み' : '利用不可')) }}
+                                        {{ $status === 'pending'
+                                            ? '申請中'
+                                            : ($status === 'reserved' ? '予約済み' : '利用不可') }}
                                     </div>
                                 @endif
                             </div>
                         @endfor
                     </div>
                 </div>
+
+                {{-- 教室間の区切り線（スマホのみ表示） --}}
+                @if (!$loop->last)
+                    <div class="w-full mx-auto my-8 border-b-2 border-gray-400 md:hidden max-w-[720px]"></div>
+                @endif
+
             @endforeach
 
         </div> {{-- /.content-area --}}
