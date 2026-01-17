@@ -1,27 +1,28 @@
 /* =========================================
    Raqoo Mobile UI (<=560px)
+   ※ すべてのスタイルを一つのメディアクエリ内に統合
 ========================================= */
-@media (max-width: 560px){
-  :root{
-    --bg:#f5f6fa;
-    --card:#fff;
-    --line:#e6e9ef;
-    --blue:#2F4A6A;
-    --blue2:#243955;
-    --tab-active:#4C85B6;
-    --radius:16px;
-    --shadow:0 8px 22px rgba(0,0,0,.08);
+@media (max-width: 560px) {
+  :root {
+    --bg: #f5f6fa;
+    --card: #fff;
+    --line: #e6e9ef;
+    --blue: #2F4A6A;
+    --blue2: #243955;
+    --tab-active: #4C85B6;
+    --radius: 16px;
+    --shadow: 0 8px 22px rgba(0, 0, 0, .08);
   }
 
   /* ▼▼▼ 1. ハンバーガーボタンを表示させる ▼▼▼ */
   .m-hamburger {
     display: block !important;
-    position: absolute; /* ヘッダー内に配置 */
-    top: 15px;          /* 位置合わせ */
+    position: absolute;
+    top: 15px;
     right: 16px;
     z-index: 100;
     cursor: pointer;
-    font-size: 24px;    /* アイコンサイズ */
+    font-size: 24px;
     color: var(--blue);
   }
 
@@ -29,10 +30,14 @@
   .m-backdrop {
     display: none;
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
     z-index: 9990;
   }
+
   /* メニューが開いている時だけ背景を表示 */
   body.nav-open .m-backdrop {
     display: block;
@@ -46,268 +51,294 @@
     left: 0 !important;
     width: 260px !important;
     height: 100vh !important;
-    background-color: #1c2b4a !important; /* サイドバーの背景色 */
+    background-color: #1c2b4a !important;
     z-index: 9999 !important;
-    
     /* 初期状態は左に隠す */
     transform: translateX(-110%) !important;
     transition: transform 0.3s ease !important;
-    
     /* 中身の余白調整 */
     padding-top: 20px !important;
     padding-bottom: 20px !important;
     overflow-y: auto !important;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.3) !important;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3) !important;
   }
 
-  /* メニューが開いた時（JSで nav-open クラスがついた時） */
+  /* メニューが開いた時 */
   body.nav-open .navigation {
     transform: translateX(0) !important;
   }
-  
+
   /* メニュー展開時はスクロール固定 */
   body.nav-open {
     overflow: hidden !important;
   }
 
-  /* 不要なパーツは隠す */
-  .m-drawer{ display:none !important; }
+  .m-drawer {
+    display: none !important;
+  }
 
-  /* ▲▲▲ サイドバー設定ここまで ▲▲▲ */
-
-  body{ background:var(--bg); }
+  body {
+    background: var(--bg);
+  }
 
   /* ===== 全体余白 ===== */
-  .content-area{
-    margin-left:0 !important;
-    padding:10px 16px 18px !important;
+  .content-area {
+    margin-left: 0 !important;
+    padding: 10px 16px 18px !important;
   }
 
   /* ===== ヘッダー/ロゴ/プロフィール ===== */
-  .header{
-    padding:6px 0 4px !important;
-    margin:0 !important;
-    background:transparent !important;
-    position: relative; /* ボタン配置の基準にするため追加 */
+  .header {
+    padding: 6px 0 4px !important;
+    margin: 0 !important;
+    background: transparent !important;
+    position: relative;
   }
-  .raqoo-logo{ max-width:230px !important; }
 
-  .profile-box{
-    position:static !important;
-    transform:none !important;
-    margin:6px 0 8px auto !important;
-    border-radius:12px !important;
+  .raqoo-logo {
+    max-width: 230px !important;
+  }
+
+  .profile-box {
+    position: static !important;
+    transform: none !important;
+    margin: 6px 0 8px auto !important;
+    border-radius: 12px !important;
   }
 
   /* ===== 検索カード ===== */
-  .search-form{
-    margin:8px auto 10px !important;
-    padding:14px !important;
-    max-width:none !important;
-    background:var(--card) !important;
-    border:1px solid var(--line) !important;
-    border-radius:var(--radius) !important;
-    box-shadow:var(--shadow) !important;
+  .search-form {
+    margin: 8px auto 10px !important;
+    padding: 14px !important;
+    max-width: none !important;
+    background: var(--card) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: var(--shadow) !important;
   }
 
   /* 日付以外は非表示 */
-  label[for="periodInput"], #periodInput,
-  label[for="peopleInput"], #peopleInput{
-    display:none !important;
+  label[for="periodInput"],
+  #periodInput,
+  label[for="peopleInput"],
+  #peopleInput {
+    display: none !important;
   }
 
-  .form-row{
-    grid-template-columns:1fr !important;
-    gap:10px !important;
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
   }
 
-  #dateInput{
-    font-size:18px !important;
-    padding:14px 44px 14px 14px !important;
-    border-radius:12px !important;
-    border:1px solid var(--line) !important;
+  #dateInput {
+    font-size: 18px !important;
+    padding: 14px 44px 14px 14px !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--line) !important;
   }
 
-  .form-row-btn{ margin-top:10px !important; }
-
-  .search-btn{
-    width:100% !important;
-    padding:16px 0 !important;
-    font-size:20px !important;
-    font-weight:900 !important;
-    border-radius:14px !important;
-    background:linear-gradient(180deg, var(--blue), var(--blue2)) !important;
-    box-shadow:0 6px 18px rgba(0,0,0,.12) !important;
+  .form-row-btn {
+    margin-top: 10px !important;
   }
 
-  /* ===== 曜日ストリップ（枠線・区切り線追加） ===== */
-  .day-tabs{
-    display:flex !important;
-    flex-wrap:nowrap !important;
-    width:100% !important;
-    height:72px !important;
-    margin:10px auto 6px !important;
-    padding:0 !important;
-    gap:0 !important;
-    justify-content:center !important;
-    align-items:center !important;
-    position:relative !important;
-    background:#b3b3b3 !important;
-    
-    /* ▼▼▼ 追加：全体の枠線 ▼▼▼ */
-    border: 1px solid #9ca3af !important; /* 背景より少し濃いグレーの枠 */
-    border-radius:12px !important;
-    overflow:hidden !important;
+  .search-btn {
+    width: 100% !important;
+    padding: 16px 0 !important;
+    font-size: 20px !important;
+    font-weight: 900 !important;
+    border-radius: 14px !important;
+    background: linear-gradient(180deg, var(--blue), var(--blue2)) !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .12) !important;
+  }
+
+  /* ===== 曜日ストリップ ===== */
+  .day-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    height: 72px !important;
+    margin: 10px auto 6px !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    position: relative !important;
+    background: #b3b3b3 !important;
+    border: 1px solid #9ca3af !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
     box-sizing: border-box !important;
   }
 
-  .day-tab{
-    flex:1 1 0 !important;
-    min-width:0 !important;
-    height:72px !important;
-    background:transparent !important;
-    display:flex !important;
-    flex-direction:column !important;
-    justify-content:center !important;
-    align-items:center !important;
-    gap:6px !important;
-    padding:0 !important;
-
-    /* ▼▼▼ 追加：日付ごとの区切り線 ▼▼▼ */
-    border-right: 1px solid rgba(255, 255, 255, 0.3) !important; /* 薄い白線 */
+  .day-tab {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    height: 72px !important;
+    background: transparent !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 0 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
     box-sizing: border-box !important;
   }
-  
-  /* ▼▼▼ 追加：一番右の区切り線は消す ▼▼▼ */
+
   .day-tab:last-child {
     border-right: none !important;
   }
 
-  .day-tab.active{ background:var(--tab-active) !important; }
-
-  .day-label, .date-label{
-    margin:0 !important;
-    line-height:1 !important;
-    color:#fff !important;
-    opacity:.92 !important;
-    white-space:nowrap !important;
+  .day-tab.active {
+    background: var(--tab-active) !important;
   }
-  .day-label{ font-size:14px !important; letter-spacing:.2px !important; }
-  .date-label{ font-size:13px !important; letter-spacing:0 !important; }
 
-  /* 矢印：帯の外側に重ねる（帯幅を広げない） */
-  .day-tabs .strip-btn{
-    position:absolute !important;
-    top:50% !important;
-    transform:translateY(-50%) !important;
-    width:30px !important;
-    height:30px !important;
-    background:#6b7280 !important;
-    border-radius:999px !important;
-    z-index:20 !important;
+  .day-label,
+  .date-label {
+    margin: 0 !important;
+    line-height: 1 !important;
+    color: #fff !important;
+    opacity: .92 !important;
+    white-space: nowrap !important;
   }
-  .day-tabs .strip-prev{ left:-16px !important; }
-  .day-tabs .strip-next{ right:-16px !important; }
+
+  .day-label {
+    font-size: 14px !important;
+    letter-spacing: .2px !important;
+  }
+
+  .date-label {
+    font-size: 13px !important;
+    letter-spacing: 0 !important;
+  }
+
+  .day-tabs .strip-btn {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 30px !important;
+    height: 30px !important;
+    background: #6b7280 !important;
+    border-radius: 999px !important;
+    z-index: 20 !important;
+  }
+
+  .day-tabs .strip-prev {
+    left: -16px !important;
+  }
+
+  .day-tabs .strip-next {
+    right: -16px !important;
+  }
 
   /* ===== 中央日付 ===== */
-  .date-display{
-    transform:none !important;
-    margin:4px auto 6px !important;
-    text-align:center !important;
+  .date-display {
+    transform: none !important;
+    margin: 4px auto 6px !important;
+    text-align: center !important;
   }
-  .date-display .date-main{ font-size:42px !important; font-weight:900 !important; }
-  .date-display .date-weekday{ font-size:24px !important; font-weight:900 !important; }
+
+  .date-display .date-main {
+    font-size: 42px !important;
+    font-weight: 900 !important;
+  }
+
+  .date-display .date-weekday {
+    font-size: 24px !important;
+    font-weight: 900 !important;
+  }
 
   /* ===== 凡例 ===== */
-  .status-bar-2{
-    width:100% !important;
-    max-width:none !important;
-    margin:8px auto 10px !important;
-    padding:8px 12px !important;
-    border-radius:10px !important;
-    border:1px solid #d7dbe3 !important;
-    background:#fff !important;
-    justify-content:center !important;
-    gap:18px !important;
+  .status-bar-2 {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 8px auto 10px !important;
+    padding: 8px 12px !important;
+    border-radius: 10px !important;
+    border: 1px solid #d7dbe3 !important;
+    background: #fff !important;
+    justify-content: center !important;
+    gap: 18px !important;
   }
 
   /* ===== 教室 ===== */
-  .room-title{
-    background:transparent !important;
-    color:#111 !important;
-    font-size:22px !important;
-    font-weight:900 !important;
-    padding:6px 2px 6px !important;
-    margin:0 !important;
+  .room-title {
+    background: transparent !important;
+    color: #111 !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    padding: 6px 2px 6px !important;
+    margin: 0 !important;
   }
 
-  .room-times{
-    display:grid !important;
-    grid-template-columns:repeat(3, 1fr) !important;
-    gap:10px !important;
-    margin-top:6px !important;
-    padding:0 !important;
-    background:transparent !important;
-    border:none !important;
+  .room-times {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 10px !important;
+    margin-top: 6px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
   }
 
-  .time-card{
-    width:auto !important;
-    background:#fff !important;
-    border:1px solid #e5e7eb !important;
-    border-radius:12px !important;
-    box-shadow:0 2px 10px rgba(0,0,0,.04) !important;
-    padding:12px 10px !important;
+  .time-card {
+    width: auto !important;
+    background: #fff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .04) !important;
+    padding: 12px 10px !important;
   }
 
-  .time-main{ font-size:30px !important; font-weight:900 !important; color:#9ca3af !important; }
-  .time-sub{ font-size:14px !important; color:#9ca3af !important; }
-  .floor{ display:none !important; }
-
-  .available-label, .unavailable-label{
-    margin-top:10px !important;
-    font-size:16px !important;
-    font-weight:900 !important;
-  }
-  .available-label{ color:var(--blue) !important; }
-  .unavailable-label{ color:#6b7280 !important; }
-
-  .reserve-btn{
-    margin-top:10px !important;
-    width:100% !important;
-    padding:10px 0 !important;
-    border-radius:10px !important;
-    background:#3b6a93 !important;
-    font-size:16px !important;
-    font-weight:900 !important;
-    text-align:center !important;
-    display:inline-block !important;
+  .time-main {
+    font-size: 30px !important;
+    font-weight: 900 !important;
+    color: #9ca3af !important;
   }
 
-  /* 小さい端末の保険 */
-  @media (max-width: 390px){
-    .day-label{ font-size:13px !important; }
-    .date-label{ font-size:12px !important; }
+  .time-sub {
+    font-size: 14px !important;
+    color: #9ca3af !important;
   }
-  @media (max-width: 360px){
-    .room-times{ grid-template-columns:repeat(2,1fr) !important; }
-    .day-tabs .strip-btn{ width:26px !important; height:26px !important; }
-    .day-label{ font-size:12px !important; }
-    .date-label{ font-size:11px !important; }
+
+  .floor {
+    display: none !important;
   }
-}
-/* =========================================
-   階数フィルター（スマホ用：折り返し表示修正版）
-========================================= */
-@media (max-width: 560px) {
-  
+
+  .available-label,
+  .unavailable-label {
+    margin-top: 10px !important;
+    font-size: 16px !important;
+    font-weight: 900 !important;
+  }
+
+  .available-label {
+    color: var(--blue) !important;
+  }
+
+  .unavailable-label {
+    color: #6b7280 !important;
+  }
+
+  .reserve-btn {
+    margin-top: 10px !important;
+    width: 100% !important;
+    padding: 10px 0 !important;
+    border-radius: 10px !important;
+    background: #3b6a93 !important;
+    font-size: 16px !important;
+    font-weight: 900 !important;
+    text-align: center !important;
+    display: inline-block !important;
+  }
+
+  /* ===== 階数フィルター（統合済み） ===== */
   .floor-filter-container {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
     margin: 16px 0 20px;
     width: 100%;
-    /* overflow: hidden;  ←削除（文字切れの原因になるため） */
   }
 
   .floor-filter-label {
@@ -319,22 +350,49 @@
 
   .floor-filter-list {
     display: flex;
-    flex-wrap: wrap !important; /* ←重要：折り返して全部見せる */
-    gap: 8px; /* ボタン同士の間隔 */
+    flex-wrap: wrap !important; /* 折り返し有効 */
+    gap: 8px;
     width: 100%;
-    padding: 0; /* 余計な余白を削除 */
-    
-    /* 横スクロール関連の記述を削除 */
-    overflow-x: visible; 
+    padding: 0;
+    overflow-x: visible;
   }
 
-  /* スマホでのボタンサイズ調整 */
   .floor-chip {
     flex: 0 0 auto;
     height: 40px;
-    padding: 0 16px; /* 少し詰める */
+    padding: 0 16px;
     font-size: 14px;
     border-radius: 20px;
-    margin-bottom: 4px; /* 行間確保 */
+    margin-bottom: 4px;
+  }
+
+  /* 小さい端末の保険 */
+  @media (max-width: 390px) {
+    .day-label {
+      font-size: 13px !important;
+    }
+
+    .date-label {
+      font-size: 12px !important;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .room-times {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .day-tabs .strip-btn {
+      width: 26px !important;
+      height: 26px !important;
+    }
+
+    .day-label {
+      font-size: 12px !important;
+    }
+
+    .date-label {
+      font-size: 11px !important;
+    }
   }
 }

@@ -33,9 +33,10 @@ class RoomController extends Controller
         // N+1問題対策として with('roomStatuses') を追加
         $query = Room::query()->with('roomStatuses');
 
-        // ★追加: 階数の絞り込み処理
-        // もしURLに ?floor=2 のような値があれば、その階だけで絞り込む
-        if ($floor) {
+        // ★修正: 階数の絞り込み処理（セキュリティ対策追加）
+        // URL等で不正な値（例: abc, 999）が入力された場合は無視し、
+        // 「1〜5」の正しい数値が来た場合のみ絞り込みを行う
+        if ($floor && in_array((int)$floor, [1, 2, 3, 4, 5], true)) {
             $query->where('floor', $floor);
         }
 
