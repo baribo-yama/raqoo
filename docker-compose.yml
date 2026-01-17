@@ -20,7 +20,7 @@ services:
 
   # .envファイルの「DB_HOST」とサービス名を合わせる
   db-appli4:
-    image: mysql:latest
+    image: mariadb:latest
     container_name: db-appli4
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -28,7 +28,7 @@ services:
       #MYSQL_DATABASE: sample_db
       TZ: "Asia/Tokyo"
       # 文字コード指定
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    command: mariadbd --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - ./docker/db/data:/var/lib/mysql
       - ./docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
