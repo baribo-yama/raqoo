@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\RoomStatus;
+use App\Models\Room;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class RoomStatusController extends Controller
@@ -51,7 +53,20 @@ class RoomStatusController extends Controller
             return response()->json(['error' => '日付が指定されていません'], 400);
         }
 
-        $statuses = RoomStatus::where('date', $date)->get();
+        $userId = Auth::id(); // 認証済みユーザーIDを取得
+        $rooms = Room::with('roomStatuses')->get();
+
+        $statuses = [];
+        foreach ($rooms as $room) {
+            for ($period = 1; $period <= 6; $period++) {
+                $status = $room->getStatusForPeriod($date, $period, $userId);
+                $statuses[] = [
+                    'room_id' => $room->id,
+                    'period' => $period,
+                    'status' => $status,
+                ];
+            }
+        }
 
         return response()->json($statuses);
     }
