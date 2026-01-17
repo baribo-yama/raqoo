@@ -15,20 +15,29 @@ class RoomController extends Controller
         $startPeriod = $request->input('start_period'); // 開始時限
         $endPeriod = $request->input('end_period');     // 終了時限
         $people = $request->input('people');            // 利用人数
+        
+        // ★追加: 階数フィルタの入力を取得
+        $floor = $request->input('floor');
 
-        // ★追加修正: 開始時限が終了時限より大きい場合（例: 6〜2）、自動で入れ替える
+        // 開始時限が終了時限より大きい場合（例: 6〜2）、自動で入れ替える
         if ($startPeriod && $endPeriod && $startPeriod > $endPeriod) {
             $temp = $startPeriod;
             $startPeriod = $endPeriod;
             $endPeriod = $temp;
 
-            // ★追加: 自動修正したことをユーザーに通知（フラッシュメッセージ）
+            // 自動修正したことをユーザーに通知（フラッシュメッセージ）
             session()->flash('info', '開始時限が終了時限より遅いため、自動的に順序を入れ替えました。');
         }
 
         // 2. クエリの準備
-        // ★修正: N+1問題対策として with('roomStatuses') を追加
+        // N+1問題対策として with('roomStatuses') を追加
         $query = Room::query()->with('roomStatuses');
+
+        // ★追加: 階数の絞り込み処理
+        // もしURLに ?floor=2 のような値があれば、その階だけで絞り込む
+        if ($floor) {
+            $query->where('floor', $floor);
+        }
 
         // --- 検索条件1: 人数 ---
         // 入力がある場合のみ、定員(capacity)と比較
@@ -53,8 +62,7 @@ class RoomController extends Controller
         $rooms = $query->get();
 
         // 4. ビューにデータを渡す
-        // 検索条件をフォームに残すために、入力値も一緒に渡します
-        // （startPeriodなどは入れ替え後の正しい値が渡されます）
-        return view('user.home', compact('rooms', 'date', 'startPeriod', 'endPeriod', 'people'));
+        // ★追加: $floor も compact に追加してビューに渡す（ボタンのアクティブ判定に使うため）
+        return view('user.home', compact('rooms', 'date', 'startPeriod', 'endPeriod', 'people', 'floor'));
     }
 }

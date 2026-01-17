@@ -296,3 +296,45 @@
     .date-label{ font-size:11px !important; }
   }
 }
+/* =========================================
+   階数フィルター（スマホ用：折り返し表示修正版）
+========================================= */
+@media (max-width: 560px) {
+  
+  .floor-filter-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 16px 0 20px;
+    width: 100%;
+    /* overflow: hidden;  ←削除（文字切れの原因になるため） */
+  }
+
+  .floor-filter-label {
+    font-size: 13px;
+    margin-left: 2px;
+    color: #6b7280;
+    font-weight: bold;
+  }
+
+  .floor-filter-list {
+    display: flex;
+    flex-wrap: wrap !important; /* ←重要：折り返して全部見せる */
+    gap: 8px; /* ボタン同士の間隔 */
+    width: 100%;
+    padding: 0; /* 余計な余白を削除 */
+    
+    /* 横スクロール関連の記述を削除 */
+    overflow-x: visible; 
+  }
+
+  /* スマホでのボタンサイズ調整 */
+  .floor-chip {
+    flex: 0 0 auto;
+    height: 40px;
+    padding: 0 16px; /* 少し詰める */
+    font-size: 14px;
+    border-radius: 20px;
+    margin-bottom: 4px; /* 行間確保 */
+  }
+}
