@@ -18,41 +18,25 @@ class ReservationController extends Controller
         $this->middleware('auth');
     }
 
-    // 予約申請フォーム表示
     public function create(Request $request)
     {
-        Log::info('予約フォーム表示', [
-            'room_id' => $request->room_id,
-            'date' => $request->date,
-            'period' => $request->period,
-        ]);
-
+        // (変更なし)
         $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
 
         if (!$request->date) {
-            return redirect()->route('user.home.index')
-                ->with('error', '日付が指定されていません。');
+            return redirect()->route('user.home.index')->with('error', '日付が指定されていません。');
         }
-
         if (!$selectedRoom) {
-            return redirect()->route('user.home.index')
-                ->with('error', '教室がみつかりません。');
+            return redirect()->route('user.home.index')->with('error', '教室がみつかりません。');
         }
 
         $date = $request->date;
         $room = $selectedRoom;
-        // ▼▼▼ 修正：元の時限を変数として渡す ▼▼▼
         $period = $request->period; 
         
         return view('user.reservation-form', compact('room', 'date', 'period'));
     }
 
-    // --- (check, store, index, show, cancel, history メソッドは変更なし) ---
-    // ※ checkメソッド以降は前回のままでOKです
-    
-    /**
-     * 確認画面表示
-     */
     public function check(Request $request)
     {
         $validated = $request->validate([
@@ -66,14 +50,15 @@ class ReservationController extends Controller
 
         $selectedRoom = Room::find($validated['room_id']);
 
+        // 重複チェック（ステータスがキャンセル以外すべてを対象）
         $existing = Reservation::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
             ->whereIn('period', $validated['periods'])
-            ->where('status', 'approved')
+            ->where('status', '!=', 'cancelled') // 修正: キャンセル以外は重複とみなす
             ->exists();
 
         if ($existing) {
-            return back()->withErrors(['periods' => '選択された時間帯の中に、すでに予約済みの枠が含まれています。'])
+            return back()->withErrors(['periods' => '選択された時間帯の中に、すでに予約済みまたは申請中の枠が含まれています。'])
                          ->withInput();
         }
 
@@ -97,9 +82,6 @@ class ReservationController extends Controller
 
     public function store(Request $request)
     {
-        // (前回のコードと同じため省略、変更不要)
-        // トランザクション処理などはそのまま維持してください
-        
         $validated = $request->validate([
             'room_id' => 'required|exists:rooms,id',
             'date'    => 'required|date|after_or_equal:today',
@@ -109,20 +91,28 @@ class ReservationController extends Controller
             'members' => 'nullable|string',
         ]);
 
-        $existing = Reservation::where('room_id', $validated['room_id'])
-            ->where('date', $validated['date'])
-            ->whereIn('period', $validated['periods'])
-            ->where('status', 'approved')
-            ->exists();
+        // トランザクション処理（排他制御を含む）
+        return DB::transaction(function () use ($validated) {
+            
+            // 修正: lockForUpdate() を使用して、同時実行時の重複を防ぐ
+            // キャンセル済み以外の予約が対象期間に存在するかチェック
+            $existing = Reservation::where('room_id', $validated['room_id'])
+                ->where('date', $validated['date'])
+                ->whereIn('period', $validated['periods'])
+                ->where('status', '!=', 'cancelled')
+                ->lockForUpdate() // ★ここが重要：行をロックする
+                ->exists();
 
-        if ($existing) {
-            return redirect()->route('user.reservations.create', [
-                'room_id' => $validated['room_id'],
-                'date' => $validated['date']
-            ])->withErrors(['error' => 'タッチの差で予約が埋まってしまいました。再度確認してください。']);
-        }
+            if ($existing) {
+                // トランザクション内なので例外を投げてロールバックさせるか、リダイレクトを返す
+                // ここではリダイレクトを返せないので例外を投げる設計にするのが一般的だが、
+                // 簡易的にエラーメッセージを持たせてリダイレクトする
+                 return redirect()->route('user.reservations.create', [
+                    'room_id' => $validated['room_id'],
+                    'date' => $validated['date']
+                ])->withErrors(['error' => 'タッチの差で予約が埋まってしまいました。']);
+            }
 
-        DB::transaction(function () use ($validated) {
             foreach ($validated['periods'] as $period) {
                 Reservation::create([
                     'user_id' => Auth::id(),
@@ -134,15 +124,49 @@ class ReservationController extends Controller
                     'status'  => 'pending',
                 ]);
             }
-        });
 
-        return redirect()->route('user.home.index')
-            ->with('success', '予約申請を送信しました。承認をお待ちください。');
+            return redirect()->route('user.home.index')
+                ->with('success', '予約申請を送信しました。承認をお待ちください。');
+        });
     }
 
-    // index, show, cancel, history 等も変更なし
-    public function index() { /*...*/ return view('user.reservations-index', /*...*/); }
-    public function show(Reservation $reservation) { /*...*/ return view('user.reservation-detail', compact('reservation')); }
-    public function cancel(Reservation $reservation) { /*...*/ }
-    public function history() { /*...*/ return view('user.reservations-history', /*...*/); }
+    public function index()
+    {
+        $reservations = Reservation::where('user_id', Auth::id())
+            ->where('date', '>=', Carbon::today())
+            ->with('room')
+            ->orderBy('date')
+            ->orderBy('period')
+            ->get();
+        return view('user.reservations-index', compact('reservations'));
+    }
+
+    public function show(Reservation $reservation)
+    {
+        if ($reservation->user_id !== Auth::id()) abort(403);
+        return view('user.reservation-detail', compact('reservation'));
+    }
+
+    public function cancel(Reservation $reservation)
+    {
+        if ($reservation->user_id !== Auth::id()) abort(403);
+        if (!in_array($reservation->status, ['pending', 'approved'])) {
+            return back()->withErrors(['error' => 'この予約はキャンセルできません。']);
+        }
+        $reservation->update(['status' => 'cancelled']);
+        return redirect()->route('user.reservations.index')->with('success', '予約をキャンセルしました。');
+    }
+
+    public function history()
+    {
+        $historyReservations = Reservation::where(function ($query) {
+            $query->where('date', '<', Carbon::today())
+                ->orWhereIn('status', ['completed', 'cancelled', 'rejected']);
+        })
+            ->where('user_id', Auth::id())
+            ->with('room')
+            ->orderBy('date', 'desc')
+            ->paginate(10);
+        return view('user.reservations-history', compact('historyReservations'));
+    }
 }
