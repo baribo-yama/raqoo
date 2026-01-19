@@ -10,7 +10,6 @@
 </head>
 
 <body>
-    <!-- ヘッダー -->
     <header class="header">
         <div class="title">Raqoo 管理</div>
         <nav class="menu">
@@ -18,16 +17,13 @@
             <a class="menu-item" href="#">教室管理</a>
             <a class="menu-item" href="#">予約管理</a>
         </nav>
-        <!-- 予約リクエスト通知アイコン -->
         <button class="notification-btn" id="requestToggle">
             <span class="icon">🔔</span>
-            <span class="badge" id="reservationBadge">{{ $reservations->count() }}</span>
+            <span class="badge" id="reservationBadge">{{ count($reservations) }}</span>
         </button>
     </header>
 
-    <!-- メインコンテンツ -->
     <div class="dashboard-container">
-        <!-- 左カラム: カレンダー（30%） -->
         <aside class="calendar-section">
             <div class="calendar-header">
                 <button id="prevMonth">◀</button>
@@ -35,26 +31,20 @@
                 <button id="nextMonth">▶</button>
             </div>
             <div class="calendar-grid" id="calendar">
-                <!-- JavaScriptで生成 -->
-            </div>
+                </div>
         </aside>
 
-        <!-- 右カラム: 教室テーブル（70%） -->
         <main class="room-table-section">
             <div class="table-header">
                 <h2 id="selectedDate"></h2>
             </div>
-
             <div class="table-wrapper">
                 <table class="room-table">
                     <thead>
                         <tr>
                             <th class="room-col">教室</th>
                             @foreach ($periods as $period)
-                                <th>{{ $period->id }}限
-                                    <br>
-                                    <small>{{ $period->time }}</small>
-                                </th>
+                                <th>{{ $period->id }}限<br><small>{{ $period->time }}</small></th>
                             @endforeach
                         </tr>
                     </thead>
@@ -63,9 +53,7 @@
                             <tr data-room="{{ $room->id }}">
                                 <td class="room-col">{{ $room->name }}</td>
                                 @foreach ($periods as $period)
-                                    <td data-room-id="{{ $room->id }}" data-period-id="{{ $period->id }}">
-
-                                    </td>
+                                    <td data-room-id="{{ $room->id }}" data-period-id="{{ $period->id }}"></td>
                                 @endforeach
                             </tr>
                         @endforeach
@@ -75,54 +63,56 @@
         </main>
     </div>
 
-    <!-- 予約リクエストサイドバー -->
     <div class="request-sidebar" id="requestSidebar">
         <div class="sidebar-header">
             <h3>予約リクエスト</h3>
             <button class="close-btn" id="closeSidebar">✕</button>
         </div>
         <div class="sidebar-content" id="requestList">
-            @forelse($reservations as $reservation)
+            @forelse($reservations as $group)
                 <div class="request-card">
                     <div class="request-card-header">
-                        <h4>{{ $reservation->user->name }}</h4>
-                        <small>
-                            学籍番号: {{ $reservation->user->student_id }}
-                        </small>
+                        <h4>{{ $group->user->name }}</h4>
+                        <small>学籍番号: {{ $group->user->student_id }}</small>
                     </div>
-                    <div class="request-card-info">教室: {{ $reservation->room->name }}</div>
-                    <div class="request-card-info">予約したい日: {{ $reservation->date }}</div>
-                    <div class="request-card-info">時限: {{ $reservation->period }}限</div>
-                    <div class="request-card-info">利用目的: {{ $reservation->purpose }}</div>
+                    <div class="request-card-info">教室: {{ $group->room->name }}</div>
+                    <div class="request-card-info">予約日: {{ $group->date }}</div>
+                    
+                    {{-- ▼▼▼ 修正：まとめた時限を表示（例: 1~3限） ▼▼▼ --}}
+                    <div class="request-card-info" style="font-weight:bold; color:#2563eb;">
+                        時限: {{ $group->period }}限
+                    </div>
+                    
+                    <div class="request-card-info">利用目的: {{ $group->purpose }}</div>
 
                     <div class="request-actions">
-                        <form action="{{ route('admin.reservations.approve', $reservation) }}" method="POST">
+                        {{-- ▼▼▼ 修正：一括承認フォーム ▼▼▼ --}}
+                        <form action="{{ route('admin.reservations.bulk_approve') }}" method="POST">
                             @csrf
-                            <button class="btn btn-approve" type="submit">
-                                承認
-                            </button>
+                            {{-- まとめたIDリストを送信 --}}
+                            <input type="hidden" name="ids" value="{{ $group->ids }}">
+                            <button class="btn btn-approve" type="submit">承認</button>
                         </form>
-                        <form action="{{ route('admin.reservations.reject', $reservation) }}" method="POST">
+
+                        {{-- ▼▼▼ 修正：一括却下フォーム ▼▼▼ --}}
+                        <form action="{{ route('admin.reservations.bulk_reject') }}" method="POST">
                             @csrf
-                            <button class="btn btn-reject" type="submit" onclick="return confirm('この予約を却下しますか？')">
+                            <input type="hidden" name="ids" value="{{ $group->ids }}">
+                            <button class="btn btn-reject" type="submit" onclick="return confirm('この予約（{{ $group->count }}コマ分）を全て却下しますか？')">
                                 却下
                             </button>
                         </form>
                     </div>
                 </div>
             @empty
-                <div class="request-card">
+                <div class="request-card" style="text-align: center; color: gray;">
                     承認待ちの予約はありません
                 </div>
             @endforelse
-
         </div>
     </div>
 
-    <!-- オーバーレイ -->
     <div class="overlay" id="overlay"></div>
-
     <script src="{{ asset('admin/dashboard.js') }}"></script>
 </body>
-
 </html>
