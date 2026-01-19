@@ -642,7 +642,7 @@ body.with-sidebar {
   body.with-sidebar {
     padding-left: 0;
   }
-  
+
   .layout {
     flex-direction: column;
   }
@@ -660,7 +660,7 @@ body.with-sidebar {
     box-shadow: 4px 0 14px rgba(0, 0, 0, 0.12);
     z-index: 1000;
   }
-  
+
   body.nav-open .navigation {
     transform: translateX(0);
   }
@@ -739,7 +739,7 @@ body.with-sidebar {
   .day-tab.active {
     background: #4C85B6 !important;
   }
-  
+
   .day-label, .date-label {
     color: #fff !important;
     line-height: 1 !important;
@@ -790,7 +790,7 @@ body.with-sidebar {
     flex-wrap: wrap !important;
     gap: 6px;
     padding: 0 8px;
-    background: #fff !important; 
+    background: #fff !important;
   }
   .day-tab {
     flex: 1 1 calc(50% - 8px) !important;
@@ -799,6 +799,69 @@ body.with-sidebar {
     background: #888 !important;
   }
   .day-tab.active { background: #4c85b6 !important; }
-  
+
   .day-tabs .strip-btn { display: none !important; } /* スマホは矢印なし */
+}
+/* =========================================
+   階数フィルター（モダンタブデザイン）
+========================================= */
+
+.floor-filter-container {
+  max-width: 720px;
+  margin: 20px auto 24px; /* 上下の余白 */
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 4px;
+}
+
+/* ラベル：「階数で絞り込み」 */
+.floor-filter-label {
+  font-size: 13px;
+  color: #888;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* ボタンリストのラッパー */
+.floor-filter-list {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap; /* 画面が狭くても折り返す */
+}
+
+/* チップ（ボタン）のスタイル */
+.floor-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 18px; /* 完全な丸み（ピル型） */
+  background-color: #fff;
+  color: #555;
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: none;
+  border: 1px solid #e1e4e8;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03); /* わずかな影 */
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* ホバー時の挙動 */
+.floor-chip:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+  color: #2F4A6A;
+}
+
+/* 選択中（アクティブ）のデザイン */
+.floor-chip.active {
+  background-color: #2F4A6A; /* サイトのメインカラー */
+  color: #fff;
+  border-color: #2F4A6A;
+  box-shadow: 0 4px 10px rgba(47, 74, 106, 0.25); /* 光るような影 */
 }
