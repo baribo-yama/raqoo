@@ -25,7 +25,7 @@ class LoginController extends Controller
         // 管理者ガードでログイン試行
         if (Auth::guard('admin')->attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('/admin/reservations');
+            return redirect()->intended('/admin/dashboard');
         }
 
         return back()->withErrors([

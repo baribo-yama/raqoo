@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * アプリ利用者全体に見せるもの
      */
     public function up(): void
     {

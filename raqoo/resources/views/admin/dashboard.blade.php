@@ -91,7 +91,7 @@
                         </small>
                     </div>
                     <div class="request-card-info">教室: {{ $reservation->room->name }}</div>
-                    <div class="request-card-info">日付: {{ $reservation->date }}</div>
+                    <div class="request-card-info">予約したい日: {{ $reservation->date }}</div>
                     <div class="request-card-info">時限: {{ $reservation->period }}限</div>
                     <div class="request-card-info">利用目的: {{ $reservation->purpose }}</div>
 
