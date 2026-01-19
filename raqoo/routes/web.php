@@ -13,7 +13,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\SignupController;
-use App\Http\Controllers\PollTestController; // ポーリングのテスト用コントローラー
+// use App\Http\Controllers\PollTestController; // 必要なければコメントアウト
 
 /*======= 認証関連 ========*/
 // ユーザーログイン
@@ -50,16 +50,18 @@ Route::get('/admin/room-status', [RoomStatusController::class, 'getStatus'])->na
 // ユーザー向け教室ステータス更新API
 Route::get('/user/room-status', [RoomStatusController::class, 'getStatus'])->name('api.room-status');
 
-// 管理者予約管理
+// 管理者予約管理（一括承認・却下対応版）
 Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function () {
     Route::get('/reservations', [AdminReservationController::class, 'index'])->name('reservations.index');
+    
+    // 一括操作
+    Route::post('/reservations/bulk-approve', [AdminReservationController::class, 'bulkApprove'])->name('reservations.bulk_approve');
+    Route::post('/reservations/bulk-reject', [AdminReservationController::class, 'bulkReject'])->name('reservations.bulk_reject');
+
+    // 単体操作（念のため残す）
     Route::post('/reservations/{reservation}/approve', [AdminReservationController::class, 'approve'])->name('reservations.approve');
     Route::post('/reservations/{reservation}/reject', [AdminReservationController::class, 'reject'])->name('reservations.reject');
 });
-// Route::get('/admin/reservations', [AdminReservationController::class, 'index'])->name('admin.reservations.index');
-// Route::get('/admin/reservations/{reservation}', [AdminReservationController::class, 'show'])->name('admin.reservations.show');
-// Route::patch('/admin/reservations/{reservation}/status', [AdminReservationController::class, 'updateStatus'])->name('admin.reservations.updateStatus');
-// Route::patch('/admin/reservations/{reservation}/reject', [AdminReservationController::class, 'reject'])->name('admin.reservations.reject');
 
 // 管理者教室管理
 Route::get('/admin/rooms', [AdminDashBoardController::class, 'roomsIndex'])->name('admin.rooms.index');
@@ -78,15 +80,15 @@ Route::get('/night-precautions', function () {
     return view('user.night-precautions');
 })->name('user.night.precautions');
 
-// 注意事項ページ（昼間/共通版がある場合）
+// 注意事項ページ
 Route::get('/precautions', function () {
     return view('user.precautions');
 })->name('user.precautions');
 
 // ユーザー予約関連
 Route::get('/reservations/create', [UserReservationController::class, 'create'])->name('user.reservations.create');
-Route::post('/reservations/confirm', [UserReservationController::class, 'confirm'])->name('user.reservations.confirm');
-Route::post('/reservations', [UserReservationController::class, 'store'])->name('user.reservations.store');
+Route::post('/reservations/check', [UserReservationController::class, 'check'])->name('user.reservations.check'); // 確認画面
+Route::post('/reservations', [UserReservationController::class, 'store'])->name('user.reservations.store');       // 保存処理
 Route::get('/reservations', [UserReservationController::class, 'index'])->name('user.reservations.index');
 Route::get('/reservations/{reservation}', [UserReservationController::class, 'show'])->name('user.reservations.show');
 Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
@@ -100,17 +102,17 @@ Route::get('/info', function () {
     return view('user.info');
 });
 
-// ✅ 利用規約（同意ボタン無し）
+// 利用規約
 Route::get('/terms', [TermsController::class, 'index'])
     ->middleware('auth')
     ->name('user.terms');
 
-// ✅ 予約前 注意事項（同意ボタンあり）
+// 予約前 注意事項
 Route::get('/precautions', [PrecautionsController::class, 'show'])
     ->middleware('auth')
     ->name('user.precautions');
 
-// ✅ 同意POST（次回スキップもここで保存）
+// 同意POST
 Route::post('/precautions/agree', [PrecautionsController::class, 'agree'])
     ->middleware('auth')
     ->name('user.precautions.agree');
