@@ -20,7 +20,6 @@ class ReservationController extends Controller
 
     public function create(Request $request)
     {
-        // (変更なし)
         $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
 
         if (!$request->date) {
@@ -32,9 +31,16 @@ class ReservationController extends Controller
 
         $date = $request->date;
         $room = $selectedRoom;
-        $period = $request->period; 
+        $period = (int)$request->period; // 数値型に変換
+
+        // ▼▼▼ 追加：すでに埋まっている予約を取得（キャンセル以外） ▼▼▼
+        $reservedPeriods = Reservation::where('room_id', $room->id)
+            ->where('date', $date)
+            ->where('status', '!=', 'cancelled')
+            ->pluck('period')
+            ->toArray(); // 配列にする (例: [1, 3])
         
-        return view('user.reservation-form', compact('room', 'date', 'period'));
+        return view('user.reservation-form', compact('room', 'date', 'period', 'reservedPeriods'));
     }
 
     public function check(Request $request)
@@ -54,7 +60,7 @@ class ReservationController extends Controller
         $existing = Reservation::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
             ->whereIn('period', $validated['periods'])
-            ->where('status', '!=', 'cancelled') // 修正: キャンセル以外は重複とみなす
+            ->where('status', '!=', 'cancelled')
             ->exists();
 
         if ($existing) {
@@ -91,22 +97,18 @@ class ReservationController extends Controller
             'members' => 'nullable|string',
         ]);
 
-        // トランザクション処理（排他制御を含む）
+        // トランザクション処理
         return DB::transaction(function () use ($validated) {
             
-            // 修正: lockForUpdate() を使用して、同時実行時の重複を防ぐ
-            // キャンセル済み以外の予約が対象期間に存在するかチェック
+            // lockForUpdate() を使用して、同時実行時の重複を防ぐ
             $existing = Reservation::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
                 ->whereIn('period', $validated['periods'])
                 ->where('status', '!=', 'cancelled')
-                ->lockForUpdate() // ★ここが重要：行をロックする
+                ->lockForUpdate()
                 ->exists();
 
             if ($existing) {
-                // トランザクション内なので例外を投げてロールバックさせるか、リダイレクトを返す
-                // ここではリダイレクトを返せないので例外を投げる設計にするのが一般的だが、
-                // 簡易的にエラーメッセージを持たせてリダイレクトする
                  return redirect()->route('user.reservations.create', [
                     'room_id' => $validated['room_id'],
                     'date' => $validated['date']
@@ -130,6 +132,7 @@ class ReservationController extends Controller
         });
     }
 
+    // index, show, cancel, history は変更なし
     public function index()
     {
         $reservations = Reservation::where('user_id', Auth::id())
