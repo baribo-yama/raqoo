@@ -27,6 +27,8 @@ class DashBoardController extends Controller
             ->where('status', 'pending')
             ->orderBy('date')
             ->orderBy('room_id')
+            // ▼▼▼ 修正：user_id順を追加してグループ化を確実に ▼▼▼
+            ->orderBy('user_id')
             ->orderBy('period')
             ->get();
 
@@ -46,13 +48,12 @@ class DashBoardController extends Controller
             if ($temp) {
                 $tempDate = $temp['date_raw'];
 
-                // 修正: 目的(purpose)とメンバー(members)も比較に追加して、別件の申請が混ざらないようにする
                 if (
                     $temp['user_id'] == $res->user_id &&
                     $tempDate === $resDate &&
                     $temp['room_id'] == $res->room_id &&
-                    $temp['purpose'] === $res->purpose && // ★追加
-                    $temp['members'] === $res->members && // ★追加
+                    $temp['purpose'] === $res->purpose &&
+                    $temp['members'] === $res->members &&
                     (int)end($temp['periods']) + 1 === (int)$res->period
                 ) {
                     $temp['periods'][] = (int)$res->period;
@@ -72,8 +73,8 @@ class DashBoardController extends Controller
                 'date_raw' => $resDate,
                 'date_display' => $resDate,
                 'periods' => [(int)$res->period],
-                'purpose' => $res->purpose, // 比較用に保存
-                'members' => $res->members, // 比較用に保存
+                'purpose' => $res->purpose,
+                'members' => $res->members,
                 'ids' => [$res->id],
             ];
         }

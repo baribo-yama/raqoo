@@ -101,7 +101,8 @@
                                                 {{ $isOriginal ? 'checked disabled' : '' }}
                                                 {{ $isReserved ? 'disabled' : '' }}>
                                             
-                                            <span class="font-medium {{ $isReserved ? 'text-gray-400 decoration-line-through' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
+                                            {{-- ▼▼▼ 修正：decoration-line-through を line-through に変更 ▼▼▼ --}}
+                                            <span class="font-medium {{ $isReserved ? 'text-gray-400 line-through' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
                                                 {{ $i }}限
                                                 @if($isOriginal)
                                                     <span class="text-xs ml-1 font-normal text-blue-600">(選択中)</span>
