@@ -55,7 +55,6 @@
                                 </div>
                                 <div>
                                     <span class="text-gray-500 text-sm">選択中の時限</span>
-                                    {{-- ▼▼▼ 修正：ここに元の時限を大きく表示 ▼▼▼ --}}
                                     <div class="font-bold text-lg text-blue-600">
                                         {{ $period }}限
                                     </div>
@@ -73,43 +72,46 @@
                             </label>
                             <div class="p-4 border rounded-md bg-white">
                                 <p class="text-sm text-gray-600 mb-3">
-                                    {{ $period }}限に加えて、前後のコマも予約する場合は選択してください。
+                                    <span id="instructionText" class="font-bold text-orange-600">
+                                        ※1名利用（メンバー未入力）の場合は連続予約できません。
+                                    </span>
+                                    <br>
+                                    <span class="text-xs text-gray-500">
+                                        ※2名以上での利用は最大2コマまで予約可能です。
+                                    </span>
                                 </p>
                                 <div class="flex flex-wrap gap-4">
                                     @for($i = 1; $i <= 6; $i++)
                                         @php
-                                            // 元の時限かどうか
                                             $isOriginal = ($i == $period);
-                                            
-                                            // チェック状態の判定
-                                            $isChecked = false;
-                                            if ($isOriginal) {
-                                                $isChecked = true;
-                                            } elseif (old('periods')) {
-                                                // バリデーションエラーなどで戻ってきた場合
-                                                $isChecked = in_array($i, old('periods'));
-                                            }
+                                            // すでに予約されているか判定（キャンセル以外）
+                                            $isReserved = in_array($i, $reservedPeriods) && !$isOriginal;
                                         @endphp
 
-                                        <label class="flex items-center space-x-2 p-3 rounded border transition-colors duration-200 
-                                            {{ $isOriginal ? 'bg-blue-100 border-blue-500 cursor-not-allowed' : 'hover:bg-gray-50 border-gray-200 cursor-pointer' }}
-                                            {{ $isChecked && !$isOriginal ? 'bg-blue-50 border-blue-400' : '' }}">
+                                        <label class="period-label flex items-center space-x-2 p-3 rounded border transition-colors duration-200 
+                                            {{ $isOriginal ? 'bg-blue-100 border-blue-500 cursor-not-allowed' : 'border-gray-200' }}
+                                            {{ $isReserved ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50' }}"
+                                            id="label-{{ $i }}">
                                             
                                             <input type="checkbox" name="periods[]" value="{{ $i }}" 
-                                                class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
-                                                {{ $isChecked ? 'checked' : '' }}
-                                                {{-- 元の時限は操作不可にする --}}
-                                                {{ $isOriginal ? 'disabled' : '' }}>
+                                                class="period-checkbox form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
+                                                data-period="{{ $i }}"
+                                                data-reserved="{{ $isReserved ? 1 : 0 }}"
+                                                data-original="{{ $isOriginal ? 1 : 0 }}"
+                                                {{ $isOriginal ? 'checked disabled' : '' }}
+                                                {{ $isReserved ? 'disabled' : '' }}>
                                             
-                                            <span class="font-medium {{ $isOriginal ? 'text-blue-800' : 'text-gray-900' }}">
+                                            <span class="font-medium {{ $isReserved ? 'text-gray-400 decoration-line-through' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
                                                 {{ $i }}限
                                                 @if($isOriginal)
                                                     <span class="text-xs ml-1 font-normal text-blue-600">(選択中)</span>
+                                                @elseif($isReserved)
+                                                    <span class="text-xs ml-1 font-normal text-red-400">(予約済)</span>
                                                 @endif
                                             </span>
                                         </label>
 
-                                        {{-- disabledにしたチェックボックスは値が送信されないため、hiddenで送る --}}
+                                        {{-- 元の時限はPOST値に含めるためにhiddenで送る --}}
                                         @if($isOriginal)
                                             <input type="hidden" name="periods[]" value="{{ $i }}">
                                         @endif
@@ -117,6 +119,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="mb-6">
                             <label for="purpose" class="block text-sm font-medium text-gray-700 mb-2">
                                 利用目的 <span class="text-red-500">*</span>
@@ -144,6 +147,7 @@
                             <label for="members" class="block text-sm font-medium text-gray-700 mb-2">
                                 利用メンバー（代表者以外、最大30名）
                             </label>
+                            {{-- JSで監視するためにID 'members' を使用 --}}
                             <textarea id="members" name="members" rows="6"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="メンバーの氏名と学籍番号を入力してください&#10;例：&#10;山田太郎 (S12345)&#10;佐藤花子 (S67890)">{{ old('members') }}</textarea>
@@ -170,47 +174,124 @@
     </div>
 
     <script>
-        // 文字数カウント
-        const purposeTextarea = document.getElementById('purpose');
-        const purposeCount = document.getElementById('purposeCount');
-
-        if(purposeTextarea){
-            purposeTextarea.addEventListener('input', function() {
-                purposeCount.textContent = this.value.length;
-            });
-            purposeCount.textContent = purposeTextarea.value.length;
-        }
-
-        // チェックボックスのデザイン連動（元の時限以外）
-        const checkboxes = document.querySelectorAll('input[type="checkbox"][name="periods[]"]:not(:disabled)');
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', function() {
-                const label = this.closest('label');
-                if(this.checked) {
-                    label.classList.add('bg-blue-50', 'border-blue-400');
-                    label.classList.remove('border-gray-200');
-                } else {
-                    label.classList.remove('bg-blue-50', 'border-blue-400');
-                    label.classList.add('border-gray-200');
-                }
-            });
-        });
-
-        // ナビゲーション切り替え
-        let list = document.querySelectorAll('.list');
-        function activeLink() {
-            list.forEach((item) => item.classList.remove('active'));
-            this.classList.add('active');
-        }
-        list.forEach((item) => item.addEventListener('click', activeLink));
-
-        let toggle = document.querySelector('.nav-toggle');
-        let navigation = document.querySelector('.navigation');
-        if(toggle){
-            toggle.onclick = function() {
-                navigation.classList.toggle('active');
+        document.addEventListener('DOMContentLoaded', function() {
+            // 文字数カウント
+            const purposeTextarea = document.getElementById('purpose');
+            const purposeCount = document.getElementById('purposeCount');
+            if(purposeTextarea){
+                purposeTextarea.addEventListener('input', function() {
+                    purposeCount.textContent = this.value.length;
+                });
+                purposeCount.textContent = purposeTextarea.value.length;
             }
-        }
+
+            // 連続予約の制御ロジック
+            const membersInput = document.getElementById('members');
+            const checkboxes = document.querySelectorAll('.period-checkbox');
+            const instructionText = document.getElementById('instructionText');
+            
+            function updateFormState() {
+                const membersValue = membersInput.value.trim();
+                const hasMembers = membersValue.length > 0; // メンバー入力があるか
+
+                // メッセージの切り替え
+                if (hasMembers) {
+                    instructionText.textContent = "※最大2コマまで選択可能です。";
+                    instructionText.classList.remove('text-orange-600');
+                    instructionText.classList.add('text-blue-600');
+                } else {
+                    instructionText.textContent = "※1名利用（メンバー未入力）の場合は連続予約できません。";
+                    instructionText.classList.add('text-orange-600');
+                    instructionText.classList.remove('text-blue-600');
+                }
+
+                // 現在チェックされている追加のコマ数（メイン以外）を数える
+                let extraCheckedCount = 0;
+                checkboxes.forEach(cb => {
+                    if (cb.dataset.original === "0" && cb.checked) {
+                        extraCheckedCount++;
+                    }
+                });
+
+                // 各チェックボックスの制御
+                checkboxes.forEach(cb => {
+                    const isOriginal = cb.dataset.original === "1";
+                    const isReserved = cb.dataset.reserved === "1";
+                    const label = document.getElementById('label-' + cb.value);
+
+                    // 1. メインのコマは何もしない（常にdisabled checked）
+                    if (isOriginal) return;
+
+                    // 2. すでに予約済みのコマは常に無効
+                    if (isReserved) {
+                        cb.disabled = true;
+                        // デザイン調整
+                        label.classList.add('bg-gray-100', 'opacity-50', 'cursor-not-allowed');
+                        return; 
+                    }
+
+                    // 3. メンバー入力がない場合（1人利用）
+                    if (!hasMembers) {
+                        cb.disabled = true;   // 無効化
+                        cb.checked = false;   // チェックも外す
+                        label.classList.remove('bg-blue-50', 'border-blue-400');
+                        label.classList.add('border-gray-200');
+                        return;
+                    }
+
+                    // 4. メンバー入力がある場合（2人以上利用）
+                    // -> 追加で1つ選んだら（合計2コマ）、それ以外の未選択は選べなくする
+                    if (extraCheckedCount >= 1 && !cb.checked) {
+                        cb.disabled = true; 
+                        label.classList.add('opacity-50', 'cursor-not-allowed');
+                    } else {
+                        // 選択可能な状態に戻す
+                        cb.disabled = false;
+                        label.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                });
+            }
+
+            // イベントリスナー
+            if(membersInput) {
+                membersInput.addEventListener('input', updateFormState);
+            }
+            
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', function() {
+                    // デザイン更新
+                    const label = document.getElementById('label-' + this.value);
+                    if(this.checked) {
+                        label.classList.add('bg-blue-50', 'border-blue-400');
+                        label.classList.remove('border-gray-200');
+                    } else {
+                        label.classList.remove('bg-blue-50', 'border-blue-400');
+                        label.classList.add('border-gray-200');
+                    }
+                    // ルール再計算
+                    updateFormState();
+                });
+            });
+
+            // サイドバー等の既存JS
+            let list = document.querySelectorAll('.list');
+            function activeLink() {
+                list.forEach((item) => item.classList.remove('active'));
+                this.classList.add('active');
+            }
+            list.forEach((item) => item.addEventListener('click', activeLink));
+
+            let toggle = document.querySelector('.nav-toggle');
+            let navigation = document.querySelector('.navigation');
+            if(toggle){
+                toggle.onclick = function() {
+                    navigation.classList.toggle('active');
+                }
+            }
+
+            // 初期実行
+            updateFormState();
+        });
     </script>
 </body>
 </html>
