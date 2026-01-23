@@ -26,9 +26,13 @@ class ReservationController extends Controller
     //===== 一括承認処理 =====//
     public function bulkApprove(Request $request)
     {
-        $ids = explode(',', $request->input('ids'));
+        // ▼▼▼ 修正：バリデーションを追加 ▼▼▼
+        $validated = $request->validate([
+            'ids' => 'required|string',
+        ]);
+        $ids = explode(',', $validated['ids']);
         
-        // 修正: 'pending' 状態のものだけを対象にする（二重承認防止）
+        // 'pending' 状態のものだけを対象にする
         $reservations = Reservation::with('room')
             ->whereIn('id', $ids)
             ->where('status', 'pending')
@@ -36,7 +40,6 @@ class ReservationController extends Controller
             ->get();
 
         if ($reservations->isEmpty()) {
-            // 修正: 何も処理しなかった場合のメッセージを追加
             return redirect()->back()->with('error', '承認待ちの予約が見つからないか、既に処理されています。');
         }
 
@@ -75,9 +78,13 @@ class ReservationController extends Controller
     //===== 一括却下処理 =====//
     public function bulkReject(Request $request)
     {
-        $ids = explode(',', $request->input('ids'));
+        // ▼▼▼ 修正：バリデーションを追加 ▼▼▼
+        $validated = $request->validate([
+            'ids' => 'required|string',
+        ]);
+        $ids = explode(',', $validated['ids']);
         
-        // 修正: 'pending' のみ対象
+        // 'pending' のみ対象
         $reservations = Reservation::with('room')
             ->whereIn('id', $ids)
             ->where('status', 'pending')
@@ -138,8 +145,9 @@ class ReservationController extends Controller
     //===== (既存) 単体却下 =====//
     public function reject(Request $request, Reservation $reservation)
     {
+        // ▼▼▼ 修正：インデントの修正（余分な空白削除） ▼▼▼
         if ($reservation->status !== 'pending') {
-             return redirect()->back()->with('error', 'この予約は承認待ちではありません。');
+            return redirect()->back()->with('error', 'この予約は承認待ちではありません。');
         }
         
         $reservation->update(['status' => 'cancelled']);
@@ -160,6 +168,8 @@ class ReservationController extends Controller
         $rawReservations = Reservation::where('status', 'pending')
             ->orderBy('date')
             ->orderBy('room_id')
+            // ▼▼▼ 修正：user_idの順序指定を追加してグループ化を確実に ▼▼▼
+            ->orderBy('user_id')
             ->orderBy('period')
             ->get();
 
@@ -175,8 +185,8 @@ class ReservationController extends Controller
                     $temp['user_id'] == $res->user_id &&
                     $temp['date'] === $resDate &&
                     $temp['room_id'] == $res->room_id &&
-                    $temp['purpose'] === $res->purpose && // 追加: 目的も一致
-                    $temp['members'] === $res->members && // 追加: メンバーも一致
+                    $temp['purpose'] === $res->purpose &&
+                    $temp['members'] === $res->members &&
                     $temp['last_period'] + 1 === (int)$res->period
                 ) {
                     $temp['last_period'] = (int)$res->period;
