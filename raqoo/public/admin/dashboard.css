@@ -385,3 +385,26 @@ body {
     opacity: 1;
     visibility: visible;
 }
+
+/* ========== セル詳細モーダル ========== */
+.cell-detail-modal {
+     position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    z-index: 250;
+    padding: 20px;
+}
+
+.cell-detail-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
