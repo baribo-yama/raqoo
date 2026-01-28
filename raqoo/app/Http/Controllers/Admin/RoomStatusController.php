@@ -44,7 +44,10 @@ class RoomStatusController extends Controller
         return response()->json(['success' => true]);
     }
 
-
+    /**
+     * 指定日付の全教室・前時限のステータスを取得
+     * ユーザー画面と管理者画面で共通仕様
+     */
     public function getStatus(Request $request)
     {
         $date = $request->query('date');
@@ -53,13 +56,32 @@ class RoomStatusController extends Controller
             return response()->json(['error' => '日付が指定されていません'], 400);
         }
 
-        $userId = Auth::id(); // 認証済みユーザーIDを取得
         $rooms = Room::with('roomStatuses')->get();
 
         $statuses = [];
         foreach ($rooms as $room) {
             for ($period = 1; $period <= 6; $period++) {
-                $status = $room->getStatusForPeriod($date, $period, $userId);
+                // Room.phpから基本的なステータスを取得
+                $status = $room->getStatusForPeriod($date, $period, null);
+
+                // =========== 管理者専用：ステータス変換処理 ===========
+                // Room::getStatusForAdmin() は承認済み予約を 'unavailable' で返すため、
+                // ここで 'reserved' に変換して管理画面に表示
+                // ※ 'pending'（申請中）は管理画面には表示しない仕様
+                if ($status === 'unavailable') {
+                    $hasReservation = \App\Models\Reservation::where('room_id', $room->id)
+                        ->where('date', $date)
+                        ->where('period', $period)
+                        ->whereIn('status', ['reserved', 'in_use'])
+                        ->exists();
+
+                    if ($hasReservation) {
+                        $status = 'reserved'; // 管理ダッシュボードに「予約」と表示
+                    }
+                }
+
+
+
                 $statuses[] = [
                     'room_id' => $room->id,
                     'period' => $period,

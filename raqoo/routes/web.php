@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashBoardController as AdminDashBoardController;
 use App\Http\Controllers\User\RoomController as UserRoomController;
 use App\Http\Controllers\Admin\RoomStatusController;
+use App\Http\Controllers\User\RoomStatusController as UserRoomStatusController;
 use App\Http\Controllers\User\ReservationController as UserReservationController;
 use App\Http\Controllers\User\NotificationController as UserNotificationController;
 use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
@@ -43,17 +44,24 @@ Route::get('/admin/reservations/count', [AdminReservationController::class, 'cou
     ->middleware('auth:admin')
     ->name('admin.reservations.count');
 
-// 教室ステータス更新API（管理者）
-Route::post('/admin/room-status', [RoomStatusController::class, 'updateStatus'])->name('admin.room-status.update');
-Route::get('/admin/room-status', [RoomStatusController::class, 'getStatus'])->name('admin.room-status.get');
+// 管理者向け教室ステータス更新API
+Route::post('/admin/room-status', [RoomStatusController::class, 'updateStatus'])
+    ->middleware('auth:admin')
+    ->name('admin.room-status.update');
+
+Route::get('/admin/room-status', [RoomStatusController::class, 'getStatus'])
+    ->middleware('auth:admin')
+    ->name('admin.room-status.get');
 
 // ユーザー向け教室ステータス更新API
-Route::get('/user/room-status', [RoomStatusController::class, 'getStatus'])->name('api.room-status');
+Route::get('/user/room-status', [UserRoomStatusController::class, 'getStatus'])
+    ->middleware('auth')
+    ->name('api.room-status');
 
 // 管理者予約管理（一括承認・却下対応版）
 Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function () {
     Route::get('/reservations', [AdminReservationController::class, 'index'])->name('reservations.index');
-    
+
     // 一括操作
     Route::post('/reservations/bulk-approve', [AdminReservationController::class, 'bulkApprove'])->name('reservations.bulk_approve');
     Route::post('/reservations/bulk-reject', [AdminReservationController::class, 'bulkReject'])->name('reservations.bulk_reject');
