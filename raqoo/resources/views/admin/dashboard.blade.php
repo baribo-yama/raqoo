@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>管理ダッシュボード - Raqoo</title>
     <link rel="stylesheet" href="{{ asset('admin/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/cell-detail-modal.css') }}">
 </head>
 
 <body>
@@ -119,12 +120,10 @@
 
     <div class="overlay" id="overlay"></div>
 
-     <!-- セル詳細モーダル -->
-    <div class="cell-detail-modal" id="cellDetailModal">
-        <p>モーダル</p>
-    </div>
-
+    <!-- セル詳細モーダル -->
+    @include('admin.cell-detail-modal')
 
     <script src="{{ asset('admin/dashboard.js') }}"></script>
+    <script src="{{ asset('admin/cell-detail-modal.js') }}"></script>
 </body>
 </html>

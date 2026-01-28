@@ -605,6 +605,57 @@ body.with-sidebar {
   color: #999;
 }
 
+/* 申請中のスタイル */
+.time-card.pending {
+  background-color: #FEF3C7; /* 黄色系 */
+  border: 2px solid #F59E0B;
+  color: #92400E;
+}
+
+.time-card.pending:hover {
+  background-color: #FEF3C7;
+  transform: none;
+}
+
+.time-card.pending .unavailable-label {
+  color: #D97706;
+  font-weight: bold;
+}
+
+/* 予約済み（自分の予約）のスタイル */
+.time-card.reserved {
+  background-color: #DBEAFE; /* 青色系 */
+  border: 2px solid #3B82F6;
+  color: #1E40AF;
+}
+
+.time-card.reserved:hover {
+  background-color: #DBEAFE;
+  transform: none;
+}
+
+.time-card.reserved .unavailable-label {
+  color: #2563EB;
+  font-weight: bold;
+}
+
+/* 利用中のスタイル */
+.time-card.in_use {
+  background-color: #D1FAE5; /* 緑色系 */
+  border: 2px solid #10B981;
+  color: #065F46;
+}
+
+.time-card.in_use:hover {
+  background-color: #D1FAE5;
+  transform: none;
+}
+
+.time-card.in_use .unavailable-label {
+  color: #059669;
+  font-weight: bold;
+}
+
 /* 予約ボタン */
 .reserve-btn {
   display: inline-block;

@@ -129,15 +129,27 @@ function renderRoomTable() {
           item => item.room_id == roomId && item.period == periodId
         );
 
-        if (statusData && statusData.status === 'unavailable') {
-          cell.classList.add('unavailable');
-          cell.textContent = '利用不可';
-          cell.style.backgroundColor = '#e5e7eb';
-          cell.style.color = '#6b7280';
+        // statusDataが存在する場合
+        if (statusData) {
+          // if (statusData && statusData.status === 'unavailable') {
+          // cell.classList.add('unavailable');
+          // cell.textContent = '利用不可';
+          // cell.style.backgroundColor = '#e5e7eb';
+          // cell.style.color = '#6b7280';
+          // }
+          if (statusData.status === 'reserved') {
+            cell.classList.add('reserved');
+            cell.textContent = '予約';
+            cell.style.backgroundColor = '#dbeafe';
+            cell.style.color = '#1e40af';
+            cell.style.fontWeight = '600';
+          }
         }
       });
     })
     .catch(error => console.error('ステータス取得エラー:', error));
+
+
 
   // クリックイベントの設定
   cells.forEach(cell => {
@@ -154,63 +166,9 @@ function toggleCellStatus(cell) {
   const periodId = cell.dataset.periodId;
   const date = formatDate(selectedDate);
 
-  // 現在のステータスを判定
-  // const isUnavailable = cell.classList.contains('unavailable');
-  // const newStatus = isUnavailable ? 'available' : 'unavailable';
-
-  // console.log('送信データ:', { roomId, periodId, date, newStatus });
-
-  // // APIリクエスト送信
-  // fetch('/admin/room-status', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-  //   },
-  //   body: JSON.stringify({
-  //     room_id: roomId,
-  //     date: date,
-  //     period: periodId,
-  //     status: newStatus
-  //   })
-  // })
-  // .then(response => {
-  //   if (!response.ok) {
-  //     throw new Error('ステータス更新に失敗しました');
-  //   }
-  //   return response.json();
-  // })
-  // .then(data => {
-  //   console.log('レスポンス:', data);
-  //   if (data.success) {
-  //     // UI更新
-  //     if (newStatus === 'unavailable') {
-  //       cell.classList.add('unavailable');
-  //       cell.textContent = '利用不可';
-  //       cell.style.backgroundColor = '#e5e7eb';
-  //       cell.style.color = '#6b7280';
-  //     } else {
-  //       cell.classList.remove('unavailable');
-  //       cell.textContent = '';
-  //       cell.style.backgroundColor = '';
-  //       cell.style.color = '';
-  //     }
-  //   }
-  // })
-  // .catch(error => {
-  //   console.error('エラー:', error);
-  //   alert('ステータスの更新に失敗しました')
-  // });
-
   // モーダルを表示
   showCellDetailModal(roomId, periodId, date, cell)
   console.log('がクリックされました')
-}
-
-// モーダル表示関数
-function showCellDetailModal(roomId, periodId, date, cell) {
-  const modal = document.getElementById('cellDetailModal')
-  modal.classList.add('active');
 }
 
 
@@ -304,6 +262,7 @@ function setupEventListeners() {
     sidebar.classList.remove('open');
     overlay.classList.remove('active');
   });
+
 }
 
 // ========== ユーティリティ関数 ==========
