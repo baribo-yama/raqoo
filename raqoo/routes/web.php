@@ -53,6 +53,12 @@ Route::get('/admin/room-status', [RoomStatusController::class, 'getStatus'])
     ->middleware('auth:admin')
     ->name('admin.room-status.get');
 
+// 管理者dsbセル詳細取得
+Route::get('/admin/room-cell-detail', [RoomStatusController::class, 'getCellDetail']);
+
+// 管理者dsbセル授業登録
+Route::post('/admin/')
+
 // ユーザー向け教室ステータス更新API
 Route::get('/user/room-status', [UserRoomStatusController::class, 'getStatus'])
     ->middleware('auth')

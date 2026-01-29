@@ -143,13 +143,17 @@ function renderRoomTable() {
             cell.style.backgroundColor = '#dbeafe';
             cell.style.color = '#1e40af';
             cell.style.fontWeight = '600';
+          } else if (statusData.status === 'lesson') {
+            cell.classList.add('unavailable');
+            cell.textContent = statusData.lesson_title || '授業';
+            cell.style.backgroundColor = '#e5e7eb';
+            cell.style.color = '#6b7280';
+            cell.style.fontWight = '600';
           }
         }
       });
     })
     .catch(error => console.error('ステータス取得エラー:', error));
-
-
 
   // クリックイベントの設定
   cells.forEach(cell => {
@@ -167,35 +171,9 @@ function toggleCellStatus(cell) {
   const date = formatDate(selectedDate);
 
   // モーダルを表示
-  showCellDetailModal(roomId, periodId, date, cell)
+  showCellDetailModal(roomId, periodId, date, cell)  // この関数はcell-detail-modal.jsから引っ張ってきてる
   console.log('がクリックされました')
 }
-
-
-
-// ========== 予約リクエスト一覧描画 ==========
-// function renderRequestList() {
-//   const container = document.getElementById('requestList');
-//   container.innerHTML = '';
-
-//   requests.forEach(req => {
-//     const card = document.createElement('div');
-//     card.className = 'request-card';
-//     card.innerHTML = `
-//       <div class="request-card-header">
-//         <h4>${req.name}</h4>
-//       </div>
-//       <div class="request-card-info">教室: ${req.room}</div>
-//       <div class="request-card-info">日付: ${req.date}</div>
-//       <div class="request-card-info">時限: ${req.period}限</div>
-//       <div class="request-actions">
-//         <button class="btn btn-approve" onclick="approveRequest(${req.id})">承認</button>
-//         <button class="btn btn-reject" onclick="rejectRequest(${req.id})">却下</button>
-//       </div>
-//     `;
-//     container.appendChild(card);
-//   });
-// }
 
 // 予約リクエスト数を更新する
 /**

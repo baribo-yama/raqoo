@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\RoomLesson;
 
 class Room extends Model
 {
@@ -16,9 +17,15 @@ class Room extends Model
         return $this->hasMany(RoomStatus::class);
     }
 
+    // RoomLesson（授業名）とのリレーション
+    public function roomLessons(): HasMany
+    {
+        return $this->hasMany(RoomLesson::class);
+    }
+
     /**
      * 指定した日付・時限のステータスを取得するメソッド
-     * 
+     *
      * @param string $date 日付 (Y-m-d)
      * @param int $period 時限 (1-6)
      * @param int|null $userId ユーザーID（null=管理者）
@@ -29,13 +36,13 @@ class Room extends Model
         if ($userId !== null) {
             return $this->getStatusForUser($date, $period, $userId);
         }
-        
+
         return $this->getStatusForAdmin($date, $period);
     }
 
     /**
      * ユーザー向けステータス判定
-     * 
+     *
      * @param string $date
      * @param int $period
      * @param int $userId
@@ -43,6 +50,17 @@ class Room extends Model
      */
     private function getStatusForUser($date, $period, $userId)
     {
+        // 授業の有無を最優先でチェック
+        // もし授業があれば unavailable （利用不可）
+        $hasLesson = RoomLesson::where('room_id', $this->id)
+            ->where('date', $date)
+            ->where('period', $period)
+            ->exists();
+
+        if ($hasLesson) {
+            return 'unavailable';
+        }
+
         // 1. 自分の申請状態をチェック（優先度：高）
         $myReservation = Reservation::where('room_id', $this->id)
             ->where('date', $date)
@@ -73,13 +91,23 @@ class Room extends Model
 
     /**
      * 管理者向けステータス判定
-     * 
+     *
      * @param string $date
      * @param int $period
      * @return string
      */
     private function getStatusForAdmin($date, $period)
     {
+        // 授業の有無を最優先でチェック
+        $hasLesson = RoomLesson::where('room_id', $this->id)
+            ->where('date', $date)
+            ->where('period', $period)
+            ->exists();
+
+        if ($hasLesson) {
+            return 'unavailable';
+        }
+
         // 承認済みの予約のみを検出（pendingは表示しない）
         $approvedReservation = Reservation::where('room_id', $this->id)
             ->where('date', $date)
