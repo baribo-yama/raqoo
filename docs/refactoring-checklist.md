@@ -599,3 +599,7 @@ $reservation = Reservation::find($request->id);
 ---
 
 **このドキュメントを使ってリファクタリングの質を向上させましょう！**
+
+---
+- **fat Model, skinny Controllerになっているかチェック**
+- **責務分離ができてるかチェック**

@@ -64,6 +64,16 @@ class RoomStatusController extends Controller
                 // Room.phpから基本的なステータスを取得
                 $status = $room->getStatusForPeriod($date, $period, null);
 
+                // 授業を優先的に取得（あるなら "lesson" 扱いにする）
+                $lesson = \App\Models\RoomLesson::where('room_id', $room->id)
+                    ->where('date', $date)
+                    ->where('period', $period)
+                    ->first();
+
+                if ($lesson) {
+                    $status = 'lesson';
+                }
+
                 // =========== 管理者専用：ステータス変換処理 ===========
                 // Room::getStatusForAdmin() は承認済み予約を 'unavailable' で返すため、
                 // ここで 'reserved' に変換して管理画面に表示
@@ -80,16 +90,78 @@ class RoomStatusController extends Controller
                     }
                 }
 
-
-
                 $statuses[] = [
                     'room_id' => $room->id,
                     'period' => $period,
                     'status' => $status,
+                    'lesson_title' => $lesson?->title,
                 ];
             }
         }
 
         return response()->json($statuses);
     }
+
+    /**
+     * ダッシュボードのセル詳細（授業/予約/空）を取得
+     */
+    public function getCellDetail(Request $request)
+    {
+        $validated = $request->validate([
+            'room_id' => 'required|exists:rooms,id',
+            'date' => 'required|date',
+            'period' => 'required|integer|min:1|max:6',
+        ]);
+
+        $roomId = $validated['room_id'];
+        $date = $validated['date'];
+        $period = $validated['period'];
+
+        // 1.授業があるかチェック
+        $lesson = \App\Models\RoomLesson::where('room_id', $roomId)
+            ->where('date', $date)
+            ->where('period', $period)
+            ->first();
+
+        if ($lesson) {
+            return response()->json([
+                'type' => 'lesson',
+                'lesson' => [
+                    'id' => $lesson->id,
+                    'title' => $lesson->title,
+                ],
+            ]);
+        }
+
+        // 2.予約があるかチェック（reserved/in_use）
+        $reservation = \App\Models\Reservation::with('user')
+            ->where('room_id', $roomId)
+            ->where('date', $date)
+            ->where('period', $period)
+            ->whereIn('status', ['reserved', 'in_use'])  // whereIn : statusカラムの値がreservedかin_useのどちらかであるデータを探して
+            ->first();
+
+        // もし予約があれば予約情報を表示させる
+        if ($reservation) {
+            return response()->json([
+                'type' => 'reservation',
+                'reservation' => [
+                    'id' => $reservation->id,
+                    'representative' => $reservation->user?->name, // 代表者名
+                    'members' => $reservation->members, // メンバー
+                    'status' => $reservation->status, // ステータス
+                ],
+            ]);
+        }
+
+        // 3.授業とか予約とかなんもない場合（空セル）
+        return response()->json([
+            'type' => 'empty',
+        ]);
+    }
+
+    /**
+     * 授業登録（空セルに登録 / 既存なら上書き）
+     */
+    public function storelesson
 }
