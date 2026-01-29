@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>予約申請確認 - Raqoo</title>
     <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
@@ -15,10 +12,8 @@
 </head>
 <body>
     <div class="layout">
-        <!-- ナビゲーション -->
         <x-user.sidebar />
 
-        <!-- メインコンテンツ -->
         <div class="content-area">
             <div class="recentOrders">
                 <div class="cardHeader">
@@ -26,95 +21,101 @@
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <!-- 確認内容 -->
                     <div class="mb-6">
                         <h3 class="text-xl font-semibold mb-4 text-gray-800">申請内容をご確認ください</h3>
 
-                        <!-- 予約情報 -->
-                        <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                            <h4 class="font-semibold text-lg mb-3">予約情報</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100">
+                            <h4 class="font-semibold text-lg mb-3 text-gray-700">予約情報</h4>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <span class="text-gray-600">教室:</span>
-                                    <span class="font-semibold">{{ $selectedRoom->name }}</span>
+                                    <span class="font-bold text-gray-800 ml-2">{{ $selectedRoom->name }}</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-600">階層:</span>
-                                    <span class="font-semibold">{{ $selectedRoom->floor }}階</span>
+                                    <span class="font-bold text-gray-800 ml-2">{{ $selectedRoom->floor }}階</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-600">日付:</span>
-                                    <span class="font-semibold">{{ $reservationData['date'] }}</span>
+                                    <span class="font-bold text-gray-800 ml-2">{{ $reservationData['date'] }}</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-600">時限:</span>
-                                    <span class="font-semibold">{{ $reservationData['period'] }}限</span>
+                                    <span class="font-bold text-blue-600 ml-2">
+                                        {{-- ▼▼▼ 修正：複数の時限を表示 ▼▼▼ --}}
+                                        @foreach($reservationData['periods'] as $period)
+                                            {{ $period }}限{{ !$loop->last ? ', ' : '' }}
+                                        @endforeach
+                                    </span>
                                 </div>
                                 <div>
                                     <span class="text-gray-600">収容人数:</span>
-                                    <span class="font-semibold">{{ $selectedRoom->capacity }}名</span>
+                                    <span class="font-bold text-gray-800 ml-2">{{ $selectedRoom->capacity }}名</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-600">設備:</span>
-                                    <span class="font-semibold">{{ $selectedRoom->equipment }}</span>
+                                    <span class="font-bold text-gray-800 ml-2">{{ $selectedRoom->equipment }}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 利用目的 -->
                         <div class="mb-6">
-                            <h4 class="font-semibold text-lg mb-2">利用目的</h4>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-700">利用目的</h4>
                             <div class="p-3 bg-gray-50 rounded border">
                                 {{ $reservationData['purpose'] }}
                             </div>
                         </div>
 
-                        <!-- 代表者 -->
                         <div class="mb-6">
-                            <h4 class="font-semibold text-lg mb-2">代表者</h4>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-700">代表者</h4>
                             <div class="p-3 bg-gray-50 rounded border">
                                 {{ Auth::user()->name }} ({{ Auth::user()->student_id }})
                             </div>
                         </div>
 
-                        <!-- 利用メンバー -->
-                        @if($reservationData['members'])
+                        @if(!empty($reservationData['members']))
                         <div class="mb-6">
-                            <h4 class="font-semibold text-lg mb-2">利用メンバー</h4>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-700">利用メンバー</h4>
                             <div class="p-3 bg-gray-50 rounded border">
-                                <pre class="whitespace-pre-wrap">{{ $reservationData['members'] }}</pre>
+                                <pre class="whitespace-pre-wrap font-sans">{{ $reservationData['members'] }}</pre>
                             </div>
                         </div>
                         @endif
                     </div>
 
-                    <!-- エラーメッセージ表示エリア -->
-                    @if ($errors->any())
-                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                        @foreach ($errors->all() as $error)
-                            <p class="text-red-800">{{ $error }}</p>
-                        @endforeach
-                    </div>
-                    @endif
-
-                    <!-- ボタン -->
-                    <div class="flex justify-between">
-                        <button onclick="history.back()"
-                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200">
-                            戻る
-                        </button>
-
-                        <form action="{{ route('user.reservations.store') }}" method="POST" class="inline">
-                            @csrf
-                            <input type="hidden" name="room_id" value="{{ $selectedRoom->id }}">
+                    <div class="flex justify-between items-center pt-4 border-t">
+                        
+                        {{-- ▼▼▼ 修正：戻るボタン（入力値を保持して戻る） ▼▼▼ --}}
+                        <form action="{{ route('user.reservations.create') }}" method="GET">
+                            <input type="hidden" name="room_id" value="{{ $reservationData['room_id'] }}">
                             <input type="hidden" name="date" value="{{ $reservationData['date'] }}">
-                            <input type="hidden" name="period" value="{{ $reservationData['period'] }}">
+                            @foreach($reservationData['periods'] as $period)
+                                <input type="hidden" name="periods[]" value="{{ $period }}">
+                            @endforeach
+                            
+                            <button type="submit"
+                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200">
+                                修正する
+                            </button>
+                        </form>
+
+                        {{-- ▼▼▼ 修正：申請ボタン（配列データを送信） ▼▼▼ --}}
+                        <form action="{{ route('user.reservations.store') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="room_id" value="{{ $reservationData['room_id'] }}">
+                            <input type="hidden" name="date" value="{{ $reservationData['date'] }}">
                             <input type="hidden" name="purpose" value="{{ $reservationData['purpose'] }}">
                             <input type="hidden" name="members" value="{{ $reservationData['members'] }}">
+                            
+                            {{-- 時限（配列）を送る --}}
+                            @foreach($reservationData['periods'] as $period)
+                                <input type="hidden" name="periods[]" value="{{ $period }}">
+                            @endforeach
 
                             <button type="submit"
-                                    class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
-                                申請する
+                                class="px-8 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-lg transition duration-200 font-bold flex items-center">
+                                <ion-icon name="paper-plane-outline" class="mr-2 text-xl"></ion-icon>
+                                申請を確定する
                             </button>
                         </form>
                     </div>
@@ -122,22 +123,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // ナビゲーション切り替え
-        let list = document.querySelectorAll('.list');
-        function activeLink() {
-            list.forEach((item) => item.classList.remove('active'));
-            this.classList.add('active');
-        }
-        list.forEach((item) => item.addEventListener('click', activeLink));
-
-        // トグルメニュー
-        let toggle = document.querySelector('.nav-toggle');
-        let navigation = document.querySelector('.navigation');
-        toggle.onclick = function() {
-            navigation.classList.toggle('active');
-        }
-    </script>
 </body>
 </html>
