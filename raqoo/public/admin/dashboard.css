@@ -50,6 +50,26 @@ body {
     background: rgba(255,255,255,0.1);
 }
 
+.logout-form {
+    margin-right: 12px;
+}
+
+.logout-btn {
+    background: transparent;
+    color: rgba(255,255,255,0.9);
+    border: 1px solid rgba(255,255,255,0.35);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.logout-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.6);
+}
+
 /* 通知ボタン */
 .notification-btn {
     position: relative;
