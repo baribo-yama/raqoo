@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Room;
 use App\Models\RoomLesson;
+use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,24 +21,33 @@ class RoomStatusController extends Controller
      */
     public function getStatus(Request $request)
     {
-        $date = $request->query('date');
-
-        if (!$date) {
-            return response()->json(['error' => '日付が指定されていません'], 400);
-        }
+        $validated = $request->validate([
+            'date' => 'required|date',
+        ]);
+        $date = $validated['date'];
 
         $userId = Auth::id();
-        $rooms = Room::with('roomStatuses')->get();
+        $rooms = Room::all();
+
+        // 一括取得して look up を作る
+        $lessonMap = [];
+        foreach (RoomLesson::where('date', $date)->get() as $lesson) {
+            $lessonMap[$lesson->room_id][$lesson->period] = $lesson;
+        }
+
+        $reservationMap = [];
+        foreach (Reservation::where('date', $date)
+            ->whereIn('status', ['pending', 'reserved', 'in_use'])
+            ->get() as $reservation) {
+            $reservationMap[$reservation->room_id][$reservation->period][] = $reservation;
+        }
 
 
         $statuses = [];
         foreach ($rooms as $room) {
             for ($period = 1; $period <= 6; $period++) {
-                $status = $room->getStatusForPeriod($date, $period, $userId);
-                $lesson = RoomLesson::where('room_id', $room->id)
-                    ->where('date', $date)
-                    ->where('period', $period)
-                    ->first();
+                $status = $room->getStatusForPeriod($date, $period, $userId, $lessonMap, $reservationMap);
+                $lesson = $lessonMap[$room->id][$period] ?? null;
 
                 $statuses[] = [
                     'room_id' => $room->id,
