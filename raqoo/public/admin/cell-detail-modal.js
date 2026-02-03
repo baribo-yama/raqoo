@@ -16,7 +16,10 @@ function showCellDetailModal(roomId, periodId, date, cell) {
     // ここでAPIを呼んでtypeによってmodalの表示内容を切り替える
     // RoomStatusControllerのgetCellDetail()で処理
     fetch(`/admin/room-cell-detail?room_id=${roomId}&date=${date}&period=${periodId}`)
-        .then(res => res.json())  // レスポンスを受け取る
+        .then(res => {
+            if (!res.ok) throw new Error(`Http error: ${res.status}`);
+            return res.json();
+        })  // レスポンスを受け取る
         .then(data => {  // レスポンス内にあるデータを展開して取得
 
             // セルが空の場合→授業名を登録

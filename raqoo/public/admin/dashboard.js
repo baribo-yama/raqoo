@@ -131,12 +131,6 @@ function renderRoomTable() {
 
         // statusDataが存在する場合
         if (statusData) {
-          // if (statusData && statusData.status === 'unavailable') {
-          // cell.classList.add('unavailable');
-          // cell.textContent = '利用不可';
-          // cell.style.backgroundColor = '#e5e7eb';
-          // cell.style.color = '#6b7280';
-          // }
           if (statusData.status === 'reserved') {
             cell.classList.add('reserved');
             cell.textContent = '予約';
@@ -148,7 +142,7 @@ function renderRoomTable() {
             cell.textContent = statusData.lesson_title || '授業';
             cell.style.backgroundColor = '#e5e7eb';
             cell.style.color = '#6b7280';
-            cell.style.fontWight = '600';
+            cell.style.fontWeight = '600';
           }
         }
       });
