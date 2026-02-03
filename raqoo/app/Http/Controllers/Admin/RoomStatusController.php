@@ -163,5 +163,67 @@ class RoomStatusController extends Controller
     /**
      * 授業登録（空セルに登録 / 既存なら上書き）
      */
-    public function storelesson
+    public function storeLesson(Request $request)
+    {
+        $validated = $request->validate([
+            'room_id' => 'required|exists:rooms,id',
+            'date' => 'required|date',
+            'period' => 'required|integer|min:1|max:6',
+            'title' => 'required|string|max:100',
+        ]);
+
+        $lesson = \App\Models\RoomLesson::updateOrCreate(
+            [
+                // すでにあれば以下の条件でlessonを取得する
+                'room_id' => $validated['room_id'],
+                'date' => $validated['date'],
+                'period' => $validated['period'],
+            ],
+            [
+                // なければ新たに作成する
+                'title' => $validated['title'],
+            ]
+        );
+
+        return response()->json(['success' => true, 'lesson_id' => $lesson->id]);  // このsuccessフラグは使ってないみたい
+
+    }
+
+    /**
+     * 授業キャンセル（削除）
+     */
+    public function cancelLesson(Request $request)
+    {
+        // 削除するときは一意のレコードを特定すればいいので'title'はvalidationに含めない
+        $validated = $request->validate([
+            'room_id' => 'required|exists:rooms,id',
+            'date' => 'required|date',
+            'period' => 'required|integer|min:1|max:6',
+        ]);
+
+        \App\Models\RoomLesson::where('room_id', $validated['room_id'])
+            ->where('date', $validated['date'])
+            ->where('period', $validated['period'])
+            ->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+
+    /**
+     * 予約キャンセル（削除）
+     */
+    // TODO:削除にしないでstatusをrejectにしたほうがいいか？その方が良い気がする
+    public function cancelReservation(Request $request)
+    {
+        $validated = $request->validate([
+            'reservation_id' => 'required|exists:reservations,id',
+        ]);
+
+        // reservationテーブルから対象のreservation_idを取得して削除
+        \App\Models\Reservation::where('id', $validated['reservation_id'])
+            ->delete();
+
+        return response()->json(['success' => true]);
+    }
 }
