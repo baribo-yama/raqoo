@@ -13,10 +13,14 @@
     <header class="header">
         <div class="title">Raqoo 管理</div>
         <nav class="menu">
-            <a class="menu-item" href="#">ダッシュボード</a>
-            <a class="menu-item" href="#">教室管理</a>
-            <a class="menu-item" href="#">予約管理</a>
+            <a class="menu-item" href="{{ route('admin.dashboard') }}">ダッシュボード</a>
+            <a class="menu-item" href="{{ route('admin.rooms.index') }}">教室管理</a>
+            <a class="menu-item" href="{{ route('admin.reservations.index') }}">予約管理</a>
         </nav>
+        <form class="logout-form" action="{{ route('admin.logout') }}" method="POST">
+            @csrf
+            <button class="logout-btn" type="submit">ログアウト</button>
+        </form>
         <button class="notification-btn" id="requestToggle">
             <span class="icon">🔔</span>
             <span class="badge" id="reservationBadge">{{ count($reservations) }}</span>
