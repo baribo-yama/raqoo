@@ -1,11 +1,14 @@
 <?php
-// 教室の利用状態をうまいこと処理するやつ
+// 管理者ダッシュボードで教室のステータスを管理する（予約状況、授業情報の有無）
 namespace App\Http\Controllers\Admin;
+
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\RoomStatus;
 use App\Models\Room;
+use App\Models\RoomLesson;
+use App\Models\Reservation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -45,7 +48,7 @@ class RoomStatusController extends Controller
     }
 
     /**
-     * 指定日付の全教室・前時限のステータスを取得
+     * 指定日付の全教室・全時限のステータスを取得
      * ユーザー画面と管理者画面で共通仕様
      */
     public function getStatus(Request $request)

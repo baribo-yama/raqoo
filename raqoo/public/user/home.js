@@ -85,14 +85,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const statusData = data.find(
               item => item.room_id == roomId && item.period == period
             );
-            // statusDataの中にlesson_titleがあるか確認デバッグログ
-            console.log('statusData', statusData)
-            console.log('lesson_title', statusData?.lesson_title)
 
             const status = statusData ? statusData.status : 'available';
 
             // デバッグ用ログ
-            console.log(`Room ${roomId}, Period ${period}: status = "${status}"`);
+            // console.log(`Room ${roomId}, Period ${period}: status = "${status}"`);
 
             // ステータス別のCSSクラスを設定（target-periodは保持）
             card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable');

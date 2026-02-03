@@ -54,17 +54,21 @@ Route::get('/admin/room-status', [RoomStatusController::class, 'getStatus'])
     ->middleware('auth:admin')
     ->name('admin.room-status.get');
 
-// 管理者dsbセル詳細取得
-Route::get('/admin/room-cell-detail', [RoomStatusController::class, 'getCellDetail']);
+// 管理者ダッシュボードセル詳細取得
+Route::get('/admin/room-cell-detail', [RoomStatusController::class, 'getCellDetail'])
+    ->middleware('auth:admin');
 
-// 管理者dsbセル授業登録
-Route::post('/admin/room-lesson', [RoomStatusController::class, 'storeLesson']);
+// 管理者ダッシュボードセル授業登録
+Route::post('/admin/room-lesson', [RoomStatusController::class, 'storeLesson'])
+    ->middleware('auth:admin');
 
-// 管理者dsb授業キャンセル
-Route::delete('/admin/room-lesson/cancel', [RoomStatusController::class, 'cancelLesson']);
+// 管理者ダッシュボード授業キャンセル
+Route::delete('/admin/room-lesson/cancel', [RoomStatusController::class, 'cancelLesson'])
+    ->middleware('auth:admin');
 
-// 管理者dsb予約キャンセル
-Route::post('/admin/reservations/cancel', [RoomStatusController::class, 'cancelReservation']);
+// 管理者ダッシュボード予約キャンセル
+Route::post('/admin/reservations/cancel', [RoomStatusController::class, 'cancelReservation'])
+    ->middleware('auth:admin');
 
 
 
