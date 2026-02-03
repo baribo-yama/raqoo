@@ -32,13 +32,14 @@ class Room extends Model
      * @param int|null $userId ユーザーID（null=管理者）
      * @return string ステータス ('available', 'pending', 'reserved', 'unavailable')
      */
-    public function getStatusForPeriod($date, $period, $userId = null)
+    // public functionなのでコントローラーや他のクラスからも呼び出せる
+    public function getStatusForPeriod($date, $period, $userId = null, $lessonMap = [], $reservationMap = [])
     {
         if ($userId !== null) {
-            return $this->getStatusForUser($date, $period, $userId);
+            return $this->getStatusForUser($date, $period, $userId, $lessonMap, $reservationMap);
         }
 
-        return $this->getStatusForAdmin($date, $period);
+        return $this->getStatusForAdmin($date, $period, $lessonMap, $reservationMap);
     }
 
     /**
@@ -49,44 +50,30 @@ class Room extends Model
      * @param int $userId
      * @return string
      */
-    private function getStatusForUser($date, $period, $userId)
+    // private functionなのでこのRoomクラス（モデル）の内部からしか呼べない。外部からは呼べない。
+    private function getStatusForUser($date, $period, $userId, $lessonMap, $reservationMap)
     {
         // 授業の有無を最優先でチェック
         // もし授業があれば unavailable （利用不可）
-        $hasLesson = RoomLesson::where('room_id', $this->id)
-            ->where('date', $date)
-            ->where('period', $period)
-            ->exists();
-
-        if ($hasLesson) {
+        if (isset($lessonMap[$this->id][$period])) {
             return 'unavailable';
         }
 
-        // 1. 自分の申請状態をチェック（優先度：高）
-        $myReservation = Reservation::where('room_id', $this->id)
-            ->where('date', $date)
-            ->where('period', $period)
-            ->where('user_id', $userId)
-            ->whereIn('status', ['pending', 'reserved', 'in_use'])
-            ->first();
-
-        if ($myReservation) {
-            return $myReservation->status; // 'pending', 'reserved', 'in_use'
+        // 自分の予約（優先度：高）
+        foreach ($reservationMap[$this->id][$period] ?? [] as $r) {
+            if ($r->user_id === $userId && in_array($r->status, ['pending', 'reserved', 'in_use'], true)) {
+                return $r->status;
+            }
         }
 
-        // 2. 他人の予約・利用状況をチェック
-        $othersReservation = Reservation::where('room_id', $this->id)
-            ->where('date', $date)
-            ->where('period', $period)
-            ->where('user_id', '!=', $userId)
-            ->whereIn('status', ['pending', 'reserved', 'in_use'])
-            ->exists();
-
-        if ($othersReservation) {
-            return 'unavailable'; // 他人が使用中・予約済み
+        // 他人の予約
+        foreach ($reservationMap[$this->id][$period] ?? [] as $r) {
+            if ($r->user_id !== $userId && in_array($r->status, ['reserved', 'in_use'], true)) {
+                return 'unavailable';
+            }
         }
 
-        // 3. どの条件にも該当しない場合
+        // どの条件にも該当しない場合
         return 'available';
     }
 
@@ -97,27 +84,17 @@ class Room extends Model
      * @param int $period
      * @return string
      */
-    private function getStatusForAdmin($date, $period)
+    private function getStatusForAdmin($date, $period, $lessonMap, $reservationMap)
     {
         // 授業の有無を最優先でチェック
-        $hasLesson = RoomLesson::where('room_id', $this->id)
-            ->where('date', $date)
-            ->where('period', $period)
-            ->exists();
-
-        if ($hasLesson) {
+        if (isset($lessonMap[$this->id][$period])) {
             return 'unavailable';
         }
 
-        // 承認済みの予約のみを検出（pendingは表示しない）
-        $approvedReservation = Reservation::where('room_id', $this->id)
-            ->where('date', $date)
-            ->where('period', $period)
-            ->whereIn('status', ['reserved', 'in_use'])
-            ->exists();
-
-        if ($approvedReservation) {
-            return 'unavailable'; // RoomStatusControllerで'reserved'に変換される
+        foreach ($reservationMap[$this->id][$period] ?? [] as $r) {
+            if (in_array($r->status, ['reserved', 'in_use'], true)) {
+                return 'unavailable';
+            }
         }
 
         return 'available';

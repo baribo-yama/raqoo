@@ -49,7 +49,7 @@ class RoomStatusController extends Controller
 
     /**
      * 指定日付の全教室・全時限のステータスを取得
-     * ユーザー画面と管理者画面で共通仕様
+     * 管理者画面専用の仕様（ユーザー画面とは別実装）
      */
     public function getStatus(Request $request)
     {
@@ -59,20 +59,31 @@ class RoomStatusController extends Controller
             return response()->json(['error' => '日付が指定されていません'], 400);
         }
 
-        $rooms = Room::with('roomStatuses')->get();
+
+        $rooms = Room::all();
+
+        // 一括取得して look upを作る（検索して見つけるのではなくて表からキー指定して取得）
+        // 対象日付の授業・予約をまとめて取得し、「room_id + period」で即引ける map（連想配列）」に変換している
+        $lessonMap = [];
+        foreach (RoomLesson::where('date', $date)->get() as $lesson) {
+            $lessonMap[$lesson->room_id][$lesson->period] = $lesson;
+        }
+
+        $reservationMap = [];
+        foreach (Reservation::where('date', $date)
+            ->whereIn('status', ['pending', 'reserved', 'in_use'])  // statusカラムの値がこの三つのどれかであるレコードだけを取得する
+            ->get() as $reservation) {
+            $reservationMap[$reservation->room_id][$reservation->period][] = $reservation;
+        }
 
         $statuses = [];
         foreach ($rooms as $room) {
             for ($period = 1; $period <= 6; $period++) {
                 // Room.phpから基本的なステータスを取得
-                $status = $room->getStatusForPeriod($date, $period, null);
+                $status = $room->getStatusForPeriod($date, $period, null, $lessonMap, $reservationMap);
 
                 // 授業を優先的に取得（あるなら "lesson" 扱いにする）
-                $lesson = \App\Models\RoomLesson::where('room_id', $room->id)
-                    ->where('date', $date)
-                    ->where('period', $period)
-                    ->first();
-
+                $lesson = $lessonMap[$room->id][$period] ?? null;
                 if ($lesson) {
                     $status = 'lesson';
                 }
@@ -82,13 +93,16 @@ class RoomStatusController extends Controller
                 // ここで 'reserved' に変換して管理画面に表示
                 // ※ 'pending'（申請中）は管理画面には表示しない仕様
                 if ($status === 'unavailable') {
-                    $hasReservation = \App\Models\Reservation::where('room_id', $room->id)
-                        ->where('date', $date)
-                        ->where('period', $period)
-                        ->whereIn('status', ['reserved', 'in_use'])
-                        ->exists();
-
-                    if ($hasReservation) {
+                    $hasReservation = false;  // 予約があるかどうかのフラグ（初期値は'ない'=false）
+                    foreach ($reservationMap[$room->id][$period] ?? [] as $r) {  // ないときは空配列[] つまりここから取り出すものは何もないのでループが一回も回らない
+                        // $r->statusがreservedかin_useかどうかを判定
+                        // in_array()は配列の中に値があるか調べる関数　
+                        if (in_array($r->status, ['reserved', 'in_use'], true)) {  // 第三引数trueは厳密比較（型まで一致）を意味する
+                            $hasReservation = true;
+                            break;
+                        }
+                    }
+                    if ($hasReservation) {  // 上で$hasReservation=trueになったものがここを通る
                         $status = 'reserved'; // 管理ダッシュボードに「予約」と表示
                     }
                 }
