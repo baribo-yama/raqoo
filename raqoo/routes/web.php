@@ -28,6 +28,7 @@ Route::get('/signup', function() {
 });
 Route::post('/signup', [SignupController::class, 'up']);
 
+
 /*======= 管理者画面 ========*/
 // 管理者ログイン
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login.form');
@@ -57,7 +58,17 @@ Route::get('/admin/room-status', [RoomStatusController::class, 'getStatus'])
 Route::get('/admin/room-cell-detail', [RoomStatusController::class, 'getCellDetail']);
 
 // 管理者dsbセル授業登録
-Route::post('/admin/')
+Route::post('/admin/room-lesson', [RoomStatusController::class, 'storeLesson']);
+
+// 管理者dsb授業キャンセル
+Route::delete('/admin/room-lesson/cancel', [RoomStatusController::class, 'cancelLesson']);
+
+// 管理者dsb予約キャンセル
+Route::post('/admin/reservations/cancel', [RoomStatusController::class, 'cancelReservation']);
+
+
+
+
 
 // ユーザー向け教室ステータス更新API
 Route::get('/user/room-status', [UserRoomStatusController::class, 'getStatus'])
@@ -84,6 +95,7 @@ Route::get('/admin/rooms', [AdminDashBoardController::class, 'roomsIndex'])->nam
 Route::get('/admin/notifications', function() {
     return view('admin.notifications-index');
 })->name('admin.notifications.index');
+
 
 /*======= ユーザー画面 ========*/
 // ユーザーホーム

@@ -85,6 +85,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const statusData = data.find(
               item => item.room_id == roomId && item.period == period
             );
+            // statusDataの中にlesson_titleがあるか確認デバッグログ
+            console.log('statusData', statusData)
+            console.log('lesson_title', statusData?.lesson_title)
 
             const status = statusData ? statusData.status : 'available';
 
@@ -123,9 +126,13 @@ document.addEventListener("DOMContentLoaded", () => {
                   'pending': '申請中',
                   'reserved': '予約済み',
                   'in_use': '利用中',
-                  'unavailable': '利用不可'
+                  'unavailable': '利用不可',
+                  // TODO:授業が入ってたら授業名表示
                 };
-                unavailableLabel.textContent = statusLabels[status] || '利用不可';
+
+                // 授業が入っていたら最優先で表示
+                const label = statusData?.lesson_title ?? statusLabels[status] ?? '利用不可';
+                unavailableLabel.textContent = label;
               }
               if (reserveBtn) {
                 reserveBtn.style.display = 'none';
