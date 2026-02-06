@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
       case "rejected":   return { text: "却下",     cls: "my-badge rejected" };
       case "cancelled":  return { text: "キャンセル", cls: "my-badge cancelled" };
       case "completed":  return { text: "完了",     cls: "my-badge completed" };
-      case "reserved":   return { text: "予約済み", cls: "my-badge reserved" }; // もし返るなら変換
+      case "reserved":   return { text: "予約済み", cls: "my-badge reserved" };
       case "in_use":     return { text: "利用中",   cls: "my-badge in_use" };
       default:           return { text: status || "不明", cls: "my-badge other" };
     }
@@ -167,27 +167,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 教室ステータスをサーバーから取得して更新（既存のまま）
+  // 教室ステータスをサーバーから取得して更新
+  // ★重要: developブランチの最新ロジック（授業名表示、日付リンク修正など）を採用
   function updateRoomStatuses(date) {
-    document.querySelectorAll(".room-group").forEach((roomGroup) => {
-      roomGroup.querySelectorAll(".time-card").forEach((card) => {
-        card.classList.remove("available");
-        card.classList.add("unavailable");
+    // --- ステータス表示のリセット処理 ---
+    // APIレスポンスを待つ間、ローディング状態にする
+    document.querySelectorAll('.room-group').forEach((roomGroup) => {
+      roomGroup.querySelectorAll('.time-card').forEach((card) => {
+        // ステータスクラスはAPIレスポンス後に設定するため、ここでは削除のみ
+        card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable');
 
         const availableLabel = card.querySelector(".available-label");
         const unavailableLabel = card.querySelector(".unavailable-label");
         const reserveBtn = card.querySelector(".reserve-btn");
 
-        if (availableLabel) availableLabel.style.display = "none";
+        // ローディング中の表示
+        if (availableLabel) {
+          availableLabel.style.display = 'none';
+        }
         if (unavailableLabel) {
-          unavailableLabel.style.display = "";
-          unavailableLabel.textContent = "確認中";
+          unavailableLabel.style.display = '';
+          unavailableLabel.textContent = '読み込み中...';
+        }
+        if (reserveBtn) {
+          reserveBtn.style.display = 'none';
         }
 
+        // 予約ボタンのリンク先（href）に含まれる日付を、新しい日付に書き換える
         if (reserveBtn) {
-          reserveBtn.style.display = "none";
-          let href = reserveBtn.getAttribute("href");
+          let href = reserveBtn.getAttribute('href');
           if (href) {
+            // URLエンコードされた日付 (date%3DYYYY-MM-DD) と 通常の日付 (date=YYYY-MM-DD) の両方を置換
             href = href.replace(/date%3D\d{4}-\d{2}-\d{2}/g, `date%3D${date}`);
             href = href.replace(/date=\d{4}-\d{2}-\d{2}/g, `date=${date}`);
             reserveBtn.setAttribute("href", href);
@@ -211,14 +221,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const status = statusData ? statusData.status : "available";
 
-            card.classList.remove("available", "unavailable");
-            card.classList.add(status === "available" ? "available" : "unavailable");
+            // ステータス別のCSSクラスを設定（target-periodは保持）
+            card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable');
+            card.classList.add(status);
 
             const availableLabel = card.querySelector(".available-label");
             const unavailableLabel = card.querySelector(".unavailable-label");
             const reserveBtn = card.querySelector(".reserve-btn");
 
-            if (status === "available") {
+            if (status === 'available') {
+              // 利用可能：予約ボタン表示
               if (availableLabel) {
                 availableLabel.style.display = "";
                 availableLabel.textContent = "利用可能";
@@ -226,15 +238,27 @@ document.addEventListener("DOMContentLoaded", () => {
               if (unavailableLabel) unavailableLabel.style.display = "none";
               if (reserveBtn) reserveBtn.style.display = "";
             } else {
-              if (availableLabel) availableLabel.style.display = "none";
-              if (unavailableLabel) {
-                unavailableLabel.style.display = "";
-                unavailableLabel.textContent =
-                  status === "pending" ? "申請中" :
-                  status === "in_use" ? "利用中" :
-                  status === "reserved" ? "予約済み" : "利用不可";
+              // 利用不可：ステータスラベル表示
+              if (availableLabel) {
+                availableLabel.style.display = 'none';
               }
-              if (reserveBtn) reserveBtn.style.display = "none";
+              if (unavailableLabel) {
+                unavailableLabel.style.display = '';
+                // ステータスに応じたラベルテキスト
+                const statusLabels = {
+                  'pending': '申請中',
+                  'reserved': '予約済み',
+                  'in_use': '利用中',
+                  'unavailable': '利用不可',
+                };
+
+                // 授業が入っていたら最優先で表示（developの機能）
+                const label = statusData?.lesson_title ?? statusLabels[status] ?? '利用不可';
+                unavailableLabel.textContent = label;
+              }
+              if (reserveBtn) {
+                reserveBtn.style.display = 'none';
+              }
             }
           });
         });
@@ -303,4 +327,5 @@ document.addEventListener("DOMContentLoaded", () => {
     startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
     renderStrip();
   });
+
 });
