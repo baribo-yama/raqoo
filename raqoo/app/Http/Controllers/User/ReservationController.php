@@ -191,8 +191,9 @@ class ReservationController extends Controller
         $date  = $request->query('date');
         $limit = (int) $request->query('limit', 50);
 
+        // 修正箇所: auth()->id() を Auth::id() に変更してIDEエラーを回避
         $q = Reservation::with('room')
-            ->where('user_id', auth()->id())
+            ->where('user_id', Auth::id()) 
             ->orderBy('date')
             ->orderBy('period');
 
