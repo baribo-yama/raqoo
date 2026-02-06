@@ -116,3 +116,12 @@ Route::get('/precautions', [PrecautionsController::class, 'show'])
 Route::post('/precautions/agree', [PrecautionsController::class, 'agree'])
     ->middleware('auth')
     ->name('user.precautions.agree');
+
+Route::get('/user/my-reservations',
+  [\App\Http\Controllers\User\ReservationController::class, 'myReservations']
+)->middleware('auth')
+ ->name('user.my_reservations');
+
+    
+
+
