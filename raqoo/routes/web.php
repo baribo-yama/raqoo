@@ -71,9 +71,6 @@ Route::post('/admin/reservations/cancel', [RoomStatusController::class, 'cancelR
     ->middleware('auth:admin');
 
 
-
-
-
 // ユーザー向け教室ステータス更新API
 Route::get('/user/room-status', [UserRoomStatusController::class, 'getStatus'])
     ->middleware('auth')
@@ -147,8 +144,8 @@ Route::post('/precautions/agree', [PrecautionsController::class, 'agree'])
     ->middleware('auth')
     ->name('user.precautions.agree');
 
-// ★HEADの変更を採用（自分の予約一覧ルート）
+// 自分の予約一覧取得 (JSON)
 Route::get('/user/my-reservations',
  [\App\Http\Controllers\User\ReservationController::class, 'myReservations']
 )->middleware('auth')
- ->name('user.my_reservations');
+ ->name('user.reservations.my');

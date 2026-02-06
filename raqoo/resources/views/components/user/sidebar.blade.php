@@ -73,14 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('nav-open');
     nav.dataset.open = 'true';
     toggle.setAttribute('aria-expanded', 'true');
-    backdrop?.setAttribute('aria-hidden', 'false');
+    // Copilot修正: aria-hiddenは常にtrueのまま、CSSで表示制御する
   };
 
   const closeMenu = () => {
     document.body.classList.remove('nav-open');
     nav.dataset.open = 'false';
     toggle.setAttribute('aria-expanded', 'false');
-    backdrop?.setAttribute('aria-hidden', 'true');
   };
 
   // ハンバーガークリック

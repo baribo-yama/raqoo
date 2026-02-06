@@ -152,7 +152,8 @@ class ReservationController extends Controller
     {
         if ($reservation->user_id !== Auth::id()) abort(403);
 
-        if (!in_array($reservation->status, ['pending', 'approved'], true)) {
+        // Copilot修正: 管理者承認後は 'reserved' になるため、キャンセル許可リストに追加
+        if (!in_array($reservation->status, ['pending', 'reserved'], true)) {
             return back()->withErrors(['error' => 'この予約はキャンセルできません。']);
         }
 
@@ -166,7 +167,8 @@ class ReservationController extends Controller
     {
         $historyReservations = Reservation::where(function ($query) {
                 $query->where('date', '<', Carbon::today())
-                      ->orWhereIn('status', ['completed', 'cancelled', 'rejected']);
+                      // Copilot修正: 完了(finished/completed)や却下(rejected)、キャンセル(cancelled)を網羅
+                      ->orWhereIn('status', ['finished', 'completed', 'cancelled', 'rejected']);
             })
             ->where('user_id', Auth::id())
             ->with('room')
@@ -178,8 +180,6 @@ class ReservationController extends Controller
 
     /**
      * ✅ 自分の予約一覧（スマホの見開き用 / JSON）
-     * - ?date=YYYY-MM-DD があればその日の自分の予約
-     * - 無ければ今日以降の自分の予約
      */
     public function myReservations(Request $request)
     {
@@ -191,7 +191,6 @@ class ReservationController extends Controller
         $date  = $request->query('date');
         $limit = (int) $request->query('limit', 50);
 
-        // 修正箇所: auth()->id() を Auth::id() に変更してIDEエラーを回避
         $q = Reservation::with('room')
             ->where('user_id', Auth::id()) 
             ->orderBy('date')
