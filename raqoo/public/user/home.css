@@ -865,3 +865,26 @@ body.with-sidebar {
   border-color: #2F4A6A;
   box-shadow: 0 4px 10px rgba(47, 74, 106, 0.25); /* 光るような影 */
 }
+@media (max-width: 1024px) {
+  .m-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 900; /* navigation(1000)より下にする */
+  }
+
+  body.nav-open .m-backdrop {
+    display: block;
+  }
+}
+/* ========== PC版でのスマホ要素抑制 ========== */
+/* 561px以上のときは、スマホ専用パーツを強制非表示にする */
+@media (min-width: 561px) {
+  .m-hamburger, 
+  .m-status-btn, 
+  .m-status-sheet, 
+  .m-backdrop {
+    display: none !important;
+  }
+}
