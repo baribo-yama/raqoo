@@ -37,12 +37,12 @@ document.addEventListener("DOMContentLoaded", () => {
       case "pending":    return { text: "申請中",   cls: "my-badge pending" };
       case "reserved":   return { text: "予約済み", cls: "my-badge reserved" };
       case "in_use":     return { text: "利用中",   cls: "my-badge in_use" };
-      case "finished":   return { text: "利用完了", cls: "my-badge finished" }; // 色定義がなければ completed と同じでもOK
+      case "finished":   return { text: "利用完了", cls: "my-badge completed" }; // CSSの.completedを使用
       case "cancelled":  return { text: "キャンセル", cls: "my-badge cancelled" };
-      
+      case "rejected":   return { text: "却下",     cls: "my-badge rejected" }; // 専用の赤色クラス
+
       // 旧ステータス互換・予備
       case "approved":   return { text: "予約済み", cls: "my-badge reserved" };
-      case "rejected":   return { text: "却下",     cls: "my-badge cancelled" };
       case "completed":  return { text: "完了",     cls: "my-badge completed" };
       default:           return { text: status || "不明", cls: "my-badge other" };
     }

@@ -28,7 +28,6 @@
             @if ($reservations->count() > 0)
                 <div class="space-y-4">
                     @foreach ($reservations as $reservation)
-                        {{-- ▼▼▼ VS Codeのエラー回避のため div onclick ではなく a href に変更 ▼▼▼ --}}
                         <a href="{{ route('user.reservations.show', $reservation->id) }}"
                            class="block bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200 cursor-pointer text-left">
                             
@@ -39,14 +38,15 @@
                                             {{ $reservation->room->name }}
                                         </h3>
                                         <span class="px-2 py-1 text-xs rounded-full
+                                    {{-- Copilot修正: approved ではなく reserved を判定 --}}
                                     @if ($reservation->status === 'pending') bg-yellow-100 text-yellow-800
-                                    @elseif($reservation->status === 'approved') bg-green-100 text-green-800
+                                    @elseif($reservation->status === 'reserved') bg-green-100 text-green-800
                                     @elseif($reservation->status === 'rejected') bg-red-100 text-red-800
                                     @elseif($reservation->status === 'cancelled') bg-gray-100 text-gray-800 @endif">
                                             @if ($reservation->status === 'pending')
                                                 承認待ち
-                                            @elseif($reservation->status === 'approved')
-                                                承認済み
+                                            @elseif($reservation->status === 'reserved')
+                                                予約済み
                                             @elseif($reservation->status === 'rejected')
                                                 却下
                                             @elseif($reservation->status === 'cancelled')
@@ -86,7 +86,6 @@
                                 </div>
                             </div>
                         </a> 
-                        {{-- ▲▲▲ 閉じタグも a に変更 ▲▲▲ --}}
                     @endforeach
                 </div>
             @else

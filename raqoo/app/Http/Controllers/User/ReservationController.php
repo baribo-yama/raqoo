@@ -152,7 +152,7 @@ class ReservationController extends Controller
     {
         if ($reservation->user_id !== Auth::id()) abort(403);
 
-        // Copilot修正: 管理者承認後は 'reserved' になるため、キャンセル許可リストに追加
+        // Copilot修正: 'approved' ではなく、DB実態の 'reserved' を許可リストに追加
         if (!in_array($reservation->status, ['pending', 'reserved'], true)) {
             return back()->withErrors(['error' => 'この予約はキャンセルできません。']);
         }
@@ -167,8 +167,8 @@ class ReservationController extends Controller
     {
         $historyReservations = Reservation::where(function ($query) {
                 $query->where('date', '<', Carbon::today())
-                      // Copilot修正: 完了(finished/completed)や却下(rejected)、キャンセル(cancelled)を網羅
-                      ->orWhereIn('status', ['finished', 'completed', 'cancelled', 'rejected']);
+                      // Copilot修正: DB実態に合わせて finished と cancelled を指定
+                      ->orWhereIn('status', ['finished', 'cancelled']);
             })
             ->where('user_id', Auth::id())
             ->with('room')

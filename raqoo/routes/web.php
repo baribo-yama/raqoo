@@ -145,7 +145,8 @@ Route::post('/precautions/agree', [PrecautionsController::class, 'agree'])
     ->name('user.precautions.agree');
 
 // 自分の予約一覧取得 (JSON)
+// Copilot修正: コメント削除、ルート名統一、クラスエイリアス統一
 Route::get('/user/my-reservations',
- [\App\Http\Controllers\User\ReservationController::class, 'myReservations']
+ [UserReservationController::class, 'myReservations']
 )->middleware('auth')
  ->name('user.reservations.my');
