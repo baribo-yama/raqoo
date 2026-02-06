@@ -1,6 +1,6 @@
 /* =========================================
    Raqoo Mobile UI (<=560px)
-   修正版：全てのスタイルをこのメディアクエリ内に格納
+   Final Corrected Version
 ========================================= */
 @media (max-width: 560px) {
   :root {
@@ -14,23 +14,23 @@
     --shadow: 0 8px 22px rgba(0, 0, 0, .08);
   }
 
-  /* ★追加：サイドバーが開いてる間はハンバーガー（nav-toggle / m-hamburger）を隠す */
-  body.nav-open .nav-toggle { display: none !important; }
+  /* サイドバーが開いてる間はハンバーガーを隠す */
+  body.nav-open .nav-toggle, 
   body.nav-open .m-hamburger { display: none !important; }
 
-  /* ▼▼▼ 1. ハンバーガーボタン（最前面にする） ▼▼▼ */
+  /* 1. ハンバーガーボタン */
   .m-hamburger {
     display: block !important;
     position: absolute;
     top: 15px;
     right: 16px;
-    z-index: 1100 !important; /* ★重要：backdropより上へ */
+    z-index: 1100 !important;
     cursor: pointer;
     font-size: 24px;
     color: var(--blue);
   }
 
-  /* 背景の黒透かし（サイドバー外タップ） */
+  /* 背景の黒透かし */
   .m-backdrop {
     display: none;
     position: fixed;
@@ -39,13 +39,11 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 900 !important; /* ★重要：navより下 */
+    z-index: 900 !important;
   }
-  body.nav-open .m-backdrop {
-    display: block;
-  }
+  body.nav-open .m-backdrop { display: block !important; }
 
-  /* ▼▼▼ 2. サイドバー（ナビゲーション） ▼▼▼ */
+  /* 2. サイドバー */
   .navigation {
     display: block !important;
     position: fixed !important;
@@ -54,7 +52,7 @@
     width: 260px !important;
     height: 100vh !important;
     background-color: #1c2b4a !important;
-    z-index: 1000 !important; /* ★重要：backdropより上 */
+    z-index: 1000 !important;
     transform: translateX(-110%) !important;
     transition: transform 0.3s ease !important;
     padding-top: 20px !important;
@@ -68,28 +66,18 @@
 
   body { background: var(--bg); }
 
-  /* ===== 全体余白 ===== */
+  /* 余白調整 */
   .content-area {
     margin-left: 0 !important;
     padding: 10px 16px 18px !important;
   }
 
-  /* ===== ヘッダー/ロゴ/プロフィール ===== */
-  .header {
-    padding: 6px 0 4px !important;
-    margin: 0 !important;
-    background: transparent !important;
-    position: relative;
-  }
+  /* ロゴ・プロフ */
+  .header { padding: 6px 0 4px !important; margin: 0 !important; background: transparent !important; position: relative; }
   .raqoo-logo { max-width: 230px !important; }
-  .profile-box {
-    position: static !important;
-    transform: none !important;
-    margin: 6px 0 8px auto !important;
-    border-radius: 12px !important;
-  }
+  .profile-box { position: static !important; transform: none !important; margin: 6px 0 8px auto !important; border-radius: 12px !important; }
 
-  /* ===== 検索カード ===== */
+  /* 検索カード */
   .search-form {
     margin: 8px auto 10px !important;
     padding: 14px !important;
@@ -99,37 +87,19 @@
     border-radius: var(--radius) !important;
     box-shadow: var(--shadow) !important;
   }
-
-  /* ※この非表示はHTMLのid/nameと合ってないなら消してOK */
-  label[for="periodInput"],
-  #periodInput,
-  label[for="peopleInput"],
-  #peopleInput {
+  
+  /* 入力欄の非表示制御 */
+  label[for="periodInput"], #periodInput,
+  label[for="peopleInput"], #peopleInput {
     display: none !important;
   }
 
   .form-row { grid-template-columns: 1fr !important; gap: 10px !important; }
-
-  #dateInput {
-    font-size: 18px !important;
-    padding: 14px 44px 14px 14px !important;
-    border-radius: 12px !important;
-    border: 1px solid var(--line) !important;
-  }
-
+  #dateInput { font-size: 18px !important; padding: 14px 44px 14px 14px !important; border-radius: 12px !important; border: 1px solid var(--line) !important; }
   .form-row-btn { margin-top: 10px !important; }
+  .search-btn { width: 100% !important; padding: 16px 0 !important; font-size: 20px !important; font-weight: 900 !important; border-radius: 14px !important; background: linear-gradient(180deg, var(--blue), var(--blue2)) !important; box-shadow: 0 6px 18px rgba(0, 0, 0, .12) !important; }
 
-  .search-btn {
-    width: 100% !important;
-    padding: 16px 0 !important;
-    font-size: 20px !important;
-    font-weight: 900 !important;
-    border-radius: 14px !important;
-    background: linear-gradient(180deg, var(--blue), var(--blue2)) !important;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, .12) !important;
-  }
-
-  /* ===== 曜日ストリップ ===== */
+  /* 曜日タブ */
   .day-tabs {
     display: flex !important;
     flex-wrap: nowrap !important;
@@ -147,7 +117,6 @@
     overflow: hidden !important;
     box-sizing: border-box !important;
   }
-
   .day-tab {
     flex: 1 1 0 !important;
     min-width: 0 !important;
@@ -164,67 +133,27 @@
   }
   .day-tab:last-child { border-right: none !important; }
   .day-tab.active { background: var(--tab-active) !important; }
-
-  .day-label,
-  .date-label {
-    margin: 0 !important;
-    line-height: 1 !important;
-    color: #fff !important;
-    opacity: .92 !important;
-    white-space: nowrap !important;
-  }
+  .day-label, .date-label { margin: 0 !important; line-height: 1 !important; color: #fff !important; opacity: .92 !important; white-space: nowrap !important; }
   .day-label { font-size: 14px !important; letter-spacing: .2px !important; }
   .date-label { font-size: 13px !important; letter-spacing: 0 !important; }
 
-  .day-tabs .strip-btn {
-    position: absolute !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 30px !important;
-    height: 30px !important;
-    background: #6b7280 !important;
-    border-radius: 999px !important;
-    z-index: 20 !important;
-  }
+  .day-tabs .strip-btn { position: absolute !important; top: 50% !important; transform: translateY(-50%) !important; width: 30px !important; height: 30px !important; background: #6b7280 !important; border-radius: 999px !important; z-index: 20 !important; }
   .day-tabs .strip-prev { left: -16px !important; }
   .day-tabs .strip-next { right: -16px !important; }
 
-  /* ===== 中央日付 ===== */
-  .date-display {
-    transform: none !important;
-    margin: 4px auto 6px !important;
-    text-align: center !important;
-  }
+  /* 中央日付 */
+  .date-display { transform: none !important; margin: 4px auto 6px !important; text-align: center !important; }
   .date-display .date-main { font-size: 42px !important; font-weight: 900 !important; }
   .date-display .date-weekday { font-size: 24px !important; font-weight: 900 !important; }
 
-  /* ===== 凡例 ===== */
-  .status-bar-2 {
-    width: 100% !important;
-    max-width: none !important;
-    margin: 8px auto 10px !important;
-    padding: 8px 12px !important;
-    border-radius: 10px !important;
-    border: 1px solid #d7dbe3 !important;
-    background: #fff !important;
-    justify-content: center !important;
-    gap: 18px !important;
-  }
+  /* 凡例 */
+  .status-bar-2 { width: 100% !important; max-width: none !important; margin: 8px auto 10px !important; padding: 8px 12px !important; border-radius: 10px !important; border: 1px solid #d7dbe3 !important; background: #fff !important; justify-content: center !important; gap: 18px !important; }
 
-  /* ★追加：予約状況を見るボタン（スマホのみ） */
-  .m-status-btn{
-    display: block !important;
-    width: 100% !important;
-    margin: 10px 0 6px !important;
-    padding: 12px 0 !important;
-    border: 1px solid #d7dbe3 !important;
-    border-radius: 12px !important;
-    background: #fff !important;
-    font-weight: 900 !important;
-  }
+  /* 予約状況を見るボタン */
+  .m-status-btn { display: block !important; width: 100% !important; margin: 10px 0 6px !important; padding: 12px 0 !important; border: 1px solid #d7dbe3 !important; border-radius: 12px !important; background: #fff !important; font-weight: 900 !important; }
 
-  /* ★追加：予約状況シート（スマホのみ） */
-  .m-status-sheet{
+  /* 予約状況シート */
+  .m-status-sheet {
     display: flex !important;
     position: fixed !important;
     left: 0 !important;
@@ -239,154 +168,48 @@
     z-index: 9998 !important;
     flex-direction: column !important;
   }
-  body.sheet-open .m-status-sheet{ transform: translateY(0) !important; }
+  body.sheet-open .m-status-sheet { transform: translateY(0) !important; }
+  .sheet-head { padding: 14px 14px 10px !important; border-bottom: 1px solid #e6e9ef !important; display: flex !important; align-items: center !important; justify-content: space-between !important; }
+  .sheet-title { font-weight: 900 !important; font-size: 16px !important; }
+  .sheet-close { width: 36px !important; height: 36px !important; border-radius: 12px !important; border: 1px solid #e6e9ef !important; background: #fff !important; font-size: 22px !important; line-height: 1 !important; }
+  .sheet-body { padding: 12px 14px 18px !important; overflow: auto !important; }
+  .sheet-row { border: 1px solid #e6e9ef !important; border-radius: 12px !important; padding: 10px !important; margin-bottom: 10px !important; }
+  .sheet-room { font-weight: 900 !important; margin-bottom: 8px !important; }
+  .sheet-grid { display: grid !important; grid-template-columns: repeat(6, 1fr) !important; gap: 6px !important; }
+  .sheet-cell { border-radius: 10px !important; padding: 8px 0 !important; text-align: center !important; font-weight: 900 !important; font-size: 12px !important; border: 1px solid #e6e9ef !important; }
+  .sheet-ok { background:#eff6ff !important; }
+  .sheet-ng { background:#f3f4f6 !important; color:#6b7280 !important; }
 
-  .sheet-head{
-    padding: 14px 14px 10px !important;
-    border-bottom: 1px solid #e6e9ef !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-  }
-  .sheet-title{ font-weight: 900 !important; font-size: 16px !important; }
-  .sheet-close{
-    width: 36px !important;
-    height: 36px !important;
-    border-radius: 12px !important;
-    border: 1px solid #e6e9ef !important;
-    background: #fff !important;
-    font-size: 22px !important;
-    line-height: 1 !important;
-  }
-  .sheet-body{
-    padding: 12px 14px 18px !important;
-    overflow: auto !important;
-  }
-  .sheet-row{
-    border: 1px solid #e6e9ef !important;
-    border-radius: 12px !important;
-    padding: 10px !important;
-    margin-bottom: 10px !important;
-  }
-  .sheet-room{ font-weight: 900 !important; margin-bottom: 8px !important; }
-  .sheet-grid{
-    display: grid !important;
-    grid-template-columns: repeat(6, 1fr) !important;
-    gap: 6px !important;
-  }
-  .sheet-cell{
-    border-radius: 10px !important;
-    padding: 8px 0 !important;
-    text-align: center !important;
-    font-weight: 900 !important;
-    font-size: 12px !important;
-    border: 1px solid #e6e9ef !important;
-  }
-  .sheet-ok{ background:#eff6ff !important; }
-  .sheet-ng{ background:#f3f4f6 !important; color:#6b7280 !important; }
-
-  /* ===== 教室 ===== */
-  .room-title {
-    background: transparent !important;
-    color: #111 !important;
-    font-size: 22px !important;
-    font-weight: 900 !important;
-    padding: 6px 2px 6px !important;
-    margin: 0 !important;
-  }
-
-  .room-times {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 10px !important;
-    margin-top: 6px !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border: none !important;
-  }
-
-  .time-card {
-    width: auto !important;
-    background: #fff !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 12px !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, .04) !important;
-    padding: 12px 10px !important;
-  }
-
+  /* 教室カード */
+  .room-title { background: transparent !important; color: #111 !important; font-size: 22px !important; font-weight: 900 !important; padding: 6px 2px 6px !important; margin: 0 !important; }
+  .room-times { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; margin-top: 6px !important; padding: 0 !important; background: transparent !important; border: none !important; }
+  .time-card { width: auto !important; background: #fff !important; border: 1px solid #e5e7eb !important; border-radius: 12px !important; box-shadow: 0 2px 10px rgba(0, 0, 0, .04) !important; padding: 12px 10px !important; }
   .time-main { font-size: 30px !important; font-weight: 900 !important; color: #9ca3af !important; }
   .time-sub { font-size: 14px !important; color: #9ca3af !important; }
-
   .floor { display: none !important; }
-
-  .available-label,
-  .unavailable-label {
-    margin-top: 10px !important;
-    font-size: 16px !important;
-    font-weight: 900 !important;
-  }
+  
+  .available-label, .unavailable-label { margin-top: 10px !important; font-size: 16px !important; font-weight: 900 !important; }
   .available-label { color: var(--blue) !important; }
   .unavailable-label { color: #6b7280 !important; }
-
-  .reserve-btn {
-    margin-top: 10px !important;
-    width: 100% !important;
-    padding: 10px 0 !important;
-    border-radius: 10px !important;
-    background: #3b6a93 !important;
-    font-size: 16px !important;
-    font-weight: 900 !important;
-    text-align: center !important;
-  }
-
+  
+  .reserve-btn { margin-top: 10px !important; width: 100% !important; padding: 10px 0 !important; border-radius: 10px !important; background: #3b6a93 !important; font-size: 16px !important; font-weight: 900 !important; text-align: center !important; }
   .time-card.unavailable .reserve-btn { display: none !important; }
   .time-card.available .reserve-btn { display: inline-block; }
-
   .time-card.available .available-label { display: block !important; }
   .time-card.available .unavailable-label { display: none !important; }
   .time-card.unavailable .available-label { display: none !important; }
   .time-card.unavailable .unavailable-label { display: block !important; }
 
-  /* ===== 階数フィルター ===== */
-  .floor-filter-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    margin: 16px 0 20px;
-    width: 100%;
-  }
-
-  .floor-filter-label {
-    font-size: 13px;
-    margin-left: 2px;
-    color: #6b7280;
-    font-weight: bold;
-  }
-
-  .floor-filter-list {
-    display: flex;
-    flex-wrap: wrap !important;
-    gap: 8px;
-    width: 100%;
-    padding: 0;
-    overflow-x: visible;
-  }
-
-  .floor-chip {
-    flex: 0 0 auto;
-    height: 40px;
-    padding: 0 16px;
-    font-size: 14px;
-    border-radius: 20px;
-    margin-bottom: 4px;
-  }
+  /* 階数フィルター */
+  .floor-filter-container { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 16px 0 20px; width: 100%; }
+  .floor-filter-label { font-size: 13px; margin-left: 2px; color: #6b7280; font-weight: bold; }
+  .floor-filter-list { display: flex; flex-wrap: wrap !important; gap: 8px; width: 100%; padding: 0; overflow-x: visible; }
+  .floor-chip { flex: 0 0 auto; height: 40px; padding: 0 16px; font-size: 14px; border-radius: 20px; margin-bottom: 4px; }
 
   @media (max-width: 390px) {
     .day-label { font-size: 13px !important; }
     .date-label { font-size: 12px !important; }
   }
-
   @media (max-width: 360px) {
     .room-times { grid-template-columns: repeat(2, 1fr) !important; }
     .day-tabs .strip-btn { width: 26px !important; height: 26px !important; }
@@ -397,122 +220,26 @@
   /* ===========================
      自分の予約シート（中身）
   =========================== */
-  .my-empty{
-    padding: 14px;
-    color:#6b7280;
-    font-weight: 900;
-    text-align: center;
-  }
+  .my-empty{ padding: 14px; color:#6b7280; font-weight: 900; text-align: center; }
+  .my-card{ border: 1px solid #e6e9ef !important; border-radius: 14px !important; background: #fff !important; padding: 12px !important; margin-bottom: 12px !important; }
+  .my-card.is-approved{ border: 2px solid #34d399 !important; box-shadow: 0 6px 18px rgba(16,185,129,.18) !important; }
+  .my-top{ display:flex !important; align-items:center !important; justify-content:space-between !important; gap:10px !important; margin-bottom: 8px !important; }
+  .my-room{ font-weight: 900 !important; font-size: 16px !important; color:#111 !important; }
+  .my-badge{ display:inline-flex !important; align-items:center !important; justify-content:center !important; padding: 6px 10px !important; border-radius: 999px !important; border: 1px solid #e5e7eb !important; font-weight: 900 !important; font-size: 12px !important; white-space: nowrap !important; }
+  
+  .my-badge.approved{ background:#d1fae5 !important; color:#065f46 !important; border-color:#34d399 !important; }
+  .my-badge.pending{ background:#fff7ed !important; color:#9a3412 !important; border-color:#fdba74 !important; }
+  .my-badge.rejected{ background:#fee2e2 !important; color:#991b1b !important; border-color:#fca5a5 !important; }
+  .my-badge.cancelled{ background:#f3f4f6 !important; color:#6b7280 !important; border-color:#e5e7eb !important; }
+  .my-badge.completed{ background:#ede9fe !important; color:#5b21b6 !important; border-color:#c4b5fd !important; }
+  .my-badge.reserved{ background:#e0f2fe !important; color:#075985 !important; border-color:#38bdf8 !important; }
+  .my-badge.in_use{ background:#e5e7eb !important; color:#111827 !important; border-color:#9ca3af !important; }
 
-  .my-card{
-    border: 1px solid #e6e9ef !important;
-    border-radius: 14px !important;
-    background: #fff !important;
-    padding: 12px !important;
-    margin-bottom: 12px !important;
-  }
+  .my-mid{ display:grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; margin-top: 8px !important; }
+  .my-item .my-k{ font-size: 11px !important; color:#6b7280 !important; font-weight: 900 !important; margin-bottom: 2px !important; }
+  .my-item .my-v{ font-size: 13px !important; font-weight: 900 !important; color:#111 !important; }
+  .my-time{ color:#6b7280 !important; font-weight: 900 !important; margin-left: 6px !important; }
+  .my-actions{ display:flex !important; justify-content:flex-end !important; margin-top: 10px !important; }
+  .my-detail{ font-weight: 900 !important; color: #1d4ed8 !important; }
 
-  .my-card.is-approved{
-    border: 2px solid #34d399 !important;
-    box-shadow: 0 6px 18px rgba(16,185,129,.18) !important;
-  }
-
-  .my-top{
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    gap:10px !important;
-    margin-bottom: 8px !important;
-  }
-
-  .my-room{
-    font-weight: 900 !important;
-    font-size: 16px !important;
-    color:#111 !important;
-  }
-
-  .my-badge{
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    padding: 6px 10px !important;
-    border-radius: 999px !important;
-    border: 1px solid #e5e7eb !important;
-    font-weight: 900 !important;
-    font-size: 12px !important;
-    white-space: nowrap !important;
-  }
-
-  /* 目立つ色（承認済みが最重要） */
-  .my-badge.approved{
-    background:#d1fae5 !important;
-    color:#065f46 !important;
-    border-color:#34d399 !important;
-  }
-  .my-badge.pending{
-    background:#fff7ed !important;
-    color:#9a3412 !important;
-    border-color:#fdba74 !important;
-  }
-  .my-badge.rejected{
-    background:#fee2e2 !important;
-    color:#991b1b !important;
-    border-color:#fca5a5 !important;
-  }
-  .my-badge.cancelled{
-    background:#f3f4f6 !important;
-    color:#6b7280 !important;
-    border-color:#e5e7eb !important;
-  }
-  .my-badge.completed{
-    background:#ede9fe !important;
-    color:#5b21b6 !important;
-    border-color:#c4b5fd !important;
-  }
-  /* reservedが来るなら“予約済み”を青系で */
-  .my-badge.reserved{
-    background:#e0f2fe !important;
-    color:#075985 !important;
-    border-color:#38bdf8 !important;
-  }
-  .my-badge.in_use{
-    background:#e5e7eb !important;
-    color:#111827 !important;
-    border-color:#9ca3af !important;
-  }
-
-  .my-mid{
-    display:grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
-    margin-top: 8px !important;
-  }
-
-  .my-item .my-k{
-    font-size: 11px !important;
-    color:#6b7280 !important;
-    font-weight: 900 !important;
-    margin-bottom: 2px !important;
-  }
-  .my-item .my-v{
-    font-size: 13px !important;
-    font-weight: 900 !important;
-    color:#111 !important;
-  }
-  .my-time{
-    color:#6b7280 !important;
-    font-weight: 900 !important;
-    margin-left: 6px !important;
-  }
-
-  .my-actions{
-    display:flex !important;
-    justify-content:flex-end !important;
-    margin-top: 10px !important;
-  }
-  .my-detail{
-    font-weight: 900 !important;
-    color: #1d4ed8 !important;
-  }
-
-} /* ← ★最重要：全てのスタイルを閉じるカッコをここに配置 */
+} /* ← ★ここが重要：全てのスタイルを閉じる */
