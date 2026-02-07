@@ -74,11 +74,16 @@
         </main>
     </div>
 
+
+    <!-- リクエストサイドバー -->
     <div class="request-sidebar" id="requestSidebar">
         <div class="sidebar-header">
             <h3>予約リクエスト</h3>
             <button class="close-btn" id="closeSidebar">✕</button>
         </div>
+
+
+
         <div class="sidebar-content" id="requestList">
             @forelse($reservations as $group)
                 <div class="request-card">
@@ -88,12 +93,12 @@
                     </div>
                     <div class="request-card-info">教室: {{ $group->room->name }}</div>
                     <div class="request-card-info">予約日: {{ $group->date }}</div>
-                    
+
                     {{-- ▼▼▼ 修正：まとめた時限を表示（例: 1~3限） ▼▼▼ --}}
                     <div class="request-card-info" style="font-weight:bold; color:#2563eb;">
                         時限: {{ $group->period }}限
                     </div>
-                    
+
                     <div class="request-card-info">利用目的: {{ $group->purpose }}</div>
 
                     <div class="request-actions">
@@ -124,6 +129,11 @@
     </div>
 
     <div class="overlay" id="overlay"></div>
+
+    <!-- セル詳細モーダル -->
+    @include('admin.cell-detail-modal')
+
     <script src="{{ asset('admin/dashboard.js') }}"></script>
+    <script src="{{ asset('admin/cell-detail-modal.js') }}"></script>
 </body>
 </html>
