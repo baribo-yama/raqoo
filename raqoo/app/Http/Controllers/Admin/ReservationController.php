@@ -17,6 +17,19 @@ class ReservationController extends Controller
         $this->middleware('auth:admin');
     }
 
+    //===== 予約一覧（管理者） =====//
+    public function index()
+    {
+        $reservations = Reservation::with(['user', 'room'])
+            ->where('status', 'pending')
+            ->orderBy('date')
+            ->orderBy('room_id')
+            ->orderBy('period')
+            ->get();
+
+        return view('admin.reservations-index', compact('reservations'));
+    }
+
     // 日付フォーマット用のヘルパーメソッド
     private function formatDate($date)
     {

@@ -7,17 +7,27 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>管理ダッシュボード - Raqoo</title>
     <link rel="stylesheet" href="{{ asset('admin/dashboard.css') }}">
-    <link rel="stylesheet" href="{{ asset('admin/cell-detail-modal.css') }}">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
 <body>
     <header class="header">
         <div class="title">Raqoo 管理</div>
         <nav class="menu">
-            <a class="menu-item" href="#">ダッシュボード</a>
-            <a class="menu-item" href="#">教室管理</a>
-            <a class="menu-item" href="#">予約管理</a>
+            <a class="menu-item" href="{{ route('admin.dashboard') }}">ダッシュボード</a>
+            <a class="menu-item" href="{{ route('admin.rooms.index') }}">教室管理</a>
+            <a class="menu-item" href="{{ route('admin.reservations.index') }}">予約管理</a>
         </nav>
+        <form class="logout-form" action="{{ route('admin.logout') }}" method="POST">
+            @csrf
+            <button class="logout-btn" type="submit">
+                <span class="logout-logo">
+                    <ion-icon name="log-out-outline"></ion-icon>
+                </span>
+                <span class="logout-text">ログアウト</span>
+            </button>
+        </form>
         <button class="notification-btn" id="requestToggle">
             <span class="icon">🔔</span>
             <span class="badge" id="reservationBadge">{{ count($reservations) }}</span>
