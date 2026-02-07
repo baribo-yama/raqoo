@@ -103,7 +103,9 @@ Route::get('/admin/notifications', function() {
 
 /*======= ユーザー画面 ========*/
 // ユーザーホーム
-Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index');
+Route::get('/home', [UserRoomController::class, 'index'])
+    ->middleware('auth')
+    ->name('user.home.index');
 
 // 夜間注意事項ページ
 Route::get('/night-precautions', function () {
