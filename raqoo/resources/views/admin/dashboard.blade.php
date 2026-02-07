@@ -7,6 +7,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>管理ダッシュボード - Raqoo</title>
     <link rel="stylesheet" href="{{ asset('admin/dashboard.css') }}">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
 <body>
@@ -19,7 +21,12 @@
         </nav>
         <form class="logout-form" action="{{ route('admin.logout') }}" method="POST">
             @csrf
-            <button class="logout-btn" type="submit">ログアウト</button>
+            <button class="logout-btn" type="submit">
+                <span class="logout-logo">
+                    <ion-icon name="log-out-outline"></ion-icon>
+                </span>
+                <span class="logout-text">ログアウト</span>
+            </button>
         </form>
         <button class="notification-btn" id="requestToggle">
             <span class="icon">🔔</span>
