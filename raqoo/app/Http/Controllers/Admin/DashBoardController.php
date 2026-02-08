@@ -37,6 +37,14 @@ class DashBoardController extends Controller
         return view('admin.dashboard', compact('rooms', 'periods', 'reservations'));
     }
 
+    // 管理者 教室管理一覧
+    public function roomsIndex()
+    {
+        $rooms = Room::orderBy('id')->get();
+
+        return view('admin.rooms-index', compact('rooms'));
+    }
+
     private function groupReservations($reservations)
     {
         $grouped = [];
