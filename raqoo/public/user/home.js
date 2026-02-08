@@ -37,31 +37,33 @@ document.addEventListener("DOMContentLoaded", () => {
   // 教室ステータスをサーバーから取得して更新
   function updateRoomStatuses(date) {
     // --- ステータス表示のリセット処理 ---
-    // 通信待ちの間、一旦すべて「利用可能」表示にリセットする
+    // APIレスポンスを待つ間、ローディング状態にする
     document.querySelectorAll('.room-group').forEach((roomGroup) => {
       roomGroup.querySelectorAll('.time-card').forEach((card) => {
-        // ★修正1：classNameでの全上書きをやめ、classListを使って target-period を保持する
-        card.classList.remove('unavailable');
-        card.classList.add('available');
+        // ステータスクラスはAPIレスポンス後に設定するため、ここでは削除のみ
+        card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable');
 
         const availableLabel = card.querySelector('.available-label');
         const unavailableLabel = card.querySelector('.unavailable-label');
         const reserveBtn = card.querySelector('.reserve-btn');
 
+        // ローディング中の表示
         if (availableLabel) {
-          availableLabel.style.display = '';
-          availableLabel.textContent = '利用可能';
+          availableLabel.style.display = 'none';
         }
-        if (unavailableLabel) unavailableLabel.style.display = 'none';
-        
+        if (unavailableLabel) {
+          unavailableLabel.style.display = '';
+          unavailableLabel.textContent = '読み込み中...';
+        }
         if (reserveBtn) {
-          reserveBtn.style.display = '';
+          reserveBtn.style.display = 'none';
+        }
 
-          // ★修正3：予約ボタンのリンク先（href）に含まれる日付を、新しい日付に書き換える
+        // 予約ボタンのリンク先（href）に含まれる日付を、新しい日付に書き換える
+        if (reserveBtn) {
           let href = reserveBtn.getAttribute('href');
           if (href) {
             // URLエンコードされた日付 (date%3DYYYY-MM-DD) と 通常の日付 (date=YYYY-MM-DD) の両方を置換
-            // ※ Laravelの route() で生成されたURLは通常エンコードされています
             href = href.replace(/date%3D\d{4}-\d{2}-\d{2}/g, `date%3D${date}`);
             href = href.replace(/date=\d{4}-\d{2}-\d{2}/g, `date=${date}`);
             reserveBtn.setAttribute('href', href);
@@ -86,19 +88,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const status = statusData ? statusData.status : 'available';
 
-            // ★修正2：ここもclassListを使って target-period を保持する
-            card.classList.remove('available', 'unavailable');
-            if (status === 'available') {
-              card.classList.add('available');
-            } else {
-              card.classList.add('unavailable');
-            }
+            // デバッグ用ログ
+            // console.log(`Room ${roomId}, Period ${period}: status = "${status}"`);
+
+            // ステータス別のCSSクラスを設定（target-periodは保持）
+            card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable');
+            card.classList.add(status);
 
             const availableLabel = card.querySelector('.available-label');
             const unavailableLabel = card.querySelector('.unavailable-label');
             const reserveBtn = card.querySelector('.reserve-btn');
 
             if (status === 'available') {
+              // 利用可能：予約ボタン表示
               if (availableLabel) {
                 availableLabel.style.display = '';
                 availableLabel.textContent = '利用可能';
@@ -110,15 +112,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 reserveBtn.style.display = '';
               }
             } else {
+              // 利用不可：ステータスラベル表示
               if (availableLabel) {
                 availableLabel.style.display = 'none';
               }
               if (unavailableLabel) {
                 unavailableLabel.style.display = '';
-                unavailableLabel.textContent =
-                  status === 'pending' ? '申請中' :
-                  status === 'in_use' ? '利用中' :
-                  status === 'reserved' ? '予約済み' : '利用不可';
+                // ステータスに応じたラベルテキスト
+                const statusLabels = {
+                  'pending': '申請中',
+                  'reserved': '予約済み',
+                  'in_use': '利用中',
+                  'unavailable': '利用不可',
+                  // TODO:授業が入ってたら授業名表示
+                };
+
+                // 授業が入っていたら最優先で表示
+                const label = statusData?.lesson_title ?? statusLabels[status] ?? '利用不可';
+                unavailableLabel.textContent = label;
               }
               if (reserveBtn) {
                 reserveBtn.style.display = 'none';
