@@ -14,10 +14,19 @@ class SignupController extends Controller
 
         $request->validate([
             'email' => 'required|string|max:255|unique:users',
-            'password' => 'required|min:6',
+            'password' => 'required|min:6',// パスワードは英語と数字混ぜる
             'name' => 'required|string|max:255',
             'student_id' => 'required|string|max:255|unique:users,student_id',
         ]);
+
+        // ドメイン制限
+        $allowedDomains = ['@edu.sba.ac.jp', '@edu.ssm.ac.jp', '@sba.ac.jp', '`ssm.ac.jp'];
+        // ↑登録はtechもしくはssmの学生・先生のみができる
+        $emailDomain = substr(strrchr($request->email, "@"), 0);
+        
+        if (!in_array($emailDomain, $allowedDomains)) {
+            return back()->withErrors(['email' => '無効なメールアドレスです。'])->withInput();
+        }
 
         // ユーザー作成
         $user = \App\Models\User::create([
