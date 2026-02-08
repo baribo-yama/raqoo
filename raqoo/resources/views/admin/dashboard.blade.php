@@ -7,16 +7,28 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>管理ダッシュボード - Raqoo</title>
     <link rel="stylesheet" href="{{ asset('admin/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/cell-detail-modal.css') }}">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
 <body>
     <header class="header">
         <div class="title">Raqoo 管理</div>
         <nav class="menu">
-            <a class="menu-item" href="#">ダッシュボード</a>
-            <a class="menu-item" href="#">教室管理</a>
-            <a class="menu-item" href="#">予約管理</a>
+            <a class="menu-item" href="{{ route('admin.dashboard') }}">ダッシュボード</a>
+            <a class="menu-item" href="{{ route('admin.rooms.index') }}">教室管理</a>
+            <a class="menu-item" href="{{ route('admin.reservations.index') }}">予約管理</a>
         </nav>
+        <form class="logout-form" action="{{ route('admin.logout') }}" method="POST">
+            @csrf
+            <button class="logout-btn" type="submit">
+                <span class="logout-logo">
+                    <ion-icon name="log-out-outline"></ion-icon>
+                </span>
+                <span class="logout-text">ログアウト</span>
+            </button>
+        </form>
         <button class="notification-btn" id="requestToggle">
             <span class="icon">🔔</span>
             <span class="badge" id="reservationBadge">{{ count($reservations) }}</span>
@@ -63,11 +75,16 @@
         </main>
     </div>
 
+
+    <!-- リクエストサイドバー -->
     <div class="request-sidebar" id="requestSidebar">
         <div class="sidebar-header">
             <h3>予約リクエスト</h3>
             <button class="close-btn" id="closeSidebar">✕</button>
         </div>
+
+
+
         <div class="sidebar-content" id="requestList">
             @forelse($reservations as $group)
                 <div class="request-card">
@@ -77,12 +94,12 @@
                     </div>
                     <div class="request-card-info">教室: {{ $group->room->name }}</div>
                     <div class="request-card-info">予約日: {{ $group->date }}</div>
-                    
+
                     {{-- ▼▼▼ 修正：まとめた時限を表示（例: 1~3限） ▼▼▼ --}}
                     <div class="request-card-info" style="font-weight:bold; color:#2563eb;">
                         時限: {{ $group->period }}限
                     </div>
-                    
+
                     <div class="request-card-info">利用目的: {{ $group->purpose }}</div>
 
                     <div class="request-actions">
@@ -113,6 +130,11 @@
     </div>
 
     <div class="overlay" id="overlay"></div>
+
+    <!-- セル詳細モーダル -->
+    @include('admin.cell-detail-modal')
+
     <script src="{{ asset('admin/dashboard.js') }}"></script>
+    <script src="{{ asset('admin/cell-detail-modal.js') }}"></script>
 </body>
 </html>
