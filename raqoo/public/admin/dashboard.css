@@ -50,6 +50,34 @@ body {
     background: rgba(255,255,255,0.1);
 }
 
+.logout-form {
+    margin-right: 12px;
+}
+
+.logout-btn {
+    background: transparent;
+    color: rgba(255,255,255,0.9);
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.logout-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.logout-logo ion-icon {
+    font-size: 18px;
+    color: rgba(255,255,255,0.9);
+    display: block;
+}
+
 /* 通知ボタン */
 .notification-btn {
     position: relative;
