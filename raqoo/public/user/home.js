@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-
   const jaWeek = ["日", "月", "火", "水", "木", "金", "土"];
   const pad2 = (n) => String(n).padStart(2, "0");
   const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   const toMMDD = (d) => `${pad2(d.getMonth() + 1)}/${pad2(d.getDate())}`;
+
+  const isMobile560 = () => window.matchMedia("(max-width: 560px)").matches;
 
   // DOM
   const mainEl = document.querySelector(".date-main");
@@ -14,132 +15,301 @@ document.addEventListener("DOMContentLoaded", () => {
   const prevBtn = document.querySelector(".strip-prev");
   const nextBtn = document.querySelector(".strip-next");
 
+  // --- シートDOM ---
+  const openSheetBtn = document.querySelector("#openStatusSheet");
+  const closeSheetBtn = document.querySelector("#closeStatusSheet");
+  const sheet = document.querySelector("#statusSheet");
+  const sheetBody = document.querySelector("#statusSheetBody");
+
+  const openSheet = () => {
+    document.body.classList.add("sheet-open");
+    sheet?.setAttribute("aria-hidden", "false");
+  };
+  const closeSheet = () => {
+    document.body.classList.remove("sheet-open");
+    sheet?.setAttribute("aria-hidden", "true");
+  };
+
+  // ---------- ステータス表示（日本語＆色用class） ----------
+  function statusMeta(status) {
+    switch (status) {
+      // メインフロー（現在DBに保存されるステータス）
+      case "pending":    return { text: "申請中",   cls: "my-badge pending" };
+      case "reserved":   return { text: "予約済み", cls: "my-badge reserved" };
+      case "in_use":     return { text: "利用中",   cls: "my-badge in_use" };
+      case "finished":   return { text: "利用完了", cls: "my-badge completed" }; // CSSの.completedを使用
+      case "cancelled":  return { text: "キャンセル", cls: "my-badge cancelled" };
+      case "rejected":   return { text: "却下",     cls: "my-badge rejected" }; // 専用の赤色クラス
+
+      // 旧ステータス互換・予備
+      case "approved":   return { text: "予約済み", cls: "my-badge reserved" };
+      case "completed":  return { text: "完了",     cls: "my-badge completed" };
+      default:           return { text: status || "不明", cls: "my-badge other" };
+    }
+  }
+
+  const timeTable = {
+    1: ["09:10", "10:40"],
+    2: ["10:50", "12:20"],
+    3: ["13:00", "14:30"],
+    4: ["14:40", "16:10"],
+    5: ["16:20", "17:50"],
+    6: ["18:00", "19:30"],
+  };
+
+  // ---------- 自分の予約を取得してシート描画 ----------
+  async function renderMyReservationsSheet(dateISO) {
+    if (!sheetBody) return;
+
+    sheetBody.textContent = "読み込み中...";
+
+    try {
+      const res = await fetch(`/user/my-reservations?date=${encodeURIComponent(dateISO)}`, { cache: "no-store" });
+      const rows = await res.json();
+
+      // 優先ソート（予約済み > 申請中 > その他）
+      const priority = (st) => {
+        if (st === "reserved" || st === "approved") return 0;
+        if (st === "pending") return 1;
+        return 9;
+      };
+
+      rows.sort((a, b) => {
+        const pa = priority(a.status);
+        const pb = priority(b.status);
+        if (pa !== pb) return pa - pb;
+        if (a.date === b.date) return (a.period || 0) - (b.period || 0);
+        return String(a.date).localeCompare(String(b.date));
+      });
+
+      // 内容をクリアして再構築（DOM XSS対策）
+      sheetBody.innerHTML = "";
+
+      if (!rows.length) {
+        const emptyDiv = document.createElement("div");
+        emptyDiv.className = "my-empty";
+        emptyDiv.textContent = "この日の予約はありません";
+        sheetBody.appendChild(emptyDiv);
+        return;
+      }
+
+      rows.forEach((r) => {
+        const meta = statusMeta(r.status);
+        const times = timeTable[r.period] || ["--:--", "--:--"];
+        const isApproved = (r.status === "reserved" || r.status === "approved");
+
+        // カード生成
+        const card = document.createElement("div");
+        card.className = `my-card ${isApproved ? "is-approved" : ""}`;
+
+        // 上部 (教室名 + ステータス)
+        const top = document.createElement("div");
+        top.className = "my-top";
+        
+        const roomName = document.createElement("div");
+        roomName.className = "my-room";
+        roomName.textContent = r.room_name || "教室";
+        
+        const statusBadge = document.createElement("span");
+        statusBadge.className = meta.cls;
+        statusBadge.textContent = meta.text;
+
+        top.appendChild(roomName);
+        top.appendChild(statusBadge);
+
+        // 中部 (日付 + 時限)
+        const mid = document.createElement("div");
+        mid.className = "my-mid";
+
+        // 日付項目
+        const dateItem = document.createElement("div");
+        dateItem.className = "my-item";
+        const dateKey = document.createElement("div");
+        dateKey.className = "my-k";
+        dateKey.textContent = "日付";
+        const dateVal = document.createElement("div");
+        dateVal.className = "my-v";
+        dateVal.textContent = r.date;
+        dateItem.appendChild(dateKey);
+        dateItem.appendChild(dateVal);
+
+        // 時限項目
+        const periodItem = document.createElement("div");
+        periodItem.className = "my-item";
+        const periodKey = document.createElement("div");
+        periodKey.className = "my-k";
+        periodKey.textContent = "時限";
+        const periodVal = document.createElement("div");
+        periodVal.className = "my-v";
+        // "1限 " + 時間
+        periodVal.appendChild(document.createTextNode(`${r.period}限 `));
+        const timeSpan = document.createElement("span");
+        timeSpan.className = "my-time";
+        timeSpan.textContent = `${times[0]}-${times[1]}`;
+        periodVal.appendChild(timeSpan);
+        periodItem.appendChild(periodKey);
+        periodItem.appendChild(periodVal);
+
+        mid.appendChild(dateItem);
+        mid.appendChild(periodItem);
+
+        // 下部 (詳細ボタン)
+        const actions = document.createElement("div");
+        actions.className = "my-actions";
+        
+        const detailLink = document.createElement("a");
+        detailLink.className = "my-detail";
+        detailLink.textContent = "詳細を見る";
+        detailLink.href = r.detail_url; // Laravelのroute()で生成されたURLなので安全
+
+        actions.appendChild(detailLink);
+
+        // 全体を組み立て
+        card.appendChild(top);
+        card.appendChild(mid);
+        card.appendChild(actions);
+        sheetBody.appendChild(card);
+      });
+
+    } catch (e) {
+      console.error(e);
+      sheetBody.innerHTML = "";
+      const errDiv = document.createElement("div");
+      errDiv.className = "my-empty";
+      errDiv.textContent = "取得に失敗しました";
+      sheetBody.appendChild(errDiv);
+    }
+  }
+
+  // ---------- シート開閉 ----------
+  if (isMobile560()) {
+    openSheetBtn?.addEventListener("click", () => {
+      // 開いた瞬間にその日の予約を読み込み
+      const iso = dateInput?.value ? dateInput.value : toISO(new Date());
+      renderMyReservationsSheet(iso);
+      openSheet();
+    });
+
+    closeSheetBtn?.addEventListener("click", closeSheet);
+
+    // 日付検索後に自動で開く（date= 付きなら）
+    if (location.search.includes("date=")) {
+      setTimeout(() => {
+        const iso = dateInput?.value ? dateInput.value : toISO(new Date());
+        renderMyReservationsSheet(iso);
+        openSheet();
+      }, 250);
+    }
+  }
+
   // --- 日付の初期化 ---
   let selectedDate;
-
   if (dateInput && dateInput.value) {
-    const [year, month, day] = dateInput.value.split('-').map(Number);
+    const [year, month, day] = dateInput.value.split("-").map(Number);
     selectedDate = new Date(year, month - 1, day);
   } else {
     selectedDate = new Date();
   }
-
   let startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
 
   // 中央の日付更新
   function updateCenterDisplay(d) {
-    mainEl.textContent = toMMDD(d);
-    wdayEl.textContent = `（${jaWeek[d.getDay()]}）`;
+    if (mainEl) mainEl.textContent = toMMDD(d);
+    if (wdayEl) wdayEl.textContent = `（${jaWeek[d.getDay()]}）`;
     if (dateInput) dateInput.value = toISO(d);
+
+    // 教室カードの状態更新（ここは既存通り）
     updateRoomStatuses(toISO(d));
+
+    // シートが開いてるなら、中身もその日付に更新
+    if (document.body.classList.contains("sheet-open") && isMobile560()) {
+      renderMyReservationsSheet(toISO(d));
+    }
   }
 
   // 教室ステータスをサーバーから取得して更新
   function updateRoomStatuses(date) {
     // --- ステータス表示のリセット処理 ---
-    // APIレスポンスを待つ間、ローディング状態にする
     document.querySelectorAll('.room-group').forEach((roomGroup) => {
       roomGroup.querySelectorAll('.time-card').forEach((card) => {
-        // ステータスクラスはAPIレスポンス後に設定するため、ここでは削除のみ
         card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable');
 
-        const availableLabel = card.querySelector('.available-label');
-        const unavailableLabel = card.querySelector('.unavailable-label');
-        const reserveBtn = card.querySelector('.reserve-btn');
+        const availableLabel = card.querySelector(".available-label");
+        const unavailableLabel = card.querySelector(".unavailable-label");
+        const reserveBtn = card.querySelector(".reserve-btn");
 
         // ローディング中の表示
-        if (availableLabel) {
-          availableLabel.style.display = 'none';
-        }
+        if (availableLabel) availableLabel.style.display = 'none';
         if (unavailableLabel) {
           unavailableLabel.style.display = '';
           unavailableLabel.textContent = '読み込み中...';
         }
-        if (reserveBtn) {
-          reserveBtn.style.display = 'none';
-        }
+        if (reserveBtn) reserveBtn.style.display = 'none';
 
         // 予約ボタンのリンク先（href）に含まれる日付を、新しい日付に書き換える
         if (reserveBtn) {
           let href = reserveBtn.getAttribute('href');
           if (href) {
-            // URLエンコードされた日付 (date%3DYYYY-MM-DD) と 通常の日付 (date=YYYY-MM-DD) の両方を置換
             href = href.replace(/date%3D\d{4}-\d{2}-\d{2}/g, `date%3D${date}`);
             href = href.replace(/date=\d{4}-\d{2}-\d{2}/g, `date=${date}`);
-            reserveBtn.setAttribute('href', href);
+            reserveBtn.setAttribute("href", href);
           }
         }
       });
     });
-    // --- リセット処理ここまで ---
 
-    fetch(`/user/room-status?date=${date}`)
-      .then(response => response.json())
-      .then(data => {
-        document.querySelectorAll('.room-group').forEach((roomGroup, roomIndex) => {
+    fetch(`/user/room-status?date=${date}`, { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => {
+        document.querySelectorAll(".room-group").forEach((roomGroup) => {
           const roomId = roomGroup.dataset.roomId;
 
-          roomGroup.querySelectorAll('.time-card').forEach((card, periodIndex) => {
-            const period = periodIndex + 1;
+          roomGroup.querySelectorAll(".time-card").forEach((card) => {
+            const period = Number(card.dataset.period);
 
             const statusData = data.find(
-              item => item.room_id == roomId && item.period == period
+              (item) => item.room_id == roomId && Number(item.period) === period
             );
 
-            const status = statusData ? statusData.status : 'available';
+            const status = statusData ? statusData.status : "available";
 
-            // デバッグ用ログ
-            // console.log(`Room ${roomId}, Period ${period}: status = "${status}"`);
-
-            // ステータス別のCSSクラスを設定（target-periodは保持）
+            // ステータス別のCSSクラスを設定
             card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable');
             card.classList.add(status);
 
-            const availableLabel = card.querySelector('.available-label');
-            const unavailableLabel = card.querySelector('.unavailable-label');
-            const reserveBtn = card.querySelector('.reserve-btn');
+            const availableLabel = card.querySelector(".available-label");
+            const unavailableLabel = card.querySelector(".unavailable-label");
+            const reserveBtn = card.querySelector(".reserve-btn");
 
             if (status === 'available') {
-              // 利用可能：予約ボタン表示
+              // 利用可能
               if (availableLabel) {
-                availableLabel.style.display = '';
-                availableLabel.textContent = '利用可能';
+                availableLabel.style.display = "";
+                availableLabel.textContent = "利用可能";
               }
-              if (unavailableLabel) {
-                unavailableLabel.style.display = 'none';
-              }
-              if (reserveBtn) {
-                reserveBtn.style.display = '';
-              }
+              if (unavailableLabel) unavailableLabel.style.display = "none";
+              if (reserveBtn) reserveBtn.style.display = "";
             } else {
-              // 利用不可：ステータスラベル表示
-              if (availableLabel) {
-                availableLabel.style.display = 'none';
-              }
+              // 利用不可
+              if (availableLabel) availableLabel.style.display = 'none';
               if (unavailableLabel) {
                 unavailableLabel.style.display = '';
-                // ステータスに応じたラベルテキスト
                 const statusLabels = {
                   'pending': '申請中',
                   'reserved': '予約済み',
                   'in_use': '利用中',
                   'unavailable': '利用不可',
-                  // TODO:授業が入ってたら授業名表示
                 };
-
-                // 授業が入っていたら最優先で表示
+                // 授業名があればそれを優先表示
                 const label = statusData?.lesson_title ?? statusLabels[status] ?? '利用不可';
                 unavailableLabel.textContent = label;
               }
-              if (reserveBtn) {
-                reserveBtn.style.display = 'none';
-              }
+              if (reserveBtn) reserveBtn.style.display = 'none';
             }
-
           });
         });
       })
-      .catch(error => console.error('ステータス取得エラー:', error));
+      .catch((error) => console.error("ステータス取得エラー:", error));
   }
 
   // 7つのタブ表示
@@ -164,46 +334,39 @@ document.addEventListener("DOMContentLoaded", () => {
   updateCenterDisplay(selectedDate);
   renderStrip();
 
-  // タブクリックで中央更新
-  tabs.forEach(tab => {
+  // タブクリック
+  tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       const iso = tab.dataset.date;
       if (!iso) return;
-
       const [year, month, day] = iso.split("-").map(Number);
       selectedDate = new Date(year, month - 1, day);
-
       updateCenterDisplay(selectedDate);
       startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
       renderStrip();
     });
   });
 
-  // 前へ
+  // 前へ・次へボタン
   prevBtn?.addEventListener("click", () => {
     selectedDate = new Date(selectedDate.getTime() - 86400000);
     startDate = new Date(startDate.getTime() - 86400000);
-
     updateCenterDisplay(selectedDate);
     renderStrip();
   });
 
-  // 次へ
   nextBtn?.addEventListener("click", () => {
     selectedDate = new Date(selectedDate.getTime() + 86400000);
     startDate = new Date(startDate.getTime() + 86400000);
-
     updateCenterDisplay(selectedDate);
     renderStrip();
   });
 
-  // 入力フォーム（日付変更）
+  // 日付入力欄変更
   dateInput?.addEventListener("change", () => {
-    const [year, month, day] = dateInput.value.split('-').map(Number);
+    const [year, month, day] = dateInput.value.split("-").map(Number);
     const d = new Date(year, month - 1, day);
-
     if (isNaN(d)) return;
-
     selectedDate = d;
     updateCenterDisplay(selectedDate);
     startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
