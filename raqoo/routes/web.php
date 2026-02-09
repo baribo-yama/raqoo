@@ -133,4 +133,7 @@ Route::middleware('auth')->group(function () {
 
     // 同意POST
     Route::post('/precautions/agree', [PrecautionsController::class, 'agree'])->name('user.precautions.agree');
-});
+
+    // 自分の予約一覧取得 (JSON)
+// Copilot修正: コメント削除、ルート名統一、クラスエイリアス統一
+Route::get('/user/my-reservations', [UserReservationController::class, 'myReservations'])>middleware('auth') ->name('user.reservations.my');
