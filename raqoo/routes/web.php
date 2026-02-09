@@ -71,9 +71,6 @@ Route::post('/admin/reservations/cancel', [RoomStatusController::class, 'cancelR
     ->middleware('auth:admin');
 
 
-
-
-
 // ユーザー向け教室ステータス更新API
 Route::get('/user/room-status', [UserRoomStatusController::class, 'getStatus'])
     ->middleware('auth')
@@ -148,3 +145,10 @@ Route::get('/precautions', [PrecautionsController::class, 'show'])
 Route::post('/precautions/agree', [PrecautionsController::class, 'agree'])
     ->middleware('auth')
     ->name('user.precautions.agree');
+
+// 自分の予約一覧取得 (JSON)
+// Copilot修正: コメント削除、ルート名統一、クラスエイリアス統一
+Route::get('/user/my-reservations',
+ [UserReservationController::class, 'myReservations']
+)->middleware('auth')
+ ->name('user.reservations.my');
