@@ -71,9 +71,6 @@ Route::post('/admin/reservations/cancel', [RoomStatusController::class, 'cancelR
     ->middleware('auth:admin');
 
 
-
-
-
 // ユーザー向け教室ステータス更新API
 Route::get('/user/room-status', [UserRoomStatusController::class, 'getStatus'])
     ->middleware('auth')
