@@ -17,6 +17,9 @@
         {{-- ナビゲーション --}}
         <x-user.sidebar />
 
+        {{-- ★追加：サイドバー外タップで閉じる用（スマホ/タブレットでのみ表示） --}}
+        <div class="m-backdrop" id="navBackdrop" aria-hidden="true"></div>
+
         {{-- 右：メインコンテンツ --}}
         <div class="content-area">
 
@@ -42,18 +45,23 @@
 
             <div class="max-w-4xl mx-auto mb-8">
                 <form action="{{ route('user.home.index') }}" method="GET" class="search-card">
-                    
+
                     {{-- 検索しても階数指定を維持するための隠しフィールド --}}
                     @if(request('floor'))
                         <input type="hidden" name="floor" value="{{ request('floor') }}">
                     @endif
 
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-                        
+
                         <div class="md:col-span-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">日付</label>
-                            <input type="date" id="dateInput" name="date" value="{{ $date ?? '' }}" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            <input
+                                type="date"
+                                id="dateInput"
+                                name="date"
+                                value="{{ $date ?? '' }}"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                            >
                         </div>
 
                         <div class="md:col-span-4">
@@ -77,12 +85,20 @@
 
                         <div class="md:col-span-2">
                             <label class="block text-sm font-bold text-gray-700 mb-2">利用人数</label>
-                            <input type="number" name="people" placeholder="0" value="{{ $people ?? '' }}" 
-                                class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                            <input
+                                type="number"
+                                name="people"
+                                placeholder="0"
+                                value="{{ $people ?? '' }}"
+                                class="w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                            >
                         </div>
 
                         <div class="md:col-span-2">
-                            <button type="submit" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
+                            <button
+                                type="submit"
+                                class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-200"
+                            >
                                 検索
                             </button>
                         </div>
@@ -139,6 +155,23 @@
                     ･･･利用可能
                 </div>
 
+                {{-- ★スマホだけ表示（<=560px）予約状況を見るボタン --}}
+                <button type="button" class="m-status-btn" id="openStatusSheet">
+                    予約状況を見る
+                </button>
+
+                {{-- ★スマホだけ出る（<=560px）予約状況シート
+                     ※タイトルは「予約状況」のままOK
+                     ※中身はJSが /user/my-reservations から「自分の予約一覧」を描画する
+                --}}
+                <div class="m-status-sheet" id="statusSheet" aria-hidden="true">
+                    <div class="sheet-head">
+                        <div class="sheet-title">予約状況</div>
+                        <button type="button" class="sheet-close" id="closeStatusSheet" aria-label="閉じる">×</button>
+                    </div>
+                    <div class="sheet-body" id="statusSheetBody">読み込み中...</div>
+                </div>
+
             </div>
 
             @if (session('success'))
@@ -157,22 +190,20 @@
             <div class="floor-filter-container">
                 <div class="floor-filter-label">階数で絞り込み</div>
                 <div class="floor-filter-list">
-                    {{-- 「すべて」ボタン: floor クエリのみを fullUrlWithoutQuery('floor') で外し、floor が未指定（空）のとき active 扱いとする --}}
-                    <a href="{{ request()->fullUrlWithoutQuery('floor') }}" 
+                    <a href="{{ request()->fullUrlWithoutQuery('floor') }}"
                        class="floor-chip {{ (request()->query('floor') ?? '') === '' ? 'active' : '' }}">
                         すべて
                     </a>
 
-                    {{-- 1階〜5階ボタン --}}
                     @for($f = 1; $f <= 5; $f++)
-                        <a href="{{ request()->fullUrlWithQuery(['floor' => $f]) }}" 
+                        <a href="{{ request()->fullUrlWithQuery(['floor' => $f]) }}"
                            class="floor-chip {{ request()->query('floor') === (string)$f ? 'active' : '' }}">
                             {{ $f }}F
                         </a>
                     @endfor
                 </div>
             </div>
-            
+
             {{-- 教室カード --}}
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
@@ -202,17 +233,15 @@
                                 $isTarget = isset($startPeriod) || isset($endPeriod);
                             @endphp
 
-                            <div class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }} {{ $isTarget ? 'target-period' : '' }}"
-                                data-period="{{ $period }}">
+                            <div
+                                class="time-card {{ $status === 'available' ? 'available' : 'unavailable' }} {{ $isTarget ? 'target-period' : '' }}"
+                                data-period="{{ $period }}"
+                            >
                                 <div class="time-main">{{ $times[$period][0] }}</div>
                                 <div class="time-sub">~{{ $times[$period][1] }}</div>
                                 <div class="floor">{{ $room->floor }}階</div>
 
-                                {{-- ▼▼▼ 修正箇所：常にHTMLを出力し、@if でstyle属性そのものを出力制御する ▼▼▼ --}}
-
-                                {{-- 1. 利用可能ラベル --}}
-                                <div class="available-label" 
-                                     @if($status !== 'available') style="display: none;" @endif>
+                                <div class="available-label" @if($status !== 'available') style="display: none;" @endif>
                                     利用可能
                                 </div>
 
@@ -224,18 +253,17 @@
                                     ], false);
                                 @endphp
 
-                                {{-- 2. 予約ボタン --}}
-                                <a href="{{ route('user.precautions', ['next' => $nextPath]) }}"
-                                   class="reserve-btn"
-                                   data-room-id="{{ $room->id }}"
-                                   data-period="{{ $period }}"
-                                   @if($status !== 'available') style="display: none;" @endif>
+                                <a
+                                    href="{{ route('user.precautions', ['next' => $nextPath]) }}"
+                                    class="reserve-btn"
+                                    data-room-id="{{ $room->id }}"
+                                    data-period="{{ $period }}"
+                                    @if($status !== 'available') style="display: none;" @endif
+                                >
                                     予約
                                 </a>
 
-                                {{-- 3. 利用不可ラベル --}}
-                                <div class="unavailable-label" 
-                                     @if($status === 'available') style="display: none;" @endif>
+                                <div class="unavailable-label" @if($status === 'available') style="display: none;" @endif>
                                     @if($status === 'pending')
                                         申請中
                                     @elseif($status === 'reserved')
@@ -246,22 +274,20 @@
                                         利用不可
                                     @endif
                                 </div>
-                                {{-- ▲▲▲ 修正箇所ここまで ▲▲▲ --}}
-                                
+
                             </div>
                         @endfor
                     </div>
                 </div>
 
-                {{-- 教室間の区切り線（スマホのみ表示） --}}
                 @if (!$loop->last)
                     <div class="w-full mx-auto my-8 border-b-2 border-gray-400 md:hidden max-w-[720px]"></div>
                 @endif
 
             @endforeach
 
-        </div> {{-- /.content-area --}}
-    </div> {{-- /.layout --}}
+        </div>
+    </div>
 
     <script src="{{ asset('user/home.js') }}"></script>
 </body>
