@@ -102,47 +102,38 @@ Route::get('/admin/notifications', function() {
 
 
 /*======= ユーザー画面 ========*/
-// ユーザーホーム
-Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index');
+Route::middleware('auth')->group(function () {
+    // ユーザーホーム
+    Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index');
 
-// 夜間注意事項ページ
-Route::get('/night-precautions', function () {
-    return view('user.night-precautions');
-})->name('user.night.precautions');
+    // 夜間注意事項ページ
+    Route::get('/night-precautions', function () {
+        return view('user.night-precautions');
+    })->name('user.night.precautions');
 
-// 注意事項ページ
-Route::get('/precautions', function () {
-    return view('user.precautions');
-})->name('user.precautions');
+    // ユーザー予約関連
+    Route::get('/reservations/create', [UserReservationController::class, 'create'])->name('user.reservations.create');
+    Route::post('/reservations/check', [UserReservationController::class, 'check'])->name('user.reservations.check'); // 確認画面
+    Route::post('/reservations', [UserReservationController::class, 'store'])->name('user.reservations.store');       // 保存処理
+    Route::get('/reservations', [UserReservationController::class, 'index'])->name('user.reservations.index');
+    Route::get('/reservations/{reservation}', [UserReservationController::class, 'show'])->name('user.reservations.show');
+    Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
+    Route::get('/reservations-history', [UserReservationController::class, 'history'])->name('user.reservations.history');
 
-// ユーザー予約関連
-Route::get('/reservations/create', [UserReservationController::class, 'create'])->name('user.reservations.create');
-Route::post('/reservations/check', [UserReservationController::class, 'check'])->name('user.reservations.check'); // 確認画面
-Route::post('/reservations', [UserReservationController::class, 'store'])->name('user.reservations.store');       // 保存処理
-Route::get('/reservations', [UserReservationController::class, 'index'])->name('user.reservations.index');
-Route::get('/reservations/{reservation}', [UserReservationController::class, 'show'])->name('user.reservations.show');
-Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
-Route::get('/reservations-history', [UserReservationController::class, 'history'])->name('user.reservations.history');
+    // ユーザー通知
+    Route::get('/notifications', [UserNotificationController::class, 'index'])->name('user.notifications.index');
 
-// ユーザー通知
-Route::get('/notifications', [UserNotificationController::class, 'index'])->name('user.notifications.index');
+    // ユーザーインフォメーション画面
+    Route::get('/info', function () {
+        return view('user.info');
+    });
 
-// ユーザーインフォメーション画面
-Route::get('/info', function () {
-    return view('user.info');
+    // 利用規約
+    Route::get('/terms', [TermsController::class, 'index'])->name('user.terms');
+
+    // 予約前 注意事項
+    Route::get('/precautions', [PrecautionsController::class, 'show'])->name('user.precautions');
+
+    // 同意POST
+    Route::post('/precautions/agree', [PrecautionsController::class, 'agree'])->name('user.precautions.agree');
 });
-
-// 利用規約
-Route::get('/terms', [TermsController::class, 'index'])
-    ->middleware('auth')
-    ->name('user.terms');
-
-// 予約前 注意事項
-Route::get('/precautions', [PrecautionsController::class, 'show'])
-    ->middleware('auth')
-    ->name('user.precautions');
-
-// 同意POST
-Route::post('/precautions/agree', [PrecautionsController::class, 'agree'])
-    ->middleware('auth')
-    ->name('user.precautions.agree');
