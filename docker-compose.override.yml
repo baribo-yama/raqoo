@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  nginx-appli4:
+    ports: []         # ローカル公開を無効化
+    networks:
+      - web-proxy
+
+networks:
+  web-proxy:
+    external: true
