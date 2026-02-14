@@ -13,7 +13,6 @@
     --shadow: 0 8px 22px rgba(0, 0, 0, .08);
   }
 
-  /* 既存のスマホ用ヘッダー・UI等はそのまま維持 */
   body.nav-open .nav-toggle, body.nav-open .m-hamburger { display: none !important; }
   .m-hamburger { display: block !important; position: absolute; top: 15px; right: 16px; z-index: 1100 !important; cursor: pointer; font-size: 24px; color: var(--blue); }
   .m-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 900 !important; }
@@ -59,17 +58,7 @@
   .sheet-cell { border-radius: 10px !important; padding: 8px 0 !important; text-align: center !important; font-weight: 900 !important; font-size: 12px !important; border: 1px solid #e6e9ef !important; }
   .sheet-ok { background:#eff6ff !important; }
   .sheet-ng { background:#f3f4f6 !important; color:#6b7280 !important; }
-
-  /* スマホ版 階数フィルターの調整 */
-  .floor-filter-container { 
-      display: flex !important; 
-      flex-direction: column !important; 
-      align-items: flex-start !important; 
-      gap: 10px !important; 
-      margin: 24px 0 20px !important; 
-      width: 100% !important; 
-      padding: 0 !important;
-  }
+  .floor-filter-container { display: flex !important; flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; margin: 24px 0 20px !important; width: 100% !important; padding: 0 !important; }
   .floor-filter-label { font-size: 14px !important; margin-left: 2px !important; color: #4b5563 !important; font-weight: 900 !important; }
   .floor-filter-list { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; width: 100% !important; padding: 0 !important; }
   .floor-chip { flex: 0 0 auto !important; height: 38px !important; padding: 0 16px !important; font-size: 13px !important; border-radius: 19px !important; margin-bottom: 4px !important; }
@@ -92,7 +81,6 @@
 
   .room-title { background: transparent !important; color: #111 !important; font-size: 20px !important; font-weight: 900 !important; padding: 6px 2px 6px !important; margin: 0 !important; }
   
-  /* カード全体を縦一列に */
   .room-times { 
       display: flex !important; 
       flex-direction: column !important; 
@@ -103,7 +91,6 @@
       border: none !important; 
   }
 
-  /* ★カード本体（スマホ版は横長リスト） */
   .time-card {
       width: 100% !important;
       height: auto !important;
@@ -119,14 +106,18 @@
   }
   .time-card:hover { transform: none !important; box-shadow: 0 4px 10px rgba(0,0,0,0.03) !important; }
 
-  /* ★視認性向上：ステータス別のカード背景・枠色付け（パッと見で分かりやすく） */
+  /* ★PC版と同様に、ロック時はカード自体のクリックも無効化する（Copilot指摘対応） */
+  .time-card.locked {
+      pointer-events: none !important;
+      cursor: default !important;
+  }
+
   .time-card.available { background: #fff !important; border: 1px solid #e6e9ef !important; }
   .time-card.pending { border: 2px solid #fcd34d !important; background: #fffbeb !important; }
   .time-card.reserved { border: 2px solid #60a5fa !important; background: #eff6ff !important; }
   .time-card.in_use { border: 2px solid #34d399 !important; background: #ecfdf5 !important; }
   .time-card.unavailable { border: 1px solid #e5e7eb !important; background: #f9fafb !important; opacity: 0.8 !important;}
 
-  /* 左側の限数ボックス */
   .sp-period-box {
       display: flex !important;
       flex-direction: column !important;
@@ -142,7 +133,6 @@
   .sp-period-box .p-num { font-size: 18px !important; font-weight: 900 !important; color: #4b5563 !important; line-height: 1 !important; }
   .sp-period-box .p-text { font-size: 10px !important; font-weight: bold !important; color: #9ca3af !important; margin-top: 2px !important; }
 
-  /* 中央の情報エリア */
   .sp-info-box {
       flex: 1 !important;
       display: flex !important;
@@ -152,7 +142,6 @@
       padding: 0 14px !important;
   }
 
-  /* 時間の表示 */
   .sp-time-row {
       display: flex !important;
       align-items: center !important;
@@ -164,7 +153,6 @@
   }
   .sp-time-row .tilde { margin: 0 4px !important; color: #6b7280 !important;}
 
-  /* ステータス表示 */
   .sp-status-area { font-size: 12px !important; font-weight: 900 !important; margin-top: 2px !important;}
   
   .sp-status-area .available-label { color: #3b82f6 !important; background: #eff6ff !important; padding: 2px 8px !important; border-radius: 10px !important;}
@@ -173,7 +161,6 @@
   .time-card.reserved .unavailable-label { color: #2563eb !important; background: #dbeafe !important; padding: 2px 8px !important; border-radius: 10px !important;}
   .time-card.in_use .unavailable-label { color: #059669 !important; background: #d1fae5 !important; padding: 2px 8px !important; border-radius: 10px !important;}
 
-  /* 右側のボタンエリア */
   .sp-action-box { flex-shrink: 0 !important; }
   .sp-reserve-btn {
       display: inline-block !important; 
@@ -186,7 +173,6 @@
       box-shadow: 0 2px 6px rgba(76, 133, 182, 0.3) !important;
   }
   
-  /* ★バグ完全修正：予約不可の時にボタンを確実に隠す */
   .time-card.unavailable .sp-reserve-btn,
   .time-card.pending .sp-reserve-btn,
   .time-card.reserved .sp-reserve-btn,
@@ -195,4 +181,4 @@
       display: none !important; 
   }
 
-} /* ← スマホ用CSSはここで閉じる */
+}

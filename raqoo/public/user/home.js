@@ -212,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateRoomStatuses(date) {
     document.querySelectorAll('.room-group').forEach((roomGroup) => {
       roomGroup.querySelectorAll('.time-card').forEach((card) => {
+        // ★Copilot指摘対応：初期化時に locked クラスも確実に削除する
         card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable', 'locked');
 
         const availableLabel = card.querySelector(".available-label");
@@ -225,13 +226,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (reserveBtn) reserveBtn.style.display = 'none';
 
-        // ★安全なURL書き換え処理★
+        // ★Copilot指摘対応：安全なURL書き換え処理（バリデーション追加）
         if (reserveBtn) {
-          let href = reserveBtn.getAttribute('href') || card.dataset.baseHref;
-          if (href) {
+          let href = reserveBtn.getAttribute('href') || reserveBtn.getAttribute('data-href') || card.dataset.baseHref;
+          // URLが文字列として正しく取得できているかチェック
+          if (href && typeof href === 'string') {
             href = href.replace(/date%3D\d{4}-\d{2}-\d{2}/g, `date%3D${date}`);
             href = href.replace(/date=\d{4}-\d{2}-\d{2}/g, `date=${date}`);
-            reserveBtn.setAttribute("href", href);
+            
+            if (reserveBtn.hasAttribute('href')) reserveBtn.setAttribute("href", href);
+            if (reserveBtn.hasAttribute('data-href')) reserveBtn.setAttribute("data-href", href);
             
             card.dataset.baseHref = href;
             if (card.hasAttribute('href')) {
@@ -253,7 +257,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const statusData = data.find((item) => item.room_id == roomId && Number(item.period) === period);
             const status = statusData ? statusData.status : "available";
 
-            card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable');
+            // ★Copilot指摘対応：ステータス更新時にも locked を削除してから追加する
+            card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable', 'locked');
             card.classList.add(status);
 
             // PC用の要素群
@@ -279,7 +284,6 @@ document.addEventListener("DOMContentLoaded", () => {
               if (spReserveBtn) spReserveBtn.style.display = "";
               
             } else {
-              // ★バグ防止：利用不可の時はhrefを消去し、物理ロックする★
               card.removeAttribute("href");
               card.classList.add('locked');
 
@@ -289,6 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 'in_use': '利用中',
                 'unavailable': '利用不可',
               };
+              // ※注：textContentへの代入はブラウザによりHTMLエスケープされるためXSSの危険性はありません
               const label = statusData?.lesson_title ?? statusLabels[status] ?? '利用不可';
 
               // PC表示
@@ -304,7 +309,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 spUnavailableLabel.style.display = '';
                 spUnavailableLabel.textContent = label;
               }
-              // スマホ用ボタンも確実に消す
               if (spReserveBtn) spReserveBtn.style.display = 'none';
             }
           });

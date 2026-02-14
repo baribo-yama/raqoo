@@ -81,61 +81,24 @@ body.with-sidebar { padding-left: 220px; transition: padding-left 0.25s ease; }
 ========================================= */
 .floor-filter-container { 
     width: 100%;
-    max-width: 1100px; /* 教室カードの横幅(1100px)と完全に一致させる */
-    margin: 40px auto 20px auto; /* 上部の凡例からしっかり距離を取り、カード群のすぐ上に配置 */
+    max-width: 1100px;
+    margin: 40px auto 20px auto; 
     display: flex; 
     align-items: center; 
-    justify-content: flex-start; /* ★左寄せにして「101教室」の文字のラインとピシッと揃える */
+    justify-content: flex-start;
     gap: 16px; 
     padding: 0; 
 }
-.floor-filter-label { 
-    font-size: 15px; 
-    color: #4b5563; 
-    font-weight: 900; 
-    white-space: nowrap; 
-}
-.floor-filter-list { 
-    display: flex; 
-    gap: 10px; 
-    align-items: center; 
-    flex-wrap: wrap; 
-}
-.floor-chip { 
-    display: inline-flex; 
-    align-items: center; 
-    justify-content: center; 
-    height: 38px; 
-    padding: 0 20px; 
-    border-radius: 19px; 
-    background-color: #fff; 
-    color: #4b5563; 
-    font-size: 14px; 
-    font-weight: bold; 
-    text-decoration: none; 
-    border: 1px solid #d1d5db; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
-    transition: all 0.2s ease; 
-    cursor: pointer; 
-}
-.floor-chip:hover { 
-    background-color: #f3f4f6; 
-    transform: translateY(-1px); 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-    color: #1f2937; 
-}
-.floor-chip.active { 
-    background-color: #2F4A6A; 
-    color: #fff; 
-    border-color: #2F4A6A; 
-    box-shadow: 0 4px 10px rgba(47, 74, 106, 0.25); 
-}
+.floor-filter-label { font-size: 15px; color: #4b5563; font-weight: 900; white-space: nowrap; }
+.floor-filter-list { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.floor-chip { display: inline-flex; align-items: center; justify-content: center; height: 38px; padding: 0 20px; border-radius: 19px; background-color: #fff; color: #4b5563; font-size: 14px; font-weight: bold; text-decoration: none; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease; cursor: pointer; }
+.floor-chip:hover { background-color: #f3f4f6; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); color: #1f2937; }
+.floor-chip.active { background-color: #2F4A6A; color: #fff; border-color: #2F4A6A; box-shadow: 0 4px 10px rgba(47, 74, 106, 0.25); }
 
 
 /* =========================================
    ▼▼▼ 教室カード（PC版） ▼▼▼
 ========================================= */
-/* SP/PC 切り替えスイッチ */
 .sp-layout { display: none; }
 .pc-layout {
     display: flex;
@@ -163,7 +126,6 @@ body.with-sidebar { padding-left: 220px; transition: padding-left 0.25s ease; }
     justify-content: space-between;
 }
 
-/* ★PC版の大きなカード全体をボタン化 */
 .time-card {
     flex: 1 1 0;
     min-width: 110px;
@@ -177,12 +139,11 @@ body.with-sidebar { padding-left: 220px; transition: padding-left 0.25s ease; }
     box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     transition: all 0.2s ease;
     cursor: default;
-    position: relative; /* 子要素の絶対配置に必須 */
+    position: relative; 
 }
 
 .time-card:not(.locked) { cursor: pointer; }
 
-/* ホバーエフェクト（利用可能な時だけ浮き上がる） */
 .time-card:hover:not(.locked) {
     background: #47a7f5;
     color: #fff;
@@ -190,17 +151,14 @@ body.with-sidebar { padding-left: 220px; transition: padding-left 0.25s ease; }
     box-shadow: 0 6px 12px rgba(71, 167, 245, 0.2);
 }
 
-/* 鉄壁のバグ防止（利用不可時はクリックをCSSでも完全無効化） */
 .time-card.locked { pointer-events: none !important; }
 
-/* PC版テキストの調整 */
 .pc-layout .time-main { font-size: 32px; font-weight: 900; line-height: 1.1; color: #374151; margin-top: 10px;}
 .time-card:hover:not(.locked) .pc-layout .time-main { color: #fff; }
 
 .pc-layout .time-sub { font-size: 16px; font-weight: bold; color: #6b7280; margin-top: 2px; }
 .time-card:hover:not(.locked) .pc-layout .time-sub { color: #f3f4f6; }
 
-/* ★階数を時間とステータスの間（元の位置）に自然に配置 */
 .pc-layout .floor { 
     font-size: 14px; 
     font-weight: bold;
@@ -210,20 +168,13 @@ body.with-sidebar { padding-left: 220px; transition: padding-left 0.25s ease; }
 }
 .time-card:hover:not(.locked) .pc-layout .floor { color: rgba(255,255,255,0.8); }
 
-/* ステータス */
 .pc-layout .status-area { margin-top: auto; font-size: 15px; font-weight: 900; padding-bottom: 5px; }
 .pc-layout .available-label { color: #3b82f6; }
 .time-card:hover:not(.locked) .pc-layout .available-label { color: #fff; }
 
-/* 予約ボタンの透明フィルム（カード全体を覆う） */
+/* 予約ボタン（PC版はカード全体がリンクのため要素としては非表示） */
 .reserve-btn { display: none; }
-.reserve-btn::after {
-  content: ''; position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 10; border-radius: 8px; cursor: pointer;
-}
 
-/* ステータスごとの色付け（PC版） */
 .time-card.unavailable { background: #f3f4f6; color: #9ca3af; border-color: #e5e7eb; }
 .time-card.unavailable .pc-layout .time-main, .time-card.unavailable .pc-layout .time-sub { color: #9ca3af; }
 
@@ -260,7 +211,6 @@ body.with-sidebar { padding-left: 220px; transition: padding-left 0.25s ease; }
   .m-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 900; }
   body.nav-open .m-backdrop { display: block; }
   
-  /* タブレット時の階数フィルター調整 */
   .floor-filter-container { padding: 0 16px; margin: 30px auto 16px auto; }
 }
 

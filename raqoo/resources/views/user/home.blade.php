@@ -158,7 +158,6 @@
                 </div>
             @endif
 
-            {{-- ▼▼▼ 階数フィルター（配置を美しく修正） ▼▼▼ --}}
             <div class="floor-filter-container">
                 <div class="floor-filter-label">階数で絞り込み</div>
                 <div class="floor-filter-list">
@@ -198,13 +197,11 @@
                                 $linkUrl = route('user.precautions', ['next' => $nextPath]);
                             @endphp
 
-                            {{-- ★ 鉄壁のロック処理：利用不可時は href 自体を出さない --}}
                             <a class="time-card {{ $status }} {{ $isTarget ? 'target-period' : '' }} {{ !$isAvailable ? 'locked' : '' }}"
                                data-period="{{ $period }}"
                                data-base-href="{{ $linkUrl }}"
                                @if($isAvailable) href="{{ $linkUrl }}" @endif
                             >
-                                {{-- ▼▼▼ 【PC表示用】縦長の大きなカードデザイン ▼▼▼ --}}
                                 <div class="pc-layout">
                                     <div class="time-main">{{ $times[$period][0] }}</div>
                                     <div class="time-sub">~{{ $times[$period][1] }}</div>
@@ -219,10 +216,10 @@
                                             @else 利用不可 @endif
                                         </div>
                                     </div>
-                                    <span class="reserve-btn" style="display: none;" href="{{ $linkUrl }}"></span>
+                                    {{-- ★修正：hrefをdata-hrefに変更（無効なHTMLエラーを解消） --}}
+                                    <span class="reserve-btn pc-only" style="display: none;" data-href="{{ $linkUrl }}"></span>
                                 </div>
 
-                                {{-- ▼▼▼ 【スマホ表示用】綺麗で視認性の高いデザイン ▼▼▼ --}}
                                 <div class="sp-layout">
                                     <div class="sp-period-box">
                                         <span class="p-num">{{ $period }}</span>
@@ -245,7 +242,6 @@
                                         </div>
                                     </div>
                                     <div class="sp-action-box">
-                                        {{-- ✕マークは完全削除し、利用可能時のみ「予約する」ボタンを配置 --}}
                                         <span class="sp-reserve-btn" @if(!$isAvailable) style="display: none;" @endif>予約する</span>
                                     </div>
                                 </div>
