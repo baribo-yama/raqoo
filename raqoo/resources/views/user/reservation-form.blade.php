@@ -84,28 +84,32 @@
                                     @for($i = 1; $i <= 6; $i++)
                                         @php
                                             $isOriginal = ($i == $period);
-                                            // すでに予約されているか判定（キャンセル以外）
-                                            $isReserved = in_array($i, $reservedPeriods) && !$isOriginal;
+                                            // 修正点：予約と授業を出し分ける判定ロジック
+                                            $isReservedOnly = in_array($i, $reservedPeriods) && !$isOriginal;
+                                            $isLesson = in_array($i, $lessonPeriods) && !$isOriginal;
+                                            $isDisabledSlot = ($isReservedOnly || $isLesson);
                                         @endphp
 
                                         <label class="period-label flex items-center space-x-2 p-3 rounded border transition-colors duration-200 
                                             {{ $isOriginal ? 'bg-blue-100 border-blue-500 cursor-not-allowed' : 'border-gray-200' }}
-                                            {{ $isReserved ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50' }}"
+                                            {{ $isDisabledSlot ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50' }}"
                                             id="label-{{ $i }}">
                                             
                                             <input type="checkbox" name="periods[]" value="{{ $i }}" 
                                                 class="period-checkbox form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
                                                 data-period="{{ $i }}"
-                                                data-reserved="{{ $isReserved ? 1 : 0 }}"
+                                                data-reserved="{{ $isDisabledSlot ? 1 : 0 }}"
                                                 data-original="{{ $isOriginal ? 1 : 0 }}"
                                                 {{ $isOriginal ? 'checked disabled' : '' }}
-                                                {{ $isReserved ? 'disabled' : '' }}>
+                                                {{ $isDisabledSlot ? 'disabled' : '' }}>
                                             
-                                            <span class="font-medium {{ $isReserved ? 'text-gray-400 line-through' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
+                                            <span class="font-medium {{ $isDisabledSlot ? 'text-gray-400 line-through' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
                                                 {{ $i }}限
                                                 @if($isOriginal)
                                                     <span class="text-xs ml-1 font-normal text-blue-600">(選択中)</span>
-                                                @elseif($isReserved)
+                                                @elseif($isLesson)
+                                                    <span class="text-xs ml-1 font-normal text-red-500 font-bold">(授業)</span>
+                                                @elseif($isReservedOnly)
                                                     <span class="text-xs ml-1 font-normal text-red-400">(予約済)</span>
                                                 @endif
                                             </span>
@@ -231,7 +235,7 @@
                     // 1. メインのコマは何もしない（常にdisabled checked）
                     if (isOriginal) return;
 
-                    // 2. すでに予約済みのコマは常に無効
+                    // 2. すでに予約済み（または授業）のコマは常に無効
                     if (isReserved) {
                         cb.disabled = true;
                         // デザイン調整
