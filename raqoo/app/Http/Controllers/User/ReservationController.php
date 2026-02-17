@@ -77,7 +77,7 @@ class ReservationController extends Controller
         for ($i = 1; $i < count($periods); $i++) {
             if ($periods[$i] - $periods[$i - 1] !== 1) {
                 return back()
-                    ->withErrors(['periods' => '複数時限を予約する場合は、連続した時限（例：3限と4限）を選択してください。離れた時限（例：3限と5限）はセットで予約できません。'])
+                    ->withErrors(['periods' => '複数時限を予約する場合は、1限・2限・3限のように「連続した時限」のみ選択してください。（例：1限と3限のように間が空く組み合わせは選択できません）もう一度、連続する時限のみを選び直してください。'])
                     ->withInput();
             }
         }
@@ -118,7 +118,7 @@ class ReservationController extends Controller
         for ($i = 1; $i < count($periods); $i++) {
             if ($periods[$i] - $periods[$i - 1] !== 1) {
                 return back()
-                    ->withErrors(['error' => '複数時限を予約する場合は、連続した時限を選択してください。'])
+                    ->withErrors(['error' => '複数時限を予約する場合は、1限・2限・3限のように「連続した時限」のみ選択してください。（例：1限と3限のように間が空く組み合わせは選択できません）もう一度、連続する時限のみを選び直してください。'])
                     ->withInput();
             }
         }

@@ -182,7 +182,8 @@
                         <span style="font-size:0.8em; font-weight:normal; margin-left:10px;">(定員:{{ $room->capacity }}人)</span>
                     </div>
 
-                    <div class="room-times cards-grid">
+                    {{-- 修正箇所1: cards-grid クラスを削除 --}}
+                    <div class="room-times">
                         @for ($period = $loopStart; $period <= $loopEnd; $period++)
                             @php
                                 $status = $room->getStatusForPeriod($displayDate, $period, auth()->id());
@@ -197,10 +198,11 @@
                                 $linkUrl = route('user.precautions', ['next' => $nextPath]);
                             @endphp
 
+                            {{-- 修正箇所3: aria-disabled 属性の追加 --}}
                             <a class="time-card {{ $status }} {{ $isTarget ? 'target-period' : '' }} {{ !$isAvailable ? 'locked' : '' }}"
                                data-period="{{ $period }}"
                                data-base-href="{{ $linkUrl }}"
-                               @if($isAvailable) href="{{ $linkUrl }}" @endif
+                               @if($isAvailable) href="{{ $linkUrl }}" @else aria-disabled="true" @endif
                             >
                                 <div class="pc-layout">
                                     <div class="time-main">{{ $times[$period][0] }}</div>
@@ -208,16 +210,16 @@
                                     <div class="floor pc-only">{{ $room->floor }}階</div>
 
                                     <div class="status-area">
-                                        <div class="available-label" @if(!$isAvailable) style="display: none;" @endif>利用可能</div>
-                                        <div class="unavailable-label" @if($isAvailable) style="display: none;" @endif>
+                                        {{-- 修正箇所2: style="display: none;" をやめ、Tailwindの hidden クラスで制御 --}}
+                                        <div class="available-label {{ !$isAvailable ? 'hidden' : '' }}">利用可能</div>
+                                        <div class="unavailable-label {{ $isAvailable ? 'hidden' : '' }}">
                                             @if($status === 'pending') 申請中
                                             @elseif($status === 'reserved') 予約済み
                                             @elseif($status === 'in_use') 利用中
                                             @else 利用不可 @endif
                                         </div>
                                     </div>
-                                    {{-- ★修正：hrefをdata-hrefに変更（無効なHTMLエラーを解消） --}}
-                                    <span class="reserve-btn pc-only" style="display: none;" data-href="{{ $linkUrl }}"></span>
+                                    <span class="reserve-btn pc-only hidden" data-href="{{ $linkUrl }}"></span>
                                 </div>
 
                                 <div class="sp-layout">
@@ -232,8 +234,9 @@
                                             <span class="time-sub">{{ $times[$period][1] }}</span>
                                         </div>
                                         <div class="sp-status-area">
-                                            <span class="available-label" @if(!$isAvailable) style="display: none;" @endif>利用可能</span>
-                                            <span class="unavailable-label" @if($isAvailable) style="display: none;" @endif>
+                                            {{-- スマホ版も同様に hidden クラスに変更 --}}
+                                            <span class="available-label {{ !$isAvailable ? 'hidden' : '' }}">利用可能</span>
+                                            <span class="unavailable-label {{ $isAvailable ? 'hidden' : '' }}">
                                                 @if($status === 'pending') 申請中
                                                 @elseif($status === 'reserved') 予約済み
                                                 @elseif($status === 'in_use') 利用中
@@ -242,7 +245,8 @@
                                         </div>
                                     </div>
                                     <div class="sp-action-box">
-                                        <span class="sp-reserve-btn" @if(!$isAvailable) style="display: none;" @endif>予約する</span>
+                                        {{-- ボタンの非表示制御も同様 --}}
+                                        <span class="sp-reserve-btn {{ !$isAvailable ? 'hidden' : '' }}">予約する</span>
                                     </div>
                                 </div>
                             </a>

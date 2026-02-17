@@ -219,21 +219,50 @@ document.addEventListener("DOMContentLoaded", () => {
         const unavailableLabel = card.querySelector(".unavailable-label");
         const reserveBtn = card.querySelector(".reserve-btn");
 
-        if (availableLabel) availableLabel.style.display = 'none';
+        // Tailwindクラスを使って非表示に切り替え
+        if (availableLabel) availableLabel.classList.add('hidden');
         if (unavailableLabel) {
-          unavailableLabel.style.display = '';
+          unavailableLabel.classList.remove('hidden');
           unavailableLabel.textContent = '読み込み中...';
         }
-        if (reserveBtn) reserveBtn.style.display = 'none';
+        if (reserveBtn) reserveBtn.classList.add('hidden');
 
-        // ★Copilot指摘対応：安全なURL書き換え処理（バリデーション追加）
+        // ★Copilot指摘対応：正規表現ではなくURL/URLSearchParamsを使った堅牢なURL書き換え
         if (reserveBtn) {
           let href = reserveBtn.getAttribute('href') || reserveBtn.getAttribute('data-href') || card.dataset.baseHref;
-          // URLが文字列として正しく取得できているかチェック
+          
           if (href && typeof href === 'string') {
-            href = href.replace(/date%3D\d{4}-\d{2}-\d{2}/g, `date%3D${date}`);
-            href = href.replace(/date=\d{4}-\d{2}-\d{2}/g, `date=${date}`);
-            
+            try {
+              // 相対パスを解析できるよう、ダミーのベースURL（location.origin）を付与
+              const url = new URL(href, window.location.origin);
+
+              // パターン1: ?next=... の中にエンコードされて date が含まれている場合 
+              // (例: /user/precautions?next=/user/reservations/create?date=...)
+              if (url.searchParams.has('next')) {
+                const nextParam = url.searchParams.get('next');
+                const nextUrl = new URL(nextParam, window.location.origin);
+                
+                if (nextUrl.searchParams.has('date')) {
+                  nextUrl.searchParams.set('date', date);
+                  // pathname + search で相対パスに戻してセット
+                  url.searchParams.set('next', nextUrl.pathname + nextUrl.search);
+                }
+              }
+              // パターン2: URL自体が直接 ?date=... を持っている場合
+              else if (url.searchParams.has('date')) {
+                url.searchParams.set('date', date);
+              }
+
+              // 元の href が 'http' で始まっていなければ相対パスに戻す
+              href = href.startsWith('http') ? url.href : url.pathname + url.search;
+
+            } catch (error) {
+              console.warn("URLパースエラー。フォールバックとして正規表現を使用します", error);
+              // パースに失敗した時のためのフォールバック
+              href = href.replace(/date%3D\d{4}-\d{2}-\d{2}/g, `date%3D${date}`);
+              href = href.replace(/date=\d{4}-\d{2}-\d{2}/g, `date=${date}`);
+            }
+
             if (reserveBtn.hasAttribute('href')) reserveBtn.setAttribute("href", href);
             if (reserveBtn.hasAttribute('data-href')) reserveBtn.setAttribute("data-href", href);
             
@@ -257,13 +286,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const statusData = data.find((item) => item.room_id == roomId && Number(item.period) === period);
             const status = statusData ? statusData.status : "available";
 
-            // ★Copilot指摘対応：ステータス更新時にも locked を削除してから追加する
             card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable', 'locked');
             card.classList.add(status);
 
             // PC用の要素群
             const availableLabel = card.querySelector(".pc-layout .available-label");
             const unavailableLabel = card.querySelector(".pc-layout .unavailable-label");
+            const reserveBtn = card.querySelector(".reserve-btn.pc-only");
             
             // スマホ用の要素群
             const spAvailableLabel = card.querySelector(".sp-layout .available-label");
@@ -273,19 +302,24 @@ document.addEventListener("DOMContentLoaded", () => {
             if (status === 'available') {
               card.setAttribute("href", card.dataset.baseHref);
               card.classList.remove('locked');
+              // ★ Copilot指摘対応: 利用可能な時は aria-disabled を外す
+              card.removeAttribute("aria-disabled");
 
               // PC表示
-              if (availableLabel) availableLabel.style.display = "";
-              if (unavailableLabel) unavailableLabel.style.display = "none";
+              if (availableLabel) availableLabel.classList.remove("hidden");
+              if (unavailableLabel) unavailableLabel.classList.add("hidden");
+              if (reserveBtn) reserveBtn.classList.remove("hidden");
               
               // スマホ表示
-              if (spAvailableLabel) spAvailableLabel.style.display = "";
-              if (spUnavailableLabel) spUnavailableLabel.style.display = "none";
-              if (spReserveBtn) spReserveBtn.style.display = "";
+              if (spAvailableLabel) spAvailableLabel.classList.remove("hidden");
+              if (spUnavailableLabel) spUnavailableLabel.classList.add("hidden");
+              if (spReserveBtn) spReserveBtn.classList.remove("hidden");
               
             } else {
               card.removeAttribute("href");
               card.classList.add('locked');
+              // ★ Copilot指摘対応: 利用不可の時は aria-disabled をつける
+              card.setAttribute("aria-disabled", "true");
 
               const statusLabels = {
                 'pending': '申請中',
@@ -293,23 +327,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 'in_use': '利用中',
                 'unavailable': '利用不可',
               };
-              // ※注：textContentへの代入はブラウザによりHTMLエスケープされるためXSSの危険性はありません
               const label = statusData?.lesson_title ?? statusLabels[status] ?? '利用不可';
 
               // PC表示
-              if (availableLabel) availableLabel.style.display = 'none';
+              if (availableLabel) availableLabel.classList.add("hidden");
               if (unavailableLabel) {
-                unavailableLabel.style.display = '';
+                unavailableLabel.classList.remove("hidden");
                 unavailableLabel.textContent = label;
               }
+              if (reserveBtn) reserveBtn.classList.add("hidden");
               
               // スマホ表示
-              if (spAvailableLabel) spAvailableLabel.style.display = 'none';
+              if (spAvailableLabel) spAvailableLabel.classList.add("hidden");
               if (spUnavailableLabel) {
-                spUnavailableLabel.style.display = '';
+                spUnavailableLabel.classList.remove("hidden");
                 spUnavailableLabel.textContent = label;
               }
-              if (spReserveBtn) spReserveBtn.style.display = 'none';
+              if (spReserveBtn) spReserveBtn.classList.add("hidden");
             }
           });
         });
