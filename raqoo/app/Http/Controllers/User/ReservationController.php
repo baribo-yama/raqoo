@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\RoomLesson; // モデルのインポート
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -17,6 +18,9 @@ class ReservationController extends Controller
         $this->middleware('auth');
     }
 
+    /**
+     * 予約申請フォームの表示
+     */
     public function create(Request $request)
     {
         $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
@@ -32,16 +36,26 @@ class ReservationController extends Controller
         $room   = $selectedRoom;
         $period = (int) $request->period;
 
-        // すでに埋まっている予約（キャンセル以外）
+        // 1. 他の人の「予約」を取得
         $reservedPeriods = Reservation::where('room_id', $room->id)
             ->where('date', $date)
             ->where('status', '!=', 'cancelled')
             ->pluck('period')
             ->toArray();
 
-        return view('user.reservation-form', compact('room', 'date', 'period', 'reservedPeriods'));
+        // 2. 管理者が登録した「授業」を取得
+        $lessonPeriods = RoomLesson::where('room_id', $room->id)
+            ->where('date', $date)
+            ->pluck('period')
+            ->toArray();
+
+        // 修正点：compactの中に 'lessonPeriods' を追加して、Blade側で使えるようにする
+        return view('user.reservation-form', compact('room', 'date', 'period', 'reservedPeriods', 'lessonPeriods'));
     }
 
+    /**
+     * 予約内容の重複チェックと確認画面表示
+     */
     public function check(Request $request)
     {
         $validated = $request->validate([
@@ -55,33 +69,36 @@ class ReservationController extends Controller
 
         $selectedRoom = Room::find($validated['room_id']);
 
-        // 重複チェック（キャンセル以外すべて対象）
+        // 予約テーブルとの重複チェック
         $existing = Reservation::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
             ->whereIn('period', $validated['periods'])
             ->where('status', '!=', 'cancelled')
             ->exists();
 
-        if ($existing) {
+        // 授業テーブルとの重複チェック
+        $existingLesson = RoomLesson::where('room_id', $validated['room_id'])
+            ->where('date', $validated['date'])
+            ->whereIn('period', $validated['periods'])
+            ->exists();
+
+        if ($existing || $existingLesson) {
             return back()
-                ->withErrors(['periods' => '選択された時間帯の中に、すでに予約済みまたは申請中の枠が含まれています。'])
+                ->withErrors(['periods' => '選択された時間帯の中に、すでに予約済みまたは授業が登録されている枠が含まれています。'])
                 ->withInput();
         }
 
         $periods = $validated['periods'];
-        sort($periods); // 昇順に並び替え
+        sort($periods);
 
-        // ----------------------------------------------------
-        // 追加：連続した時限かどうかのチェック
-        // ----------------------------------------------------
+        // 連続した時限かどうかのチェック
         for ($i = 1; $i < count($periods); $i++) {
             if ($periods[$i] - $periods[$i - 1] !== 1) {
                 return back()
-                    ->withErrors(['periods' => '複数時限を予約する場合は、1限・2限・3限のように「連続した時限」のみ選択してください。（例：1限と3限のように間が空く組み合わせは選択できません）もう一度、連続する時限のみを選び直してください。'])
+                    ->withErrors(['periods' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
                     ->withInput();
             }
         }
-        // ----------------------------------------------------
 
         $reservationData = [
             'room_id'        => $validated['room_id'],
@@ -98,6 +115,9 @@ class ReservationController extends Controller
         return view('user.reservation-confirm', compact('reservationData', 'selectedRoom'));
     }
 
+    /**
+     * 予約の保存
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -109,23 +129,8 @@ class ReservationController extends Controller
             'members'    => 'nullable|string',
         ]);
 
-        $periods = $validated['periods'];
-        sort($periods);
-
-        // ----------------------------------------------------
-        // 追加：DB保存前にも連続した時限かどうかのチェック（二重チェック）
-        // ----------------------------------------------------
-        for ($i = 1; $i < count($periods); $i++) {
-            if ($periods[$i] - $periods[$i - 1] !== 1) {
-                return back()
-                    ->withErrors(['error' => '複数時限を予約する場合は、1限・2限・3限のように「連続した時限」のみ選択してください。（例：1限と3限のように間が空く組み合わせは選択できません）もう一度、連続する時限のみを選び直してください。'])
-                    ->withInput();
-            }
-        }
-        // ----------------------------------------------------
-
         return DB::transaction(function () use ($validated) {
-
+            // 保存直前の重複チェック
             $existing = Reservation::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
                 ->whereIn('period', $validated['periods'])
@@ -133,11 +138,17 @@ class ReservationController extends Controller
                 ->lockForUpdate()
                 ->exists();
 
-            if ($existing) {
+            $existingLesson = RoomLesson::where('room_id', $validated['room_id'])
+                ->where('date', $validated['date'])
+                ->whereIn('period', $validated['periods'])
+                ->lockForUpdate()
+                ->exists();
+
+            if ($existing || $existingLesson) {
                 return redirect()->route('user.reservations.create', [
                     'room_id' => $validated['room_id'],
                     'date'    => $validated['date'],
-                ])->withErrors(['error' => 'タッチの差で予約が埋まってしまいました。']);
+                ])->withErrors(['error' => 'タッチの差で予約または授業が埋まってしまいました。']);
             }
 
             foreach ($validated['periods'] as $period) {
@@ -156,6 +167,8 @@ class ReservationController extends Controller
                 ->with('success', '予約申請を送信しました。承認をお待ちください。');
         });
     }
+
+    // --- 以降の index, show, cancel, history, myReservations は変更なし ---
 
     public function index()
     {
@@ -179,7 +192,6 @@ class ReservationController extends Controller
     {
         if ($reservation->user_id !== Auth::id()) abort(403);
 
-        // Copilot修正: 'approved' ではなく、DB実態の 'reserved' を許可リストに追加
         if (!in_array($reservation->status, ['pending', 'reserved'], true)) {
             return back()->withErrors(['error' => 'この予約はキャンセルできません。']);
         }
@@ -194,7 +206,6 @@ class ReservationController extends Controller
     {
         $historyReservations = Reservation::where(function ($query) {
                 $query->where('date', '<', Carbon::today())
-                      // Copilot修正: DB実態に合わせて finished と cancelled を指定
                       ->orWhereIn('status', ['finished', 'cancelled']);
             })
             ->where('user_id', Auth::id())
@@ -205,9 +216,6 @@ class ReservationController extends Controller
         return view('user.reservations-history', compact('historyReservations'));
     }
 
-    /**
-     * ✅ 自分の予約一覧（スマホの見開き用 / JSON）
-     */
     public function myReservations(Request $request)
     {
         $request->validate([
