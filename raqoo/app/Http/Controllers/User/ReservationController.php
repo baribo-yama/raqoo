@@ -69,7 +69,19 @@ class ReservationController extends Controller
         }
 
         $periods = $validated['periods'];
-        sort($periods);
+        sort($periods); // 昇順に並び替え
+
+        // ----------------------------------------------------
+        // 追加：連続した時限かどうかのチェック
+        // ----------------------------------------------------
+        for ($i = 1; $i < count($periods); $i++) {
+            if ($periods[$i] - $periods[$i - 1] !== 1) {
+                return back()
+                    ->withErrors(['periods' => '複数時限を予約する場合は、連続した時限（例：3限と4限）を選択してください。離れた時限（例：3限と5限）はセットで予約できません。'])
+                    ->withInput();
+            }
+        }
+        // ----------------------------------------------------
 
         $reservationData = [
             'room_id'        => $validated['room_id'],
@@ -96,6 +108,21 @@ class ReservationController extends Controller
             'purpose'    => 'required|string|max:500',
             'members'    => 'nullable|string',
         ]);
+
+        $periods = $validated['periods'];
+        sort($periods);
+
+        // ----------------------------------------------------
+        // 追加：DB保存前にも連続した時限かどうかのチェック（二重チェック）
+        // ----------------------------------------------------
+        for ($i = 1; $i < count($periods); $i++) {
+            if ($periods[$i] - $periods[$i - 1] !== 1) {
+                return back()
+                    ->withErrors(['error' => '複数時限を予約する場合は、連続した時限を選択してください。'])
+                    ->withInput();
+            }
+        }
+        // ----------------------------------------------------
 
         return DB::transaction(function () use ($validated) {
 
