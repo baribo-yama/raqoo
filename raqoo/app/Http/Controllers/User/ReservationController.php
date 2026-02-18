@@ -49,7 +49,7 @@ class ReservationController extends Controller
             ->pluck('period')
             ->toArray();
 
-        // 修正点：compactの中に 'lessonPeriods' を追加して、Blade側で使えるようにする
+        // compactの中に 'lessonPeriods' を追加して、Blade側で使えるようにする
         return view('user.reservation-form', compact('room', 'date', 'period', 'reservedPeriods', 'lessonPeriods'));
     }
 
@@ -61,7 +61,8 @@ class ReservationController extends Controller
         $validated = $request->validate([
             'room_id'    => 'required|exists:rooms,id',
             'date'       => 'required|date|after_or_equal:today',
-            'periods'    => 'required|array|min:1',
+            // ▼ Copilot指摘対応: max:2 を追加して不正な多重予約を防止
+            'periods'    => 'required|array|min:1|max:2',
             'periods.*'  => 'integer|min:1|max:6',
             'purpose'    => 'required|string|max:100',
             'members'    => 'nullable|string',
@@ -123,11 +124,24 @@ class ReservationController extends Controller
         $validated = $request->validate([
             'room_id'    => 'required|exists:rooms,id',
             'date'       => 'required|date|after_or_equal:today',
-            'periods'    => 'required|array|min:1',
+            // ▼ Copilot指摘対応: こちらにも max:2 を追加
+            'periods'    => 'required|array|min:1|max:2',
             'periods.*'  => 'integer|min:1|max:6',
             'purpose'    => 'required|string|max:500',
             'members'    => 'nullable|string',
         ]);
+
+        $periods = $validated['periods'];
+        sort($periods);
+
+        // ▼ Copilot指摘対応: DB保存前にも連続した時限かどうかのチェックを復活（二重チェック）
+        for ($i = 1; $i < count($periods); $i++) {
+            if ($periods[$i] - $periods[$i - 1] !== 1) {
+                return back()
+                    ->withErrors(['error' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
+                    ->withInput();
+            }
+        }
 
         return DB::transaction(function () use ($validated) {
             // 保存直前の重複チェック

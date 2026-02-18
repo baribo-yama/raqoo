@@ -108,7 +108,8 @@
                                                 @if($isOriginal)
                                                     <span class="text-xs ml-1 font-normal text-blue-600">(選択中)</span>
                                                 @elseif($isLesson)
-                                                    <span class="text-xs ml-1 font-normal text-red-500 font-bold">(授業)</span>
+                                                    {{-- ▼ Copilotの指摘を反映し、font-normal を削除して font-bold のみに統一 ▼ --}}
+                                                    <span class="text-xs ml-1 text-red-500 font-bold">(授業)</span>
                                                 @elseif($isReservedOnly)
                                                     <span class="text-xs ml-1 font-normal text-red-400">(予約済)</span>
                                                 @endif
