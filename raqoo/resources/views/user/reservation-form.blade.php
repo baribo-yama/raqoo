@@ -77,7 +77,7 @@
                                     </span>
                                     <br>
                                     <span class="text-xs text-gray-500">
-                                        ※2名以上での利用は最大2コマまで予約可能です。
+                                        ※2名以上での利用は最大2コマまで、かつ連続した時限のみ予約可能です。
                                     </span>
                                 </p>
                                 <div class="flex flex-wrap gap-4">
@@ -101,7 +101,6 @@
                                                 {{ $isOriginal ? 'checked disabled' : '' }}
                                                 {{ $isReserved ? 'disabled' : '' }}>
                                             
-                                            {{-- ▼▼▼ 修正：decoration-line-through を line-through に変更 ▼▼▼ --}}
                                             <span class="font-medium {{ $isReserved ? 'text-gray-400 line-through' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
                                                 {{ $i }}限
                                                 @if($isOriginal)
@@ -191,6 +190,14 @@
             const checkboxes = document.querySelectorAll('.period-checkbox');
             const instructionText = document.getElementById('instructionText');
             
+            // ▼追加：メイン（選択中）の時限を取得する
+            let mainPeriod = 0;
+            checkboxes.forEach(cb => {
+                if (cb.dataset.original === "1") {
+                    mainPeriod = parseInt(cb.value, 10);
+                }
+            });
+            
             function updateFormState() {
                 const membersValue = membersInput.value.trim();
                 const hasMembers = membersValue.length > 0; // メンバー入力があるか
@@ -219,6 +226,7 @@
                     const isOriginal = cb.dataset.original === "1";
                     const isReserved = cb.dataset.reserved === "1";
                     const label = document.getElementById('label-' + cb.value);
+                    const currentPeriod = parseInt(cb.value, 10);
 
                     // 1. メインのコマは何もしない（常にdisabled checked）
                     if (isOriginal) return;
@@ -241,8 +249,17 @@
                     }
 
                     // 4. メンバー入力がある場合（2人以上利用）
-                    // -> 追加で1つ選んだら（合計2コマ）、それ以外の未選択は選べなくする
-                    if (extraCheckedCount >= 1 && !cb.checked) {
+                    // ▼追加：メインの時限から「±1」離れている（連続していない）時限は無効化する
+                    const isConsecutive = (currentPeriod === mainPeriod - 1) || (currentPeriod === mainPeriod + 1);
+
+                    if (!isConsecutive) {
+                        cb.disabled = true;
+                        cb.checked = false;
+                        label.classList.remove('bg-blue-50', 'border-blue-400');
+                        label.classList.add('opacity-50', 'cursor-not-allowed');
+                    } 
+                    // ▼追加：連続している時限で、かつすでに1つ追加でチェック済みの場合は、他の未チェックを無効化する
+                    else if (extraCheckedCount >= 1 && !cb.checked) {
                         cb.disabled = true; 
                         label.classList.add('opacity-50', 'cursor-not-allowed');
                     } else {
