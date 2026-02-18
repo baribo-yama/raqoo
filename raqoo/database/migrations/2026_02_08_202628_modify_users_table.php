@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // email_verified_atを追加（メール認証済みかどうかのカラム）
+        // email_verified_atを追加（メール認証済みかどうかのカラム）、majorも
         Schema::table('users', function (Blueprint $table) {
             $table->timestamp('email_verified_at')->nullable()->after('email');
+            $table->char('major')->after('student_id'); // 専攻名
         });
     }
 

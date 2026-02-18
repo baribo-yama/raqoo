@@ -13,6 +13,11 @@ use App\Http\Controllers\User\TermsController;
 use App\Http\Controllers\User\PrecautionsController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\SignupController;
+use Illuminate\Auth\Events\Verified;
+
+require __DIR__.'/auth.php'; 
 
 /*======= 認証関連 ========*/
 // ユーザーログイン
@@ -90,17 +95,9 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     Route::post('/reservations/{reservation}/reject', [AdminReservationController::class, 'reject'])->name('reservations.reject');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// 管理者教室管理
+Route::get('/admin/rooms', [AdminDashBoardController::class, 'roomsIndex'])->name('admin.rooms.index');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__.'/auth.php';
 // 管理者お知らせ管理
 Route::get('/admin/notifications', function() {
     return view('admin.notifications-index');
@@ -110,7 +107,7 @@ Route::get('/admin/notifications', function() {
 /*======= ユーザー画面 ========*/
 // ユーザーホーム
 Route::get('/home', [UserRoomController::class, 'index'])
-    ->middleware('auth')
+    ->middleware('auth', 'verified')
     ->name('user.home.index');
 
 // 夜間注意事項ページ
