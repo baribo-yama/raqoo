@@ -1,0 +1,10 @@
+services:
+  nginx-appli4:
+    ports: []         # ローカル公開を無効化
+    networks:
+      - web-proxy  # リバースプロキシとつながるための外向き網
+      - default  # PHP（app-appli4）とつながるための内向き網
+
+networks:
+  web-proxy:
+    external: true

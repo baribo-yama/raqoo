@@ -8,7 +8,6 @@ use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 class ReservationController extends Controller
@@ -29,34 +28,34 @@ class ReservationController extends Controller
             return redirect()->route('user.home.index')->with('error', '教室がみつかりません。');
         }
 
-        $date = $request->date;
-        $room = $selectedRoom;
-        $period = (int)$request->period; // 数値型に変換
+        $date   = $request->date;
+        $room   = $selectedRoom;
+        $period = (int) $request->period;
 
-        // ▼▼▼ 追加：すでに埋まっている予約を取得（キャンセル以外） ▼▼▼
+        // すでに埋まっている予約（キャンセル以外）
         $reservedPeriods = Reservation::where('room_id', $room->id)
             ->where('date', $date)
             ->where('status', '!=', 'cancelled')
             ->pluck('period')
-            ->toArray(); // 配列にする (例: [1, 3])
-        
+            ->toArray();
+
         return view('user.reservation-form', compact('room', 'date', 'period', 'reservedPeriods'));
     }
 
     public function check(Request $request)
     {
         $validated = $request->validate([
-            'room_id' => 'required|exists:rooms,id',
-            'date'    => 'required|date|after_or_equal:today',
-            'periods' => 'required|array|min:1',
-            'periods.*' => 'integer|min:1|max:6',
-            'purpose' => 'required|string|max:100',
-            'members' => 'nullable|string',
+            'room_id'    => 'required|exists:rooms,id',
+            'date'       => 'required|date|after_or_equal:today',
+            'periods'    => 'required|array|min:1',
+            'periods.*'  => 'integer|min:1|max:6',
+            'purpose'    => 'required|string|max:100',
+            'members'    => 'nullable|string',
         ]);
 
         $selectedRoom = Room::find($validated['room_id']);
 
-        // 重複チェック（ステータスがキャンセル以外すべてを対象）
+        // 重複チェック（キャンセル以外すべて対象）
         $existing = Reservation::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
             ->whereIn('period', $validated['periods'])
@@ -64,23 +63,36 @@ class ReservationController extends Controller
             ->exists();
 
         if ($existing) {
-            return back()->withErrors(['periods' => '選択された時間帯の中に、すでに予約済みまたは申請中の枠が含まれています。'])
-                         ->withInput();
+            return back()
+                ->withErrors(['periods' => '選択された時間帯の中に、すでに予約済みまたは申請中の枠が含まれています。'])
+                ->withInput();
         }
 
         $periods = $validated['periods'];
-        sort($periods);
+        sort($periods); // 昇順に並び替え
+
+        // ----------------------------------------------------
+        // 追加：連続した時限かどうかのチェック
+        // ----------------------------------------------------
+        for ($i = 1; $i < count($periods); $i++) {
+            if ($periods[$i] - $periods[$i - 1] !== 1) {
+                return back()
+                    ->withErrors(['periods' => '複数時限を予約する場合は、1限・2限・3限のように「連続した時限」のみ選択してください。（例：1限と3限のように間が空く組み合わせは選択できません）もう一度、連続する時限のみを選び直してください。'])
+                    ->withInput();
+            }
+        }
+        // ----------------------------------------------------
 
         $reservationData = [
-            'room_id' => $validated['room_id'],
-            'room_name' => $selectedRoom->name,
-            'date'    => $validated['date'],
-            'periods' => $periods,
+            'room_id'        => $validated['room_id'],
+            'room_name'      => $selectedRoom->name,
+            'date'           => $validated['date'],
+            'periods'        => $periods,
             'period_display' => implode(', ', $periods),
-            'purpose' => $validated['purpose'],
-            'members' => $validated['members'],
-            'user_name' => Auth::user()->name,
-            'student_id' => Auth::user()->student_id,
+            'purpose'        => $validated['purpose'],
+            'members'        => $validated['members'],
+            'user_name'      => Auth::user()->name,
+            'student_id'     => Auth::user()->student_id,
         ];
 
         return view('user.reservation-confirm', compact('reservationData', 'selectedRoom'));
@@ -89,18 +101,31 @@ class ReservationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'room_id' => 'required|exists:rooms,id',
-            'date'    => 'required|date|after_or_equal:today',
-            'periods' => 'required|array|min:1',
-            'periods.*' => 'integer|min:1|max:6',
-            'purpose' => 'required|string|max:500',
-            'members' => 'nullable|string',
+            'room_id'    => 'required|exists:rooms,id',
+            'date'       => 'required|date|after_or_equal:today',
+            'periods'    => 'required|array|min:1',
+            'periods.*'  => 'integer|min:1|max:6',
+            'purpose'    => 'required|string|max:500',
+            'members'    => 'nullable|string',
         ]);
 
-        // トランザクション処理
+        $periods = $validated['periods'];
+        sort($periods);
+
+        // ----------------------------------------------------
+        // 追加：DB保存前にも連続した時限かどうかのチェック（二重チェック）
+        // ----------------------------------------------------
+        for ($i = 1; $i < count($periods); $i++) {
+            if ($periods[$i] - $periods[$i - 1] !== 1) {
+                return back()
+                    ->withErrors(['error' => '複数時限を予約する場合は、1限・2限・3限のように「連続した時限」のみ選択してください。（例：1限と3限のように間が空く組み合わせは選択できません）もう一度、連続する時限のみを選び直してください。'])
+                    ->withInput();
+            }
+        }
+        // ----------------------------------------------------
+
         return DB::transaction(function () use ($validated) {
-            
-            // lockForUpdate() を使用して、同時実行時の重複を防ぐ
+
             $existing = Reservation::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
                 ->whereIn('period', $validated['periods'])
@@ -109,9 +134,9 @@ class ReservationController extends Controller
                 ->exists();
 
             if ($existing) {
-                 return redirect()->route('user.reservations.create', [
+                return redirect()->route('user.reservations.create', [
                     'room_id' => $validated['room_id'],
-                    'date' => $validated['date']
+                    'date'    => $validated['date'],
                 ])->withErrors(['error' => 'タッチの差で予約が埋まってしまいました。']);
             }
 
@@ -120,7 +145,7 @@ class ReservationController extends Controller
                     'user_id' => Auth::id(),
                     'room_id' => $validated['room_id'],
                     'date'    => $validated['date'],
-                    'period'  => $period,
+                    'period'  => (int) $period,
                     'purpose' => $validated['purpose'],
                     'members' => $validated['members'],
                     'status'  => 'pending',
@@ -132,7 +157,6 @@ class ReservationController extends Controller
         });
     }
 
-    // index, show, cancel, history は変更なし
     public function index()
     {
         $reservations = Reservation::where('user_id', Auth::id())
@@ -141,6 +165,7 @@ class ReservationController extends Controller
             ->orderBy('date')
             ->orderBy('period')
             ->get();
+
         return view('user.reservations-index', compact('reservations'));
     }
 
@@ -153,23 +178,69 @@ class ReservationController extends Controller
     public function cancel(Reservation $reservation)
     {
         if ($reservation->user_id !== Auth::id()) abort(403);
-        if (!in_array($reservation->status, ['pending', 'approved'])) {
+
+        // Copilot修正: 'approved' ではなく、DB実態の 'reserved' を許可リストに追加
+        if (!in_array($reservation->status, ['pending', 'reserved'], true)) {
             return back()->withErrors(['error' => 'この予約はキャンセルできません。']);
         }
+
         $reservation->update(['status' => 'cancelled']);
-        return redirect()->route('user.reservations.index')->with('success', '予約をキャンセルしました。');
+
+        return redirect()->route('user.reservations.index')
+            ->with('success', '予約をキャンセルしました。');
     }
 
     public function history()
     {
         $historyReservations = Reservation::where(function ($query) {
-            $query->where('date', '<', Carbon::today())
-                ->orWhereIn('status', ['completed', 'cancelled', 'rejected']);
-        })
+                $query->where('date', '<', Carbon::today())
+                      // Copilot修正: DB実態に合わせて finished と cancelled を指定
+                      ->orWhereIn('status', ['finished', 'cancelled']);
+            })
             ->where('user_id', Auth::id())
             ->with('room')
             ->orderBy('date', 'desc')
             ->paginate(10);
+
         return view('user.reservations-history', compact('historyReservations'));
+    }
+
+    /**
+     * ✅ 自分の予約一覧（スマホの見開き用 / JSON）
+     */
+    public function myReservations(Request $request)
+    {
+        $request->validate([
+            'date'  => 'nullable|date',
+            'limit' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $date  = $request->query('date');
+        $limit = (int) $request->query('limit', 50);
+
+        $q = Reservation::with('room')
+            ->where('user_id', Auth::id()) 
+            ->orderBy('date')
+            ->orderBy('period');
+
+        if ($date) {
+            $q->whereDate('date', $date);
+        } else {
+            $q->where('date', '>=', Carbon::today());
+        }
+
+        $rows = $q->limit($limit)->get()->map(function ($r) {
+            return [
+                'id'         => $r->id,
+                'room_name'  => optional($r->room)->name ?? '',
+                'room_floor' => optional($r->room)->floor,
+                'date'       => Carbon::parse($r->date)->format('Y-m-d'),
+                'period'     => (int) $r->period,
+                'status'     => (string) $r->status,
+                'detail_url' => route('user.reservations.show', $r->id),
+            ];
+        });
+
+        return response()->json($rows);
     }
 }
