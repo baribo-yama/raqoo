@@ -1,7 +1,5 @@
 /* =========================================
    Raqoo Mobile UI (<=560px)
-   ※ モバイル向けのスタイルは、保守性と衝突回避のため、
-      この 1 つの @media (max-width: 560px) ブロックに集約しています。
 ========================================= */
 @media (max-width: 560px) {
   :root {
@@ -15,386 +13,172 @@
     --shadow: 0 8px 22px rgba(0, 0, 0, .08);
   }
 
-  /* ▼▼▼ 1. ハンバーガーボタンを表示させる ▼▼▼ */
-  .m-hamburger {
-    display: block !important;
-    position: absolute;
-    top: 15px;
-    right: 16px;
-    z-index: 100;
-    cursor: pointer;
-    font-size: 24px;
-    color: var(--blue);
+  body.nav-open .nav-toggle, body.nav-open .m-hamburger { display: none !important; }
+  .m-hamburger { display: block !important; position: absolute; top: 15px; right: 16px; z-index: 1100 !important; cursor: pointer; font-size: 24px; color: var(--blue); }
+  .m-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 900 !important; }
+  body.nav-open .m-backdrop { display: block !important; }
+  .navigation { display: block !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 260px !important; height: 100vh !important; background-color: #1c2b4a !important; z-index: 1000 !important; transform: translateX(-110%) !important; transition: transform 0.3s ease !important; padding-top: 20px !important; padding-bottom: 20px !important; overflow-y: auto !important; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3) !important; }
+  body.nav-open .navigation { transform: translateX(0) !important; }
+  body.nav-open { overflow: hidden !important; }
+  .m-drawer { display: none !important; }
+  body { background: var(--bg); }
+  .content-area { margin-left: 0 !important; padding: 10px 16px 18px !important; }
+  .header { padding: 6px 0 4px !important; margin: 0 !important; background: transparent !important; position: relative; }
+  .raqoo-logo { max-width: 230px !important; }
+  .profile-box { position: static !important; transform: none !important; margin: 6px 0 8px auto !important; border-radius: 12px !important; }
+  .search-form { margin: 8px auto 10px !important; padding: 14px !important; max-width: none !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: var(--radius) !important; box-shadow: var(--shadow) !important; }
+  .form-row { grid-template-columns: 1fr !important; gap: 10px !important; }
+  #dateInput { font-size: 18px !important; padding: 14px 44px 14px 14px !important; border-radius: 12px !important; border: 1px solid var(--line) !important; }
+  .form-row-btn { margin-top: 10px !important; }
+  .search-btn { width: 100% !important; padding: 16px 0 !important; font-size: 20px !important; font-weight: 900 !important; border-radius: 14px !important; background: linear-gradient(180deg, var(--blue), var(--blue2)) !important; box-shadow: 0 6px 18px rgba(0, 0, 0, .12) !important; }
+  .day-tabs { display: flex !important; flex-wrap: nowrap !important; width: 100% !important; height: 72px !important; margin: 10px auto 6px !important; padding: 0 !important; gap: 0 !important; justify-content: center !important; align-items: center !important; position: relative !important; background: #b3b3b3 !important; border: 1px solid #9ca3af !important; border-radius: 12px !important; overflow: hidden !important; box-sizing: border-box !important; }
+  .day-tab { flex: 1 1 0 !important; min-width: 0 !important; height: 72px !important; background: transparent !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 6px !important; padding: 0 !important; border-right: 1px solid rgba(255, 255, 255, 0.3) !important; box-sizing: border-box !important; }
+  .day-tab:last-child { border-right: none !important; }
+  .day-tab.active { background: var(--tab-active) !important; }
+  .day-label, .date-label { margin: 0 !important; line-height: 1 !important; color: #fff !important; opacity: .92 !important; white-space: nowrap !important; }
+  .day-label { font-size: 14px !important; letter-spacing: .2px !important; }
+  .date-label { font-size: 13px !important; letter-spacing: 0 !important; }
+  .day-tabs .strip-btn { position: absolute !important; top: 50% !important; transform: translateY(-50%) !important; width: 30px !important; height: 30px !important; background: #6b7280 !important; border-radius: 999px !important; z-index: 20 !important; }
+  .day-tabs .strip-prev { left: -16px !important; }
+  .day-tabs .strip-next { right: -16px !important; }
+  .date-display { transform: none !important; margin: 4px auto 6px !important; text-align: center !important; }
+  .date-display .date-main { font-size: 42px !important; font-weight: 900 !important; }
+  .date-display .date-weekday { font-size: 24px !important; font-weight: 900 !important; }
+  .status-bar-2 { width: 100% !important; max-width: none !important; margin: 8px auto 10px !important; padding: 8px 12px !important; border-radius: 10px !important; border: 1px solid #d7dbe3 !important; background: #fff !important; justify-content: center !important; gap: 18px !important; }
+  .m-status-btn { display: block !important; width: 100% !important; margin: 10px 0 6px !important; padding: 12px 0 !important; border: 1px solid #d7dbe3 !important; border-radius: 12px !important; background: #fff !important; font-weight: 900 !important; }
+  .m-status-sheet { display: flex !important; position: fixed !important; left: 0 !important; right: 0 !important; bottom: 0 !important; height: 70vh !important; background: #fff !important; border-radius: 18px 18px 0 0 !important; box-shadow: 0 -12px 30px rgba(0,0,0,.18) !important; transform: translateY(110%) !important; transition: transform .25s ease !important; z-index: 9998 !important; flex-direction: column !important; }
+  body.sheet-open .m-status-sheet { transform: translateY(0) !important; }
+  .sheet-head { padding: 14px 14px 10px !important; border-bottom: 1px solid #e6e9ef !important; display: flex !important; align-items: center !important; justify-content: space-between !important; }
+  .sheet-title { font-weight: 900 !important; font-size: 16px !important; }
+  .sheet-close { width: 36px !important; height: 36px !important; border-radius: 12px !important; border: 1px solid #e6e9ef !important; background: #fff !important; font-size: 22px !important; line-height: 1 !important; }
+  .sheet-body { padding: 12px 14px 18px !important; overflow: auto !important; }
+  .sheet-row { border: 1px solid #e6e9ef !important; border-radius: 12px !important; padding: 10px !important; margin-bottom: 10px !important; }
+  .sheet-room { font-weight: 900 !important; margin-bottom: 8px !important; }
+  .sheet-grid { display: grid !important; grid-template-columns: repeat(6, 1fr) !important; gap: 6px !important; }
+  .sheet-cell { border-radius: 10px !important; padding: 8px 0 !important; text-align: center !important; font-weight: 900 !important; font-size: 12px !important; border: 1px solid #e6e9ef !important; }
+  .sheet-ok { background:#eff6ff !important; }
+  .sheet-ng { background:#f3f4f6 !important; color:#6b7280 !important; }
+  .floor-filter-container { display: flex !important; flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; margin: 24px 0 20px !important; width: 100% !important; padding: 0 !important; }
+  .floor-filter-label { font-size: 14px !important; margin-left: 2px !important; color: #4b5563 !important; font-weight: 900 !important; }
+  .floor-filter-list { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; width: 100% !important; padding: 0 !important; }
+  .floor-chip { flex: 0 0 auto !important; height: 38px !important; padding: 0 16px !important; font-size: 13px !important; border-radius: 19px !important; margin-bottom: 4px !important; }
+
+  /* =========================================================
+     ▼▼▼ スマホ版：完璧で綺麗なリストデザイン ▼▼▼
+  ========================================================= */
+  .pc-layout { display: none !important; }
+  
+  .sp-layout {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      width: 100% !important;
+      height: 100% !important;
+      padding: 12px 14px !important;
+      box-sizing: border-box !important;
   }
 
-  /* 背景の黒透かし */
-  .m-backdrop {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9990;
-  }
-
-  /* メニューが開いている時だけ背景を表示 */
-  body.nav-open .m-backdrop {
-    display: block;
-  }
-
-  /* ▼▼▼ 2. サイドバー（ナビゲーション）を表示・設定する ▼▼▼ */
-  .navigation {
-    display: block !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 260px !important;
-    height: 100vh !important;
-    background-color: #1c2b4a !important;
-    z-index: 9999 !important;
-    /* 初期状態は左に隠す */
-    transform: translateX(-110%) !important;
-    transition: transform 0.3s ease !important;
-    /* 中身の余白調整 */
-    padding-top: 20px !important;
-    padding-bottom: 20px !important;
-    overflow-y: auto !important;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3) !important;
-  }
-
-  /* メニューが開いた時 */
-  body.nav-open .navigation {
-    transform: translateX(0) !important;
-  }
-
-  /* メニュー展開時はスクロール固定 */
-  body.nav-open {
-    overflow: hidden !important;
-  }
-
-  .m-drawer {
-    display: none !important;
-  }
-
-  body {
-    background: var(--bg);
-  }
-
-  /* ===== 全体余白 ===== */
-  .content-area {
-    margin-left: 0 !important;
-    padding: 10px 16px 18px !important;
-  }
-
-  /* ===== ヘッダー/ロゴ/プロフィール ===== */
-  .header {
-    padding: 6px 0 4px !important;
-    margin: 0 !important;
-    background: transparent !important;
-    position: relative;
-  }
-
-  .raqoo-logo {
-    max-width: 230px !important;
-  }
-
-  .profile-box {
-    position: static !important;
-    transform: none !important;
-    margin: 6px 0 8px auto !important;
-    border-radius: 12px !important;
-  }
-
-  /* ===== 検索カード ===== */
-  .search-form {
-    margin: 8px auto 10px !important;
-    padding: 14px !important;
-    max-width: none !important;
-    background: var(--card) !important;
-    border: 1px solid var(--line) !important;
-    border-radius: var(--radius) !important;
-    box-shadow: var(--shadow) !important;
-  }
-
-  /* 日付以外は非表示 */
-  label[for="periodInput"],
-  #periodInput,
-  label[for="peopleInput"],
-  #peopleInput {
-    display: none !important;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
-  }
-
-  #dateInput {
-    font-size: 18px !important;
-    padding: 14px 44px 14px 14px !important;
-    border-radius: 12px !important;
-    border: 1px solid var(--line) !important;
-  }
-
-  .form-row-btn {
-    margin-top: 10px !important;
-  }
-
-  .search-btn {
-    width: 100% !important;
-    padding: 16px 0 !important;
-    font-size: 20px !important;
-    font-weight: 900 !important;
-    border-radius: 14px !important;
-    background: linear-gradient(180deg, var(--blue), var(--blue2)) !important;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, .12) !important;
-  }
-
-  /* ===== 曜日ストリップ ===== */
-  .day-tabs {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    width: 100% !important;
-    height: 72px !important;
-    margin: 10px auto 6px !important;
-    padding: 0 !important;
-    gap: 0 !important;
-    justify-content: center !important;
-    align-items: center !important;
-    position: relative !important;
-    background: #b3b3b3 !important;
-    border: 1px solid #9ca3af !important;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
-  }
-
-  .day-tab {
-    flex: 1 1 0 !important;
-    min-width: 0 !important;
-    height: 72px !important;
-    background: transparent !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    gap: 6px !important;
-    padding: 0 !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
-    box-sizing: border-box !important;
-  }
-
-  .day-tab:last-child {
-    border-right: none !important;
-  }
-
-  .day-tab.active {
-    background: var(--tab-active) !important;
-  }
-
-  .day-label,
-  .date-label {
-    margin: 0 !important;
-    line-height: 1 !important;
-    color: #fff !important;
-    opacity: .92 !important;
-    white-space: nowrap !important;
-  }
-
-  .day-label {
-    font-size: 14px !important;
-    letter-spacing: .2px !important;
-  }
-
-  .date-label {
-    font-size: 13px !important;
-    letter-spacing: 0 !important;
-  }
-
-  .day-tabs .strip-btn {
-    position: absolute !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 30px !important;
-    height: 30px !important;
-    background: #6b7280 !important;
-    border-radius: 999px !important;
-    z-index: 20 !important;
-  }
-
-  .day-tabs .strip-prev {
-    left: -16px !important;
-  }
-
-  .day-tabs .strip-next {
-    right: -16px !important;
-  }
-
-  /* ===== 中央日付 ===== */
-  .date-display {
-    transform: none !important;
-    margin: 4px auto 6px !important;
-    text-align: center !important;
-  }
-
-  .date-display .date-main {
-    font-size: 42px !important;
-    font-weight: 900 !important;
-  }
-
-  .date-display .date-weekday {
-    font-size: 24px !important;
-    font-weight: 900 !important;
-  }
-
-  /* ===== 凡例 ===== */
-  .status-bar-2 {
-    width: 100% !important;
-    max-width: none !important;
-    margin: 8px auto 10px !important;
-    padding: 8px 12px !important;
-    border-radius: 10px !important;
-    border: 1px solid #d7dbe3 !important;
-    background: #fff !important;
-    justify-content: center !important;
-    gap: 18px !important;
-  }
-
-  /* ===== 教室 ===== */
-  .room-title {
-    background: transparent !important;
-    color: #111 !important;
-    font-size: 22px !important;
-    font-weight: 900 !important;
-    padding: 6px 2px 6px !important;
-    margin: 0 !important;
-  }
-
-  .room-times {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 10px !important;
-    margin-top: 6px !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border: none !important;
+  .room-title { background: transparent !important; color: #111 !important; font-size: 20px !important; font-weight: 900 !important; padding: 6px 2px 6px !important; margin: 0 !important; }
+  
+  .room-times { 
+      display: flex !important; 
+      flex-direction: column !important; 
+      gap: 12px !important; 
+      margin-top: 6px !important; 
+      padding: 0 !important; 
+      background: transparent !important; 
+      border: none !important; 
   }
 
   .time-card {
-    width: auto !important;
-    background: #fff !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 12px !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, .04) !important;
-    padding: 12px 10px !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 74px !important;
+      background: #fff !important; 
+      border: 1px solid #e6e9ef !important;
+      border-radius: 12px !important;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03) !important;
+      margin-bottom: 0 !important;
+      text-decoration: none !important;
+      transition: none !important;
+      position: relative !important;
+  }
+  .time-card:hover { transform: none !important; box-shadow: 0 4px 10px rgba(0,0,0,0.03) !important; }
+
+  /* ★PC版と同様に、ロック時はカード自体のクリックも無効化する（Copilot指摘対応） */
+  .time-card.locked {
+      pointer-events: none !important;
+      cursor: default !important;
   }
 
-  .time-main {
-    font-size: 30px !important;
-    font-weight: 900 !important;
-    color: #9ca3af !important;
+  .time-card.available { background: #fff !important; border: 1px solid #e6e9ef !important; }
+  .time-card.pending { border: 2px solid #fcd34d !important; background: #fffbeb !important; }
+  .time-card.reserved { border: 2px solid #60a5fa !important; background: #eff6ff !important; }
+  .time-card.in_use { border: 2px solid #34d399 !important; background: #ecfdf5 !important; }
+  .time-card.unavailable { border: 1px solid #e5e7eb !important; background: #f9fafb !important; opacity: 0.8 !important;}
+
+  .sp-period-box {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      width: 48px !important;
+      height: 48px !important;
+      background: #fff !important;
+      border: 1px solid #e5e7eb !important;
+      border-radius: 10px !important;
+      flex-shrink: 0 !important;
+  }
+  .sp-period-box .p-num { font-size: 18px !important; font-weight: 900 !important; color: #4b5563 !important; line-height: 1 !important; }
+  .sp-period-box .p-text { font-size: 10px !important; font-weight: bold !important; color: #9ca3af !important; margin-top: 2px !important; }
+
+  .sp-info-box {
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: flex-start !important;
+      padding: 0 14px !important;
   }
 
-  .time-sub {
-    font-size: 14px !important;
-    color: #9ca3af !important;
+  .sp-time-row {
+      display: flex !important;
+      align-items: center !important;
+      font-size: 16px !important;
+      font-weight: 900 !important;
+      color: #111827 !important;
+      margin-bottom: 4px !important;
+      font-family: Arial, sans-serif !important;
   }
+  .sp-time-row .tilde { margin: 0 4px !important; color: #6b7280 !important;}
 
-  .floor {
-    display: none !important;
-  }
+  .sp-status-area { font-size: 12px !important; font-weight: 900 !important; margin-top: 2px !important;}
+  
+  .sp-status-area .available-label { color: #3b82f6 !important; background: #eff6ff !important; padding: 2px 8px !important; border-radius: 10px !important;}
+  .time-card.unavailable .unavailable-label { color: #6b7280 !important; }
+  .time-card.pending .unavailable-label { color: #d97706 !important; background: #fef3c7 !important; padding: 2px 8px !important; border-radius: 10px !important;}
+  .time-card.reserved .unavailable-label { color: #2563eb !important; background: #dbeafe !important; padding: 2px 8px !important; border-radius: 10px !important;}
+  .time-card.in_use .unavailable-label { color: #059669 !important; background: #d1fae5 !important; padding: 2px 8px !important; border-radius: 10px !important;}
 
-  .available-label,
-  .unavailable-label {
-    margin-top: 10px !important;
-    font-size: 16px !important;
-    font-weight: 900 !important;
-  }
-
-  .available-label {
-    color: var(--blue) !important;
-  }
-
-  .unavailable-label {
-    color: #6b7280 !important;
-  }
-
-  .reserve-btn {
-    margin-top: 10px !important;
-    width: 100% !important;
-    padding: 10px 0 !important;
-    border-radius: 10px !important;
-    background: #3b6a93 !important;
-    font-size: 16px !important;
-    font-weight: 900 !important;
-    text-align: center !important;
-    display: inline-block !important;
-  }
-
-  /* ===== 階数フィルター（統合済み） ===== */
-  .floor-filter-container {
-    display: flex; /* ★修正：明示的に指定 */
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    margin: 16px 0 20px;
-    width: 100%;
-  }
-
-  .floor-filter-label {
-    font-size: 13px;
-    margin-left: 2px;
-    color: #6b7280;
-    font-weight: bold;
-  }
-
-  .floor-filter-list {
-    display: flex;
-    flex-wrap: wrap !important;
-    gap: 8px;
-    width: 100%;
-    padding: 0;
-    overflow-x: visible;
-  }
-
-  .floor-chip {
-    flex: 0 0 auto;
-    height: 40px;
-    padding: 0 16px;
-    font-size: 14px;
-    border-radius: 20px;
-    margin-bottom: 4px;
-  }
-
-  /* 小さい端末の保険 */
-  @media (max-width: 390px) {
-    .day-label {
+  .sp-action-box { flex-shrink: 0 !important; }
+  .sp-reserve-btn {
+      display: inline-block !important; 
+      padding: 8px 16px !important;
+      background: #4C85B6 !important;
+      color: #fff !important;
       font-size: 13px !important;
-    }
-
-    .date-label {
-      font-size: 12px !important;
-    }
+      font-weight: 900 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 2px 6px rgba(76, 133, 182, 0.3) !important;
+  }
+  
+  .time-card.unavailable .sp-reserve-btn,
+  .time-card.pending .sp-reserve-btn,
+  .time-card.reserved .sp-reserve-btn,
+  .time-card.in_use .sp-reserve-btn,
+  .time-card.locked .sp-reserve-btn { 
+      display: none !important; 
   }
 
-  @media (max-width: 360px) {
-    .room-times {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-
-    .day-tabs .strip-btn {
-      width: 26px !important;
-      height: 26px !important;
-    }
-
-    .day-label {
-      font-size: 12px !important;
-    }
-
-    .date-label {
-      font-size: 11px !important;
-    }
-  }
 }

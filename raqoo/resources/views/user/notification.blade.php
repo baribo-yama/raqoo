@@ -6,6 +6,8 @@
   <title>お知らせ - Raqoo</title>
   {{-- ベースのCSS --}}
   <link rel="stylesheet" href="{{ asset('user/home.css') }}">
+  <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}">
+
   {{-- Tailwind (ユーティリティ用) --}}
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
   {{-- Ionicons --}}
