@@ -102,7 +102,7 @@ Route::get('/admin/notifications', function() {
 
 
 /*======= ユーザー画面 ========*/
-Route::middleware('auth')->group(function () {
+Route::middleware('auth', 'verified')->group(function () {
     // ユーザーホーム
     Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index');
 

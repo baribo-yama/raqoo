@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Auth\Events\Registered;
 
 class SignupController extends Controller
 {
@@ -60,6 +61,8 @@ class SignupController extends Controller
             'password' => Hash::make($request->password),
 
         ]);
+        // メールを送信
+        event(new Registered($user));
 
         // 自動ログインさせる場合はこれ
         // Auth::login($user);
