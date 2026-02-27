@@ -103,15 +103,15 @@
                                                 {{ $isOriginal ? 'checked disabled' : '' }}
                                                 {{ $isDisabledSlot ? 'disabled' : '' }}>
                                             
-                                            <span class="font-medium {{ $isDisabledSlot ? 'text-gray-400 line-through' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
-                                                {{ $i }}限
+                                            <span class="font-medium {{ $isDisabledSlot ? 'text-gray-400' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
+                                                <span class="{{ $isDisabledSlot ? 'line-through' : '' }}">{{ $i }}限</span>
                                                 @if($isOriginal)
-                                                    <span class="text-xs ml-1 font-normal text-blue-600">(選択中)</span>
+                                                    <span class="text-xs ml-1 font-normal text-blue-600 inline-block">(選択中)</span>
                                                 @elseif($isLesson)
                                                     {{-- ▼ Copilotの指摘を反映し、font-normal を削除して font-bold のみに統一 ▼ --}}
-                                                    <span class="text-xs ml-1 text-red-500 font-bold">(授業)</span>
+                                                    <span class="text-xs ml-1 text-red-500 font-bold inline-block">(授業)</span>
                                                 @elseif($isReservedOnly)
-                                                    <span class="text-xs ml-1 font-normal text-red-400">(予約済)</span>
+                                                    <span class="text-xs ml-1 font-normal text-red-400 inline-block">(予約済)</span>
                                                 @endif
                                             </span>
                                         </label>
