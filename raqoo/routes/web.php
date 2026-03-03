@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashBoardController as AdminDashBoardController;
 use App\Http\Controllers\User\RoomController as UserRoomController;
 use App\Http\Controllers\Admin\RoomStatusController;
@@ -14,7 +15,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\SignupController;
-// use App\Http\Controllers\PollTestController; // 必要なければコメントアウト
+use Illuminate\Auth\Events\Verified;
+
+require __DIR__.'/auth.php'; 
 
 /*======= 認証関連 ========*/
 // ユーザーログイン
@@ -99,7 +102,7 @@ Route::get('/admin/notifications', function() {
 
 
 /*======= ユーザー画面 ========*/
-Route::middleware('auth')->group(function () {
+Route::middleware('auth', 'verified')->group(function () {
     // ユーザーホーム
     Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index');
 

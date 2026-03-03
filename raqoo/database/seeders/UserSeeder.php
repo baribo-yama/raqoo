@@ -20,6 +20,7 @@ class UserSeeder extends Seeder
             'email' => 'bayashi@example.com',
             'password' => Hash::make('123456'),
             'student_id' => 'ST001',
+            'major' => 'エンジニア専攻',
         ]);
 
         User::create([
@@ -27,6 +28,7 @@ class UserSeeder extends Seeder
             'email' => 'sato@example.com',
             'password' => Hash::make('password123'),
             'student_id' => 'ST002',
+            'major' => 'クリエーター専攻',
         ]);
 
         User::create([
@@ -34,6 +36,7 @@ class UserSeeder extends Seeder
             'email' => 'yamada@example.com',
             'password' => Hash::make('password123'),
             'student_id' => 'ST003',
+            'major' => 'ハッカー専攻',
         ]);
 
         // より多くのテストユーザーを作成したい場合はFactoryを使用
