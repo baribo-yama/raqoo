@@ -23,7 +23,7 @@ class SignupController extends Controller
             'password.mixed' => '大文字と小文字を両方含めてください。',
             'password.numbers'    => '数字を1文字以上含めてください。',
             'password.symbols'    => '記号を1文字以上含めてください。',
-            'password.uncompromised' => 'このメールアドレスは危険かもしれません。',
+            'password.uncompromised' => '学校のメールアドレスで登録してください。',
         ];
 
         $request->validate([
