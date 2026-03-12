@@ -36,7 +36,10 @@
                         <tr>
                             <td class="px-6 py-4">
                                 {{ $reservation->user->name }}<br>
-                                <span class="text-sm text-gray-500">{{ $reservation->user->student_id }}</span>
+                                <span class="text-sm text-gray-500">
+                                    {{ $reservation->user->major }}<br>
+                                    {{ $reservation->user->student_id }}
+                                </span>
                             </td>
                             <td class="px-6 py-4">{{ $reservation->room->name }}</td>
                             <td class="px-6 py-4">{{ $reservation->date }}</td>
