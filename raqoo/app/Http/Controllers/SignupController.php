@@ -13,7 +13,7 @@ class SignupController extends Controller
     public function up(Request $request)
     {
         // dd($request->all()); // ←フォームから送信されたデータを確認するためのデバッグコード
-        
+
         // バリデーションエラー時のメッセージ
         $messages = [
             'password.required' => 'パスワードを入力してください。',
@@ -23,7 +23,7 @@ class SignupController extends Controller
             'password.mixed' => '大文字と小文字を両方含めてください。',
             'password.numbers'    => '数字を1文字以上含めてください。',
             'password.symbols'    => '記号を1文字以上含めてください。',
-            'password.uncompromised' => 'このメールアドレスは危険かもしれません。',
+            'password.uncompromised' => 'このパスワードは漏洩した可能性があるため使用できません。別のパスワードを設定してください。',
         ];
 
         $request->validate([
@@ -46,9 +46,9 @@ class SignupController extends Controller
         // ドメイン制限（登録はtechもしくはssmの学生・先生のみができる）
         $allowedDomains = ['@edu.sba.ac.jp', '@edu.ssm.ac.jp', '@sba.ac.jp', '`ssm.ac.jp'];
         $emailDomain = substr(strrchr($request->email, "@"), 0); // 入力されたメールアドレスのドメイン
-        
+
         if (!in_array($emailDomain, $allowedDomains)) {
-            return back()->withErrors(['email' => '無効なメールアドレスです。'])->withInput();
+            return back()->withErrors(['email' => '無効なメールアドレスです。学校のメールアドレスで登録してください。'])->withInput();
         }
 
 
