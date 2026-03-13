@@ -161,7 +161,7 @@
                         </div>
                     </div>
 
-                    <!-- 却下理由（却下の場合のみ） -->
+                    <!-- 却下理由（却下の場合のみ）(未使用) -->
                     @if($reservation->status === 'rejected' && $reservation->rejection_reason)
                     <div class="mb-6">
                         <h3 class="text-xl font-semibold mb-2 text-red-700">却下理由</h3>
