@@ -161,7 +161,7 @@
                         </div>
                     </div>
 
-                    <!-- 却下理由（却下の場合のみ） -->
+                    <!-- 却下理由（却下の場合のみ）(未使用) -->
                     @if($reservation->status === 'rejected' && $reservation->rejection_reason)
                     <div class="mb-6">
                         <h3 class="text-xl font-semibold mb-2 text-red-700">却下理由</h3>
@@ -171,9 +171,10 @@
                     </div>
                     @endif
 
-                    <!-- アクションボタン -->
+                    <!-- 予約キャンセルボタン -->
                     <div class="flex justify-center space-x-4">
-                        @if(in_array($reservation->status, ['pending', 'approved']) && \Carbon\Carbon::parse($reservation->date)->isFuture())
+                        {{-- 必要であれば@ifにこれ入れる→ && \Carbon\Carbon::parse($reservation->date)->isFuture() で予約が今日よりも未来なのかどうかチェック --}}
+                        @if(in_array($reservation->status, ['pending', 'reserved']))
                             <!-- キャンセルボタン -->
                             <button onclick="confirmCancel()"
                                     class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
