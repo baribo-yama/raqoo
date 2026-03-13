@@ -117,9 +117,8 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::post('/reservations', [UserReservationController::class, 'store'])->name('user.reservations.store');       // 保存処理
     Route::get('/reservations', [UserReservationController::class, 'index'])->name('user.reservations.index');
     Route::get('/reservations/{reservation}', [UserReservationController::class, 'show'])->name('user.reservations.show');
-    // Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
     // 予約キャンセル
-    Route::post('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
+    Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
     Route::get('/reservations-history', [UserReservationController::class, 'history'])->name('user.reservations.history');
 
 
