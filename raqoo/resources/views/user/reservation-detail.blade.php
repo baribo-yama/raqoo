@@ -171,9 +171,10 @@
                     </div>
                     @endif
 
-                    <!-- アクションボタン -->
-                    {{-- <div class="flex justify-center space-x-4">
-                        @if(in_array($reservation->status, ['pending', 'approved']) && \Carbon\Carbon::parse($reservation->date)->isFuture())
+                    <!-- 予約キャンセルボタン -->
+                    <div class="flex justify-center space-x-4">
+                        {{-- 必要であれば@ifにこれ入れる→ && \Carbon\Carbon::parse($reservation->date)->isFuture() で予約が今日よりも未来なのかどうかチェック --}}
+                        @if(in_array($reservation->status, ['pending', 'reserved']))
                             <!-- キャンセルボタン -->
                             <button onclick="confirmCancel()"
                                     class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
@@ -181,16 +182,6 @@
                                 予約をキャンセル
                             </button>
                         @endif
-                    </div> --}}
-
-                    <!-- キャンセルボタン -->
-                    <div class="">
-                        <form action="{{ route('user.reservations.cancel', $reservation->id) }}" method="POST">
-                            @csrf
-                            <button onclick="submit">
-                                キャンセル
-                            </button>
-                        </form>
                     </div>
                 </div>
             </div>
