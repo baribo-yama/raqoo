@@ -17,7 +17,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\SignupController;
 use Illuminate\Auth\Events\Verified;
 
-require __DIR__.'/auth.php'; 
+require __DIR__.'/auth.php';
 
 /*======= 認証関連 ========*/
 // ユーザーログイン
@@ -117,8 +117,11 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::post('/reservations', [UserReservationController::class, 'store'])->name('user.reservations.store');       // 保存処理
     Route::get('/reservations', [UserReservationController::class, 'index'])->name('user.reservations.index');
     Route::get('/reservations/{reservation}', [UserReservationController::class, 'show'])->name('user.reservations.show');
-    Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
+    // Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
+    // 予約キャンセル
+    Route::post('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
     Route::get('/reservations-history', [UserReservationController::class, 'history'])->name('user.reservations.history');
+
 
     // ユーザー通知
     Route::get('/notifications', [UserNotificationController::class, 'index'])->name('user.notifications.index');

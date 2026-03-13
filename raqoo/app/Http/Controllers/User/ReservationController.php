@@ -202,6 +202,7 @@ class ReservationController extends Controller
         return view('user.reservation-detail', compact('reservation'));
     }
 
+    // キャンセル処理
     public function cancel(Reservation $reservation)
     {
         if ($reservation->user_id !== Auth::id()) abort(403);
@@ -219,9 +220,9 @@ class ReservationController extends Controller
     public function history()
     {
         $historyReservations = Reservation::where(function ($query) {
-                $query->where('date', '<', Carbon::today())
-                      ->orWhereIn('status', ['finished', 'cancelled']);
-            })
+            $query->where('date', '<', Carbon::today())
+                ->orWhereIn('status', ['finished', 'cancelled']);
+        })
             ->where('user_id', Auth::id())
             ->with('room')
             ->orderBy('date', 'desc')
@@ -241,7 +242,7 @@ class ReservationController extends Controller
         $limit = (int) $request->query('limit', 50);
 
         $q = Reservation::with('room')
-            ->where('user_id', Auth::id()) 
+            ->where('user_id', Auth::id())
             ->orderBy('date')
             ->orderBy('period');
 
