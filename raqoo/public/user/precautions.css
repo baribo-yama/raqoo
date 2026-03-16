@@ -29,6 +29,8 @@ body[data-mode] .content-area .terms-viewport{
 
 .terms-card{
   width: clamp(360px, 92vw, 640px);
+  /* ▼ 全ステップで高さを固定 */
+  height: 480px;
   background: var(--card);
   border: 1px solid rgba(230,233,238,.9);
   border-radius: 16px;
@@ -99,15 +101,13 @@ body[data-mode] .content-area .terms-viewport{
   color: var(--ink);
 }
 
-/* ▼▼▼ 文字位置の調整 ▼▼▼ */
+/* ▼ テキスト中央揃え・max-width外してパネル幅いっぱいに */
 .terms-desc{
   font-size:14px;
   color: rgba(100,116,139,.95);
   line-height:2.0;
-  white-space: normal;  /* HTMLのインデントによるズレを防止 */
-  text-align: center;   /* 中央揃え */
-  max-width:420px;
-  margin:0 auto;
+  white-space: normal;
+  text-align: center;
 }
 
 .terms-dots{
