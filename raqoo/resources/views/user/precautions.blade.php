@@ -46,10 +46,11 @@
           <h1 class="terms-title">3ステップで確認しよう！</h1>
           <div class="terms-panel">
             <div class="terms-badge" aria-hidden="true">1</div>
-            <div class="terms-lead">対象と条件を確認する</div>
+            <div class="terms-lead">空き時間を確認・選択する</div>
             <p class="terms-desc">
-                利用時間は原則として平日 9:10〜21:30 の授業時間内に限ります。
-                学生同士のみの使用は不可（教員同伴必須）。PASS証提示や申請書提出を事前に行う必要あり。
+              教室カレンダーから希望の日付・時限を選択してください。<br>
+              申請可能な時間帯は、平日 9:10〜19:30、土日 10:50〜17:50（授業時間内）に限ります。<br>
+              また、２名以上での利用の場合、１教室につき２コマまで借りることができます。
             </p>
           </div>
           <div class="terms-dots">
@@ -65,11 +66,10 @@
           <h1 class="terms-title">3ステップで確認しよう！</h1>
           <div class="terms-panel">
             <div class="terms-badge" aria-hidden="true">2</div>
-            <div class="terms-lead">申請書記入と提出</div>
+            <div class="terms-lead">申請フォームを入力して送信する</div>
             <p class="terms-desc">
-                代表者が氏名・学年・コース・使用目的、
-                教室・メンバー名を記入。使用目的は詳細に記載。
-                指定場所へ事前に申請書を提出。
+              利用目的・代表者・利用メンバー（氏名と学籍番号）を入力し申請を送信。<br>
+              管理者が確認後、承認または却下というメッセージがアプリの「お知らせ」に届きます。
             </p>
           </div>
           <div class="terms-dots">
@@ -85,11 +85,12 @@
           <h1 class="terms-title">3ステップで確認しよう！</h1>
           <div class="terms-panel">
             <div class="terms-badge" aria-hidden="true">3</div>
-            <div class="terms-lead">利用日当日の対応</div>
+            <div class="terms-lead">当日・受け取りと返却</div>
             <p class="terms-desc">
-                利用開始10分前には受付で手続き。
-                申請書のコピーを受け取り、教室の鍵などを受領。
-                利用後は速やかに退室し、返却・清掃を行う。
+              利用開始10分前に受付で手続きし、教室の鍵などを受領。<br>
+              また、鍵の受け取り時には全員分の学生証の提出が必要です。<br>
+              学生証は鍵の返却時にお返しします。<br>
+              利用後は速やかに退室し、返却・清掃を行ってください。
             </p>
           </div>
           <div class="terms-dots">
