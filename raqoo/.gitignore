@@ -23,3 +23,6 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /log/xdebug.log
+log/*.log
+*.swp
+FETCH_HEAD
