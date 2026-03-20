@@ -217,10 +217,9 @@
 
             // ▼ メンバー個別入力欄の制御
             const membersHidden = document.getElementById('membersHidden');
-            const membersProxy = document.getElementById('members'); // updateFormState監視用
+            const membersProxy = document.getElementById('members');
             const memberInputs = document.querySelectorAll('.member-name-input');
 
-            // 入力のたびにproxyを更新してupdateFormStateに連携
             memberInputs.forEach(input => {
                 input.addEventListener('input', function() {
                     const hasAny = Array.from(memberInputs).some(i => i.value.trim() !== '');
@@ -229,7 +228,6 @@
                 });
             });
 
-            // フォーム送信直前に入力内容を結合してhiddenにセット
             document.getElementById('reservationForm').addEventListener('submit', function() {
                 const filled = Array.from(memberInputs)
                     .map(input => input.value.trim())
@@ -251,7 +249,6 @@
             function updateFormState() {
                 const hasMembers = membersProxy.value.trim().length > 0;
 
-                // メッセージの切り替え
                 if (hasMembers) {
                     instructionText.textContent = "※最大2コマまで選択可能です。";
                     instructionText.classList.remove('text-orange-600');
@@ -308,7 +305,6 @@
                 });
             }
 
-            // proxyのinputイベントでupdateFormStateを呼ぶ
             membersProxy.addEventListener('input', updateFormState);
 
             checkboxes.forEach(cb => {
@@ -325,7 +321,6 @@
                 });
             });
 
-            // サイドバー等の既存JS
             let list = document.querySelectorAll('.list');
             function activeLink() {
                 list.forEach((item) => item.classList.remove('active'));
@@ -341,7 +336,6 @@
                 }
             }
 
-            // 初期実行
             updateFormState();
         });
     </script>

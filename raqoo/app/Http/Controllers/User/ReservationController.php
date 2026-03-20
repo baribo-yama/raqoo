@@ -71,7 +71,7 @@ class ReservationController extends Controller
             'room_id' => $room->id,
             'date'    => $date,
             'period'  => $period,
-            'purpose' => '選択中',  // 仮の値。storeで上書きされる
+            'purpose' => '選択中',
             'status'  => 'selecting',
         ]);
 
@@ -113,7 +113,6 @@ class ReservationController extends Controller
             ->whereIn('period', $validated['periods'])
             ->where('status', '!=', 'cancelled')
             ->where(function ($q) {
-                // 自分のselectingは重複扱いしない
                 $q->where('user_id', '!=', Auth::id())
                   ->orWhereNotIn('status', ['selecting']);
             })
@@ -298,7 +297,7 @@ class ReservationController extends Controller
 
         $q = Reservation::with('room')
             ->where('user_id', Auth::id())
-            ->whereNotIn('status', ['selecting']) // selectingは予約一覧に表示しない
+            ->whereNotIn('status', ['selecting'])
             ->orderBy('date')
             ->orderBy('period');
 
