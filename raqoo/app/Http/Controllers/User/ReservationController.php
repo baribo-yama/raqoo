@@ -47,33 +47,43 @@ class ReservationController extends Controller
             ->where('status', 'selecting')
             ->delete();
 
-        // ★ 他人がすでにpending/reserved/in_use/selectingで埋めているか確認
-        $alreadyTaken = Reservation::where('room_id', $room->id)
-            ->where('date', $date)
-            ->where('period', $period)
-            ->where('user_id', '!=', Auth::id())
-            ->whereIn('status', ['selecting', 'pending', 'reserved', 'in_use'])
-            ->exists();
+        // ★ トランザクション内でロックを取りながらselectingを作成（同時クリック競合防止）
+        $result = DB::transaction(function () use ($room, $date, $period) {
+            // 他人がすでにpending/reserved/in_use/selectingで埋めているか確認（行ロック）
+            $alreadyTaken = Reservation::where('room_id', $room->id)
+                ->where('date', $date)
+                ->where('period', $period)
+                ->where('user_id', '!=', Auth::id())
+                ->whereIn('status', ['selecting', 'pending', 'reserved', 'in_use'])
+                ->lockForUpdate()
+                ->exists();
 
-        $lessonExists = RoomLesson::where('room_id', $room->id)
-            ->where('date', $date)
-            ->where('period', $period)
-            ->exists();
+            $lessonExists = RoomLesson::where('room_id', $room->id)
+                ->where('date', $date)
+                ->where('period', $period)
+                ->exists();
 
-        if ($alreadyTaken || $lessonExists) {
+            if ($alreadyTaken || $lessonExists) {
+                return false;
+            }
+
+            // ★ selectingレコードを作成（他ユーザーへ利用不可として見せる）
+            Reservation::create([
+                'user_id' => Auth::id(),
+                'room_id' => $room->id,
+                'date'    => $date,
+                'period'  => $period,
+                'purpose' => '選択中',
+                'status'  => 'selecting',
+            ]);
+
+            return true;
+        });
+
+        if (!$result) {
             return redirect()->route('user.home.index')
                 ->with('error', 'その時間帯はすでに利用できません。');
         }
-
-        // ★ selectingレコードを作成（他ユーザーへ利用不可として見せる）
-        Reservation::create([
-            'user_id' => Auth::id(),
-            'room_id' => $room->id,
-            'date'    => $date,
-            'period'  => $period,
-            'purpose' => '選択中',
-            'status'  => 'selecting',
-        ]);
 
         // 1. 他の人の「予約」を取得（selectingも含める）
         $reservedPeriods = Reservation::where('room_id', $room->id)
@@ -157,28 +167,18 @@ class ReservationController extends Controller
 
     /**
      * 予約の保存
-     * ★ 10分以内のselectingレコードがない場合はタイムアウトエラー
+     * ★ 申請対象のroom_id/date/periodsと一致するselectingが有効か確認
      * ★ selectingレコードを削除してからpendingレコードを作成
      */
     public function store(Request $request)
     {
-        // ★ 自分のselectingレコードがまだ有効か確認（10分以内）
-        $hasValidSelecting = Reservation::where('user_id', Auth::id())
-            ->where('status', 'selecting')
-            ->where('created_at', '>=', now()->subMinutes(10))
-            ->exists();
-
-        if (!$hasValidSelecting) {
-            return redirect()->route('user.home.index')
-                ->with('error', '申請に失敗しました。選択から10分が経過したため、もう一度最初からやり直してください。');
-        }
-
         $validated = $request->validate([
             'room_id'    => 'required|exists:rooms,id',
             'date'       => 'required|date|after_or_equal:today',
             'periods'    => 'required|array|min:1|max:2',
             'periods.*'  => 'integer|min:1|max:6',
-            'purpose'    => 'required|string|max:500',
+            // ★ Copilot指摘対応: DBのカラム長(100)に合わせてmax:100に修正
+            'purpose'    => 'required|string|max:100',
             'members'    => 'nullable|string',
         ]);
 
@@ -191,6 +191,21 @@ class ReservationController extends Controller
                     ->withErrors(['error' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
                     ->withInput();
             }
+        }
+
+        // ★ Copilot指摘対応: room_id/date/periodsと一致するselectingが有効か確認
+        // user_idだけでなく申請対象の枠と一致するか確認することで、別枠のselectingで通り抜けるのを防ぐ
+        $hasValidSelecting = Reservation::where('user_id', Auth::id())
+            ->where('status', 'selecting')
+            ->where('room_id', $validated['room_id'])
+            ->where('date', $validated['date'])
+            ->whereIn('period', $validated['periods'])
+            ->where('created_at', '>=', now()->subMinutes(10))
+            ->exists();
+
+        if (!$hasValidSelecting) {
+            return redirect()->route('user.home.index')
+                ->with('error', '申請に失敗しました。選択から10分が経過したため、もう一度最初からやり直してください。');
         }
 
         return DB::transaction(function () use ($validated) {
@@ -243,6 +258,8 @@ class ReservationController extends Controller
     {
         $reservations = Reservation::where('user_id', Auth::id())
             ->where('date', '>=', Carbon::today())
+            // ★ Copilot指摘対応: selectingレコードを一覧に表示しない
+            ->whereNotIn('status', ['selecting'])
             ->with('room')
             ->orderBy('date')
             ->orderBy('period')

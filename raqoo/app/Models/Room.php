@@ -22,6 +22,16 @@ class Room extends Model
         return $this->hasMany(RoomLesson::class);
     }
 
+    /**
+     * 指定した日付・時限のステータスを取得するメソッド
+     *
+     * @param string $date 日付 (Y-m-d)
+     * @param int $period 時限 (1-6)
+     * @param int|null $userId ユーザーID（null=管理者）
+     * @param array $lessonMap 授業マップ
+     * @param array $reservationMap 予約マップ
+     * @return string ステータス ('available', 'selecting', 'pending', 'reserved', 'in_use', 'unavailable')
+     */
     public function getStatusForPeriod($date, $period, $userId = null, $lessonMap = [], $reservationMap = [])
     {
         if ($userId !== null) {
