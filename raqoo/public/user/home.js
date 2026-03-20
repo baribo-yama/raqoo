@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- ステータス表示（日本語＆色用class） ----------
   function statusMeta(status) {
     switch (status) {
+      case "selecting":  return { text: "選択中",   cls: "my-badge selecting" }; // ★ selecting追加
       case "pending":    return { text: "申請中",   cls: "my-badge pending" };
       case "reserved":   return { text: "予約済み", cls: "my-badge reserved" };
       case "in_use":     return { text: "利用中",   cls: "my-badge in_use" };
@@ -212,14 +213,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateRoomStatuses(date) {
     document.querySelectorAll('.room-group').forEach((roomGroup) => {
       roomGroup.querySelectorAll('.time-card').forEach((card) => {
-        // ★Copilot指摘対応：初期化時に locked クラスも確実に削除する
-        card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable', 'locked');
+        // ★ selectingクラスも削除対象に追加
+        card.classList.remove('available', 'selecting', 'pending', 'reserved', 'in_use', 'unavailable', 'locked');
 
         const availableLabel = card.querySelector(".available-label");
         const unavailableLabel = card.querySelector(".unavailable-label");
         const reserveBtn = card.querySelector(".reserve-btn");
 
-        // Tailwindクラスを使って非表示に切り替え
         if (availableLabel) availableLabel.classList.add('hidden');
         if (unavailableLabel) {
           unavailableLabel.classList.remove('hidden');
@@ -227,38 +227,30 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (reserveBtn) reserveBtn.classList.add('hidden');
 
-        // ★Copilot指摘対応：正規表現ではなくURL/URLSearchParamsを使った堅牢なURL書き換え
         if (reserveBtn) {
           let href = reserveBtn.getAttribute('href') || reserveBtn.getAttribute('data-href') || card.dataset.baseHref;
           
           if (href && typeof href === 'string') {
             try {
-              // 相対パスを解析できるよう、ダミーのベースURL（location.origin）を付与
               const url = new URL(href, window.location.origin);
 
-              // パターン1: ?next=... の中にエンコードされて date が含まれている場合 
-              // (例: /user/precautions?next=/user/reservations/create?date=...)
               if (url.searchParams.has('next')) {
                 const nextParam = url.searchParams.get('next');
                 const nextUrl = new URL(nextParam, window.location.origin);
                 
                 if (nextUrl.searchParams.has('date')) {
                   nextUrl.searchParams.set('date', date);
-                  // pathname + search で相対パスに戻してセット
                   url.searchParams.set('next', nextUrl.pathname + nextUrl.search);
                 }
               }
-              // パターン2: URL自体が直接 ?date=... を持っている場合
               else if (url.searchParams.has('date')) {
                 url.searchParams.set('date', date);
               }
 
-              // 元の href が 'http' で始まっていなければ相対パスに戻す
               href = href.startsWith('http') ? url.href : url.pathname + url.search;
 
             } catch (error) {
               console.warn("URLパースエラー。フォールバックとして正規表現を使用します", error);
-              // パースに失敗した時のためのフォールバック
               href = href.replace(/date%3D\d{4}-\d{2}-\d{2}/g, `date%3D${date}`);
               href = href.replace(/date=\d{4}-\d{2}-\d{2}/g, `date=${date}`);
             }
@@ -286,7 +278,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const statusData = data.find((item) => item.room_id == roomId && Number(item.period) === period);
             const status = statusData ? statusData.status : "available";
 
-            card.classList.remove('available', 'pending', 'reserved', 'in_use', 'unavailable', 'locked');
+            // ★ selectingクラスも削除対象に追加
+            card.classList.remove('available', 'selecting', 'pending', 'reserved', 'in_use', 'unavailable', 'locked');
             card.classList.add(status);
 
             // PC用の要素群
@@ -302,7 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (status === 'available') {
               card.setAttribute("href", card.dataset.baseHref);
               card.classList.remove('locked');
-              // ★ Copilot指摘対応: 利用可能な時は aria-disabled を外す
               card.removeAttribute("aria-disabled");
 
               // PC表示
@@ -318,13 +310,13 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
               card.removeAttribute("href");
               card.classList.add('locked');
-              // ★ Copilot指摘対応: 利用不可の時は aria-disabled をつける
               card.setAttribute("aria-disabled", "true");
 
               const statusLabels = {
-                'pending': '申請中',
-                'reserved': '予約済み',
-                'in_use': '利用中',
+                'selecting': '選択中',  // ★ selecting追加
+                'pending':   '申請中',
+                'reserved':  '予約済み',
+                'in_use':    '利用中',
                 'unavailable': '利用不可',
               };
               const label = statusData?.lesson_title ?? statusLabels[status] ?? '利用不可';

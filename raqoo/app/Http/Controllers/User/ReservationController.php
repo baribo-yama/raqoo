@@ -24,11 +24,15 @@ class ReservationController extends Controller
      */
     public function create(Request $request)
     {
-        $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
+        // ★ Copilot指摘対応: DB操作前にdate/periodをバリデーション
+        $request->validate([
+            'room_id' => 'required|exists:rooms,id',
+            'date'    => 'required|date|after_or_equal:today',
+            'period'  => 'required|integer|min:1|max:6',
+        ]);
 
-        if (!$request->date) {
-            return redirect()->route('user.home.index')->with('error', '日付が指定されていません。');
-        }
+        $selectedRoom = Room::find($request->room_id);
+
         if (!$selectedRoom) {
             return redirect()->route('user.home.index')->with('error', '教室がみつかりません。');
         }
@@ -167,7 +171,7 @@ class ReservationController extends Controller
 
     /**
      * 予約の保存
-     * ★ 申請対象のroom_id/date/periodsと一致するselectingが有効か確認
+     * ★ 申請対象の全periodに対してselectingが有効か確認
      * ★ selectingレコードを削除してからpendingレコードを作成
      */
     public function store(Request $request)
@@ -177,7 +181,6 @@ class ReservationController extends Controller
             'date'       => 'required|date|after_or_equal:today',
             'periods'    => 'required|array|min:1|max:2',
             'periods.*'  => 'integer|min:1|max:6',
-            // ★ Copilot指摘対応: DBのカラム長(100)に合わせてmax:100に修正
             'purpose'    => 'required|string|max:100',
             'members'    => 'nullable|string',
         ]);
@@ -193,15 +196,17 @@ class ReservationController extends Controller
             }
         }
 
-        // ★ Copilot指摘対応: room_id/date/periodsと一致するselectingが有効か確認
-        // user_idだけでなく申請対象の枠と一致するか確認することで、別枠のselectingで通り抜けるのを防ぐ
-        $hasValidSelecting = Reservation::where('user_id', Auth::id())
+        // ★ Copilot指摘対応: exists()ではなくcount()で全periodのselectingが揃っているか確認
+        // 2限連続予約の場合、1限分しかselectingがなければ通り抜けを防ぐ
+        $matchingSelectingCount = Reservation::where('user_id', Auth::id())
             ->where('status', 'selecting')
             ->where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
             ->whereIn('period', $validated['periods'])
             ->where('created_at', '>=', now()->subMinutes(10))
-            ->exists();
+            ->count();
+
+        $hasValidSelecting = ($matchingSelectingCount === count($validated['periods']));
 
         if (!$hasValidSelecting) {
             return redirect()->route('user.home.index')
@@ -258,7 +263,6 @@ class ReservationController extends Controller
     {
         $reservations = Reservation::where('user_id', Auth::id())
             ->where('date', '>=', Carbon::today())
-            // ★ Copilot指摘対応: selectingレコードを一覧に表示しない
             ->whereNotIn('status', ['selecting'])
             ->with('room')
             ->orderBy('date')

@@ -151,6 +151,11 @@
                         {{-- 実際に送信される値はこちら --}}
                         <input type="hidden" name="members" id="membersHidden">
 
+                        @php
+                            // ★ Copilot指摘対応: バリデーションエラー後にold('members')から復元
+                            $oldMembers = old('members') ? explode("\n", old('members')) : [];
+                        @endphp
+
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 利用メンバー（代表者以外、最大30名）
@@ -174,6 +179,10 @@
                                                     class="member-name-input w-full px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
                                                     placeholder="氏名を入力"
                                                     maxlength="50"
+                                                    {{-- ★ Copilot指摘対応: アクセシビリティのためaria-labelを追加 --}}
+                                                    aria-label="利用メンバー {{ $i }}人目の氏名"
+                                                    {{-- ★ Copilot指摘対応: バリデーションエラー後に入力値を復元 --}}
+                                                    value="{{ $oldMembers[$i - 1] ?? '' }}"
                                                 >
                                             </div>
                                         </div>
@@ -219,6 +228,12 @@
             const membersHidden = document.getElementById('membersHidden');
             const membersProxy = document.getElementById('members');
             const memberInputs = document.querySelectorAll('.member-name-input');
+
+            // ★ Copilot指摘対応: バリデーションエラー後にproxyを初期化（old値がある場合）
+            const hasOldMembers = Array.from(memberInputs).some(i => i.value.trim() !== '');
+            if (hasOldMembers) {
+                membersProxy.value = 'dummy';
+            }
 
             memberInputs.forEach(input => {
                 input.addEventListener('input', function() {
