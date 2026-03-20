@@ -60,15 +60,17 @@ class Room extends Model
         }
 
         // 自分の予約（優先度：高）
+        // selecting/pending/reserved/in_use なら自分のステータスをそのまま返す
         foreach ($reservationMap[$this->id][$period] ?? [] as $r) {
-            if ($r->user_id === $userId && in_array($r->status, ['pending', 'reserved', 'in_use'], true)) {
+            if ($r->user_id === $userId && in_array($r->status, ['selecting', 'pending', 'reserved', 'in_use'], true)) {
                 return $r->status;
             }
         }
 
         // 他人の予約
+        // ★ selecting（フォーム選択中）も利用不可にすることで予約重複を防ぐ
         foreach ($reservationMap[$this->id][$period] ?? [] as $r) {
-            if ($r->user_id !== $userId && in_array($r->status, ['reserved', 'in_use'], true)) {
+            if ($r->user_id !== $userId && in_array($r->status, ['selecting', 'pending', 'reserved', 'in_use'], true)) {
                 return 'unavailable';
             }
         }
