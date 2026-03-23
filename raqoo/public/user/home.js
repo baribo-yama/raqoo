@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- ステータス表示（日本語＆色用class） ----------
   function statusMeta(status) {
     switch (status) {
-      case "selecting":  return { text: "選択中",   cls: "my-badge selecting" }; // ★ selecting追加
+      case "selecting":  return { text: "選択中",   cls: "my-badge pending" }; // ★ pendingと同じバッジを使用
       case "pending":    return { text: "申請中",   cls: "my-badge pending" };
       case "reserved":   return { text: "予約済み", cls: "my-badge reserved" };
       case "in_use":     return { text: "利用中",   cls: "my-badge in_use" };

@@ -24,7 +24,7 @@ class ReservationController extends Controller
      */
     public function create(Request $request)
     {
-        // ★ Copilot指摘対応: DB操作前にdate/periodをバリデーション
+        // ★ DB操作前にdate/periodをバリデーション
         $request->validate([
             'room_id' => 'required|exists:rooms,id',
             'date'    => 'required|date|after_or_equal:today',
@@ -53,7 +53,6 @@ class ReservationController extends Controller
 
         // ★ トランザクション内でロックを取りながらselectingを作成（同時クリック競合防止）
         $result = DB::transaction(function () use ($room, $date, $period) {
-            // 他人がすでにpending/reserved/in_use/selectingで埋めているか確認（行ロック）
             $alreadyTaken = Reservation::where('room_id', $room->id)
                 ->where('date', $date)
                 ->where('period', $period)
@@ -71,7 +70,6 @@ class ReservationController extends Controller
                 return false;
             }
 
-            // ★ selectingレコードを作成（他ユーザーへ利用不可として見せる）
             Reservation::create([
                 'user_id' => Auth::id(),
                 'room_id' => $room->id,
@@ -107,6 +105,7 @@ class ReservationController extends Controller
 
     /**
      * 予約内容の重複チェックと確認画面表示
+     * ★ 2コマ連続予約の場合、追加コマ分のselectingもここで作成する
      */
     public function check(Request $request)
     {
@@ -154,6 +153,56 @@ class ReservationController extends Controller
             }
         }
 
+        // ★ Copilot指摘対応: 2コマ予約の場合、追加コマ分のselectingをここで作成する
+        // create()では最初にクリックした1コマ分しかselectingを作らないため、
+        // 確認画面に進む時点で追加コマ分のselectingを補完する
+        if (count($periods) > 1) {
+            // 自分がselectingを持っていないperiodを抽出
+            $existingSelectingPeriods = Reservation::where('user_id', Auth::id())
+                ->where('status', 'selecting')
+                ->where('room_id', $validated['room_id'])
+                ->where('date', $validated['date'])
+                ->whereIn('period', $periods)
+                ->pluck('period')
+                ->toArray();
+
+            $missingPeriods = array_diff($periods, $existingSelectingPeriods);
+
+            foreach ($missingPeriods as $missingPeriod) {
+                $created = DB::transaction(function () use ($validated, $missingPeriod) {
+                    // 他人がすでに埋めていないか確認（行ロック）
+                    $alreadyTaken = Reservation::where('room_id', $validated['room_id'])
+                        ->where('date', $validated['date'])
+                        ->where('period', $missingPeriod)
+                        ->where('user_id', '!=', Auth::id())
+                        ->whereIn('status', ['selecting', 'pending', 'reserved', 'in_use'])
+                        ->lockForUpdate()
+                        ->exists();
+
+                    if ($alreadyTaken) {
+                        return false;
+                    }
+
+                    Reservation::create([
+                        'user_id' => Auth::id(),
+                        'room_id' => $validated['room_id'],
+                        'date'    => $validated['date'],
+                        'period'  => $missingPeriod,
+                        'purpose' => '選択中',
+                        'status'  => 'selecting',
+                    ]);
+
+                    return true;
+                });
+
+                if (!$created) {
+                    return back()
+                        ->withErrors(['periods' => 'タッチの差で選択した時間帯が埋まってしまいました。もう一度選び直してください。'])
+                        ->withInput();
+                }
+            }
+        }
+
         $reservationData = [
             'room_id'        => $validated['room_id'],
             'room_name'      => $selectedRoom->name,
@@ -196,8 +245,7 @@ class ReservationController extends Controller
             }
         }
 
-        // ★ Copilot指摘対応: exists()ではなくcount()で全periodのselectingが揃っているか確認
-        // 2限連続予約の場合、1限分しかselectingがなければ通り抜けを防ぐ
+        // ★ 全period分のselectingが揃っているか確認（count比較）
         $matchingSelectingCount = Reservation::where('user_id', Auth::id())
             ->where('status', 'selecting')
             ->where('room_id', $validated['room_id'])
