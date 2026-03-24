@@ -42,6 +42,13 @@
                         <input type="hidden" name="room_id" value="{{ $room->id }}">
                         <input type="hidden" name="date" value="{{ $date }}">
 
+                        {{-- ★ toggleSelecting API用のデータをJSに渡す --}}
+                        <div id="selectingMeta"
+                            data-room-id="{{ $room->id }}"
+                            data-date="{{ $date }}"
+                            data-toggle-url="{{ route('user.reservations.selecting.toggle') }}"
+                        ></div>
+
                         <div class="mb-6 p-4 bg-gray-100 rounded-lg border border-gray-200">
                             <h3 class="text-lg font-bold mb-3 text-gray-800 border-b pb-2">基本情報</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -146,13 +153,10 @@
                         </div>
 
                         {{-- ▼ 利用メンバー欄（30人分の個別入力） --}}
-                        {{-- JSの updateFormState が監視する用のhidden（実際の送信値ではない） --}}
                         <input type="hidden" id="members" value="">
-                        {{-- 実際に送信される値はこちら --}}
                         <input type="hidden" name="members" id="membersHidden">
 
                         @php
-                            // ★ Copilot指摘対応: バリデーションエラー後にold('members')から復元
                             $oldMembers = old('members') ? explode("\n", old('members')) : [];
                         @endphp
 
@@ -162,13 +166,11 @@
                             </label>
 
                             <div class="border border-gray-300 rounded-md overflow-hidden">
-                                {{-- ヘッダー行 --}}
                                 <div class="grid grid-cols-12 bg-gray-100 border-b border-gray-300 px-3 py-2 text-sm font-bold text-gray-600">
                                     <div class="col-span-1 text-center">No.</div>
                                     <div class="col-span-11 pl-2">氏名</div>
                                 </div>
 
-                                {{-- 30人分の入力行 --}}
                                 <div class="divide-y divide-gray-200">
                                     @for ($i = 1; $i <= 30; $i++)
                                         <div class="grid grid-cols-12 items-center px-3 py-1">
@@ -179,9 +181,7 @@
                                                     class="member-name-input w-full px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
                                                     placeholder="氏名を入力"
                                                     maxlength="50"
-                                                    {{-- ★ Copilot指摘対応: アクセシビリティのためaria-labelを追加 --}}
                                                     aria-label="利用メンバー {{ $i }}人目の氏名"
-                                                    {{-- ★ Copilot指摘対応: バリデーションエラー後に入力値を復元 --}}
                                                     value="{{ $oldMembers[$i - 1] ?? '' }}"
                                                 >
                                             </div>
@@ -229,7 +229,6 @@
             const membersProxy = document.getElementById('members');
             const memberInputs = document.querySelectorAll('.member-name-input');
 
-            // ★ Copilot指摘対応: バリデーションエラー後にproxyを初期化（old値がある場合）
             const hasOldMembers = Array.from(memberInputs).some(i => i.value.trim() !== '');
             if (hasOldMembers) {
                 membersProxy.value = 'dummy';
@@ -249,6 +248,44 @@
                     .filter(val => val !== '');
                 membersHidden.value = filled.join('\n');
             });
+
+            // ★ toggleSelecting API用のデータ取得
+            const selectingMeta = document.getElementById('selectingMeta');
+            const roomId = selectingMeta.dataset.roomId;
+            const date = selectingMeta.dataset.date;
+            const toggleUrl = selectingMeta.dataset.toggleUrl;
+            const csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+            // ★ チェックボックスON/OFF時にselectingをAjaxで作成・削除する関数
+            async function toggleSelectingApi(period, action) {
+                try {
+                    const res = await fetch(toggleUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify({
+                            room_id: roomId,
+                            date: date,
+                            period: period,
+                            action: action, // 'lock' or 'unlock'
+                        }),
+                    });
+
+                    const data = await res.json();
+
+                    // 他人がすでに選択中の場合（409）
+                    if (!res.ok || !data.success) {
+                        return false;
+                    }
+
+                    return true;
+                } catch (e) {
+                    console.error('selecting toggle error:', e);
+                    return false;
+                }
+            }
 
             // 連続予約の制御ロジック
             const checkboxes = document.querySelectorAll('.period-checkbox');
@@ -323,15 +360,36 @@
             membersProxy.addEventListener('input', updateFormState);
 
             checkboxes.forEach(cb => {
-                cb.addEventListener('change', function() {
+                cb.addEventListener('change', async function() {
                     const label = document.getElementById('label-' + this.value);
+                    const period = parseInt(this.value, 10);
+                    const isOriginal = this.dataset.original === "1";
+
+                    // メインの時限はcreate()で作成済みなのでtoggle不要
+                    if (isOriginal) return;
+
                     if (this.checked) {
+                        // ★ チェックON → selectingをロック
+                        const success = await toggleSelectingApi(period, 'lock');
+
+                        if (!success) {
+                            // ロック失敗（他人が選択中）→ チェックを戻してエラー表示
+                            this.checked = false;
+                            alert('その時間帯はすでに他の人が選択中です。');
+                            updateFormState();
+                            return;
+                        }
+
                         label.classList.add('bg-blue-50', 'border-blue-400');
                         label.classList.remove('border-gray-200');
                     } else {
+                        // ★ チェックOFF → selectingを解除
+                        await toggleSelectingApi(period, 'unlock');
+
                         label.classList.remove('bg-blue-50', 'border-blue-400');
                         label.classList.add('border-gray-200');
                     }
+
                     updateFormState();
                 });
             });

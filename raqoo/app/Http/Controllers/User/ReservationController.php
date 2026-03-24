@@ -390,4 +390,82 @@ class ReservationController extends Controller
 
         return response()->json($rows);
     }
+    
+    /**
+     * チェックボックスON/OFF時のselecting作成・削除
+     * ★ 2コマ目のチェックボックスをオンにした瞬間にselectingを作成してロック
+     * ★ チェックボックスをオフにした瞬間にselectingを削除してロック解除
+     */
+    public function toggleSelecting(Request $request)
+    {
+        $validated = $request->validate([
+            'room_id' => 'required|exists:rooms,id',
+            'date'    => 'required|date|after_or_equal:today',
+            'period'  => 'required|integer|min:1|max:6',
+            'action'  => 'required|in:lock,unlock', // lock=チェックON、unlock=チェックOFF
+        ]);
+
+        // チェックOFF → selectingを削除してロック解除
+        if ($validated['action'] === 'unlock') {
+            Reservation::where('user_id', Auth::id())
+                ->where('status', 'selecting')
+                ->where('room_id', $validated['room_id'])
+                ->where('date', $validated['date'])
+                ->where('period', $validated['period'])
+                ->delete();
+
+            return response()->json(['success' => true, 'action' => 'unlocked']);
+        }
+
+        // チェックON → selectingを作成してロック
+        $result = DB::transaction(function () use ($validated) {
+            // 他人がすでに埋めていないか確認（行ロック）
+            $alreadyTaken = Reservation::where('room_id', $validated['room_id'])
+                ->where('date', $validated['date'])
+                ->where('period', $validated['period'])
+                ->where('user_id', '!=', Auth::id())
+                ->whereIn('status', ['selecting', 'pending', 'reserved', 'in_use'])
+                ->lockForUpdate()
+                ->exists();
+
+            $lessonExists = RoomLesson::where('room_id', $validated['room_id'])
+                ->where('date', $validated['date'])
+                ->where('period', $validated['period'])
+                ->exists();
+
+            if ($alreadyTaken || $lessonExists) {
+                return false;
+            }
+
+            // すでに自分のselectingがあれば作らない（二重作成防止）
+            $alreadyMine = Reservation::where('user_id', Auth::id())
+                ->where('status', 'selecting')
+                ->where('room_id', $validated['room_id'])
+                ->where('date', $validated['date'])
+                ->where('period', $validated['period'])
+                ->exists();
+
+            if (!$alreadyMine) {
+                Reservation::create([
+                    'user_id' => Auth::id(),
+                    'room_id' => $validated['room_id'],
+                    'date'    => $validated['date'],
+                    'period'  => $validated['period'],
+                    'purpose' => '選択中',
+                    'status'  => 'selecting',
+                ]);
+            }
+
+            return true;
+        });
+
+        if (!$result) {
+            return response()->json([
+                'success' => false,
+                'message' => 'その時間帯はすでに他の人が選択中です。',
+            ], 409);
+        }
+
+        return response()->json(['success' => true, 'action' => 'locked']);
+    }
 }
