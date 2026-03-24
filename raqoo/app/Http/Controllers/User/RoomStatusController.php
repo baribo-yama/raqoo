@@ -29,19 +29,26 @@ class RoomStatusController extends Controller
         $userId = Auth::id();
         $rooms = Room::all();
 
-        // 一括取得して look up を作る
+        // 期限切れのselectingレコードを削除（10分以上経過）
+        Reservation::where('status', 'selecting')
+            ->where('created_at', '<', now()->subMinutes(10))
+            ->delete();
+
+        // 一括取得してlook upを作る
         $lessonMap = [];
         foreach (RoomLesson::where('date', $date)->get() as $lesson) {
             $lessonMap[$lesson->room_id][$lesson->period] = $lesson;
         }
 
         $reservationMap = [];
-        foreach (Reservation::where('date', $date)
-            ->whereIn('status', ['pending', 'reserved', 'in_use'])
-            ->get() as $reservation) {
+        foreach (
+            Reservation::where('date', $date)
+                // ★ selectingも含めて取得することでフォーム選択中もロック対象にする
+                ->whereIn('status', ['selecting', 'pending', 'reserved', 'in_use'])
+                ->get() as $reservation
+        ) {
             $reservationMap[$reservation->room_id][$reservation->period][] = $reservation;
         }
-
 
         $statuses = [];
         foreach ($rooms as $room) {
@@ -50,9 +57,9 @@ class RoomStatusController extends Controller
                 $lesson = $lessonMap[$room->id][$period] ?? null;
 
                 $statuses[] = [
-                    'room_id' => $room->id,
-                    'period' => $period,
-                    'status' => $status,
+                    'room_id'      => $room->id,
+                    'period'       => $period,
+                    'status'       => $status,
                     'lesson_title' => $lesson?->title,
                 ];
             }

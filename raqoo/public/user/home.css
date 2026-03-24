@@ -734,6 +734,20 @@ body.with-sidebar {
     color: #9ca3af;
 }
 
+/* ★ selecting（自分がフォームを開いている状態） pendingと同じ見た目 */
+.time-card.selecting {
+    background-color: #fffbeb;
+    border: 2px solid #fcd34d;
+}
+
+.time-card.selecting .pc-layout .time-main {
+    color: #b45309;
+}
+
+.time-card.selecting .pc-layout .unavailable-label {
+    color: #d97706;
+}
+
 .time-card.pending {
     background-color: #fffbeb;
     border: 2px solid #fcd34d;
