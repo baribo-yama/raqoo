@@ -42,7 +42,6 @@
                         <input type="hidden" name="room_id" value="{{ $room->id }}">
                         <input type="hidden" name="date" value="{{ $date }}">
 
-                        {{-- ★ toggleSelecting API用のデータをJSに渡す --}}
                         <div id="selectingMeta"
                             data-room-id="{{ $room->id }}"
                             data-date="{{ $date }}"
@@ -152,7 +151,6 @@
                             </div>
                         </div>
 
-                        {{-- ▼ 利用メンバー欄（30人分の個別入力） --}}
                         <input type="hidden" id="members" value="">
                         <input type="hidden" name="members" id="membersHidden">
 
@@ -214,7 +212,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 文字数カウント
             const purposeTextarea = document.getElementById('purpose');
             const purposeCount = document.getElementById('purposeCount');
             if (purposeTextarea) {
@@ -224,7 +221,6 @@
                 purposeCount.textContent = purposeTextarea.value.length;
             }
 
-            // ▼ メンバー個別入力欄の制御
             const membersHidden = document.getElementById('membersHidden');
             const membersProxy = document.getElementById('members');
             const memberInputs = document.querySelectorAll('.member-name-input');
@@ -249,14 +245,12 @@
                 membersHidden.value = filled.join('\n');
             });
 
-            // ★ toggleSelecting API用のデータ取得
             const selectingMeta = document.getElementById('selectingMeta');
             const roomId = selectingMeta.dataset.roomId;
             const date = selectingMeta.dataset.date;
             const toggleUrl = selectingMeta.dataset.toggleUrl;
             const csrf = document.querySelector('meta[name="csrf-token"]').content;
 
-            // ★ チェックボックスON/OFF時にselectingをAjaxで作成・削除する関数
             async function toggleSelectingApi(period, action) {
                 try {
                     const res = await fetch(toggleUrl, {
@@ -269,13 +263,12 @@
                             room_id: roomId,
                             date: date,
                             period: period,
-                            action: action, // 'lock' or 'unlock'
+                            action: action,
                         }),
                     });
 
                     const data = await res.json();
 
-                    // 他人がすでに選択中の場合（409）
                     if (!res.ok || !data.success) {
                         return false;
                     }
@@ -287,7 +280,6 @@
                 }
             }
 
-            // 連続予約の制御ロジック
             const checkboxes = document.querySelectorAll('.period-checkbox');
             const instructionText = document.getElementById('instructionText');
 
@@ -298,7 +290,21 @@
                 }
             });
 
-            function updateFormState() {
+            // ★ Copilot指摘対応: プログラム的にチェックを外す時にもselectingを解除する関数
+            // updateFormState()内でcb.checked = falseするとchangeイベントが発火しないため
+            // チェックを外す前にこの関数でAPIを呼ぶ
+            async function uncheckWithUnlock(cb, label) {
+                if (cb.checked) {
+                    const period = parseInt(cb.value, 10);
+                    cb.checked = false;
+                    label.classList.remove('bg-blue-50', 'border-blue-400');
+                    label.classList.add('border-gray-200');
+                    // selectingをDBから削除
+                    await toggleSelectingApi(period, 'unlock');
+                }
+            }
+
+            async function updateFormState() {
                 const hasMembers = membersProxy.value.trim().length > 0;
 
                 if (hasMembers) {
@@ -318,34 +324,34 @@
                     }
                 });
 
-                checkboxes.forEach(cb => {
+                for (const cb of checkboxes) {
                     const isOriginal = cb.dataset.original === "1";
                     const isReserved = cb.dataset.reserved === "1";
                     const label = document.getElementById('label-' + cb.value);
                     const currentPeriod = parseInt(cb.value, 10);
 
-                    if (isOriginal) return;
+                    if (isOriginal) continue;
 
                     if (isReserved) {
                         cb.disabled = true;
                         label.classList.add('bg-gray-100', 'opacity-50', 'cursor-not-allowed');
-                        return;
+                        continue;
                     }
 
                     if (!hasMembers) {
                         cb.disabled = true;
-                        cb.checked = false;
-                        label.classList.remove('bg-blue-50', 'border-blue-400');
+                        // ★ チェックを外す時にselectingも解除
+                        await uncheckWithUnlock(cb, label);
                         label.classList.add('border-gray-200');
-                        return;
+                        continue;
                     }
 
                     const isConsecutive = (currentPeriod === mainPeriod - 1) || (currentPeriod === mainPeriod + 1);
 
                     if (!isConsecutive) {
                         cb.disabled = true;
-                        cb.checked = false;
-                        label.classList.remove('bg-blue-50', 'border-blue-400');
+                        // ★ チェックを外す時にselectingも解除
+                        await uncheckWithUnlock(cb, label);
                         label.classList.add('opacity-50', 'cursor-not-allowed');
                     } else if (extraCheckedCount >= 1 && !cb.checked) {
                         cb.disabled = true;
@@ -354,7 +360,7 @@
                         cb.disabled = false;
                         label.classList.remove('opacity-50', 'cursor-not-allowed');
                     }
-                });
+                }
             }
 
             membersProxy.addEventListener('input', updateFormState);
@@ -365,15 +371,12 @@
                     const period = parseInt(this.value, 10);
                     const isOriginal = this.dataset.original === "1";
 
-                    // メインの時限はcreate()で作成済みなのでtoggle不要
                     if (isOriginal) return;
 
                     if (this.checked) {
-                        // ★ チェックON → selectingをロック
                         const success = await toggleSelectingApi(period, 'lock');
 
                         if (!success) {
-                            // ロック失敗（他人が選択中）→ チェックを戻してエラー表示
                             this.checked = false;
                             alert('その時間帯はすでに他の人が選択中です。');
                             updateFormState();
@@ -383,7 +386,6 @@
                         label.classList.add('bg-blue-50', 'border-blue-400');
                         label.classList.remove('border-gray-200');
                     } else {
-                        // ★ チェックOFF → selectingを解除
                         await toggleSelectingApi(period, 'unlock');
 
                         label.classList.remove('bg-blue-50', 'border-blue-400');
