@@ -37,10 +37,16 @@
                     </div>
                     @endif
 
-                    <form action="{{ route('user.reservations.check') }}" method="POST">
+                    <form action="{{ route('user.reservations.check') }}" method="POST" id="reservationForm">
                         @csrf
                         <input type="hidden" name="room_id" value="{{ $room->id }}">
                         <input type="hidden" name="date" value="{{ $date }}">
+
+                        <div id="selectingMeta"
+                            data-room-id="{{ $room->id }}"
+                            data-date="{{ $date }}"
+                            data-toggle-url="{{ route('user.reservations.selecting.toggle') }}"
+                        ></div>
 
                         <div class="mb-6 p-4 bg-gray-100 rounded-lg border border-gray-200">
                             <h3 class="text-lg font-bold mb-3 text-gray-800 border-b pb-2">基本情報</h3>
@@ -84,7 +90,6 @@
                                     @for($i = 1; $i <= 6; $i++)
                                         @php
                                             $isOriginal = ($i == $period);
-                                            // 修正点：予約と授業を出し分ける判定ロジック
                                             $isReservedOnly = in_array($i, $reservedPeriods) && !$isOriginal;
                                             $isLesson = in_array($i, $lessonPeriods) && !$isOriginal;
                                             $isDisabledSlot = ($isReservedOnly || $isLesson);
@@ -108,7 +113,6 @@
                                                 @if($isOriginal)
                                                     <span class="text-xs ml-1 font-normal text-blue-600 inline-block">(選択中)</span>
                                                 @elseif($isLesson)
-                                                    {{-- ▼ Copilotの指摘を反映し、font-normal を削除して font-bold のみに統一 ▼ --}}
                                                     <span class="text-xs ml-1 text-red-500 font-bold inline-block">(授業)</span>
                                                 @elseif($isReservedOnly)
                                                     <span class="text-xs ml-1 font-normal text-red-400 inline-block">(予約済)</span>
@@ -116,7 +120,6 @@
                                             </span>
                                         </label>
 
-                                        {{-- 元の時限はPOST値に含めるためにhiddenで送る --}}
                                         @if($isOriginal)
                                             <input type="hidden" name="periods[]" value="{{ $i }}">
                                         @endif
@@ -148,16 +151,45 @@
                             </div>
                         </div>
 
+                        <input type="hidden" id="members" value="">
+                        <input type="hidden" name="members" id="membersHidden">
+
+                        @php
+                            $oldMembers = old('members') ? explode("\n", old('members')) : [];
+                        @endphp
+
                         <div class="mb-6">
-                            <label for="members" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
                                 利用メンバー（代表者以外、最大30名）
                             </label>
-                            {{-- JSで監視するためにID 'members' を使用 --}}
-                            <textarea id="members" name="members" rows="6"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="メンバーの氏名と学籍番号を入力してください&#10;例：&#10;山田太郎 (S12345)&#10;佐藤花子 (S67890)">{{ old('members') }}</textarea>
+
+                            <div class="border border-gray-300 rounded-md overflow-hidden">
+                                <div class="grid grid-cols-12 bg-gray-100 border-b border-gray-300 px-3 py-2 text-sm font-bold text-gray-600">
+                                    <div class="col-span-1 text-center">No.</div>
+                                    <div class="col-span-11 pl-2">氏名</div>
+                                </div>
+
+                                <div class="divide-y divide-gray-200">
+                                    @for ($i = 1; $i <= 30; $i++)
+                                        <div class="grid grid-cols-12 items-center px-3 py-1">
+                                            <div class="col-span-1 text-center text-sm text-gray-400 font-mono">{{ $i }}</div>
+                                            <div class="col-span-11 pl-2">
+                                                <input
+                                                    type="text"
+                                                    class="member-name-input w-full px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
+                                                    placeholder="氏名を入力"
+                                                    maxlength="50"
+                                                    aria-label="利用メンバー {{ $i }}人目の氏名"
+                                                    value="{{ $oldMembers[$i - 1] ?? '' }}"
+                                                >
+                                            </div>
+                                        </div>
+                                    @endfor
+                                </div>
+                            </div>
+
                             <div class="text-sm text-gray-500 mt-1">
-                                1行につき1名ずつ入力してください
+                                入力した分だけ送信されます（空欄はスキップ）
                             </div>
                         </div>
 
@@ -180,34 +212,101 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 文字数カウント
             const purposeTextarea = document.getElementById('purpose');
             const purposeCount = document.getElementById('purposeCount');
-            if(purposeTextarea){
+            if (purposeTextarea) {
                 purposeTextarea.addEventListener('input', function() {
                     purposeCount.textContent = this.value.length;
                 });
                 purposeCount.textContent = purposeTextarea.value.length;
             }
 
-            // 連続予約の制御ロジック
-            const membersInput = document.getElementById('members');
+            const membersHidden = document.getElementById('membersHidden');
+            const membersProxy = document.getElementById('members');
+            const memberInputs = document.querySelectorAll('.member-name-input');
+
+            const hasOldMembers = Array.from(memberInputs).some(i => i.value.trim() !== '');
+            if (hasOldMembers) {
+                membersProxy.value = 'dummy';
+            }
+
+            memberInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const hasAny = Array.from(memberInputs).some(i => i.value.trim() !== '');
+                    membersProxy.value = hasAny ? 'dummy' : '';
+                    membersProxy.dispatchEvent(new Event('input'));
+                });
+            });
+
+            document.getElementById('reservationForm').addEventListener('submit', function() {
+                const filled = Array.from(memberInputs)
+                    .map(input => input.value.trim())
+                    .filter(val => val !== '');
+                membersHidden.value = filled.join('\n');
+            });
+
+            const selectingMeta = document.getElementById('selectingMeta');
+            const roomId = selectingMeta.dataset.roomId;
+            const date = selectingMeta.dataset.date;
+            const toggleUrl = selectingMeta.dataset.toggleUrl;
+            const csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+            async function toggleSelectingApi(period, action) {
+                try {
+                    const res = await fetch(toggleUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify({
+                            room_id: roomId,
+                            date: date,
+                            period: period,
+                            action: action,
+                        }),
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok || !data.success) {
+                        return false;
+                    }
+
+                    return true;
+                } catch (e) {
+                    console.error('selecting toggle error:', e);
+                    return false;
+                }
+            }
+
             const checkboxes = document.querySelectorAll('.period-checkbox');
             const instructionText = document.getElementById('instructionText');
-            
-            // ▼追加：メイン（選択中）の時限を取得する
+
             let mainPeriod = 0;
             checkboxes.forEach(cb => {
                 if (cb.dataset.original === "1") {
                     mainPeriod = parseInt(cb.value, 10);
                 }
             });
-            
-            function updateFormState() {
-                const membersValue = membersInput.value.trim();
-                const hasMembers = membersValue.length > 0; // メンバー入力があるか
 
-                // メッセージの切り替え
+            // ★ Copilot指摘対応: プログラム的にチェックを外す時にもselectingを解除する関数
+            // updateFormState()内でcb.checked = falseするとchangeイベントが発火しないため
+            // チェックを外す前にこの関数でAPIを呼ぶ
+            async function uncheckWithUnlock(cb, label) {
+                if (cb.checked) {
+                    const period = parseInt(cb.value, 10);
+                    cb.checked = false;
+                    label.classList.remove('bg-blue-50', 'border-blue-400');
+                    label.classList.add('border-gray-200');
+                    // selectingをDBから削除
+                    await toggleSelectingApi(period, 'unlock');
+                }
+            }
+
+            async function updateFormState() {
+                const hasMembers = membersProxy.value.trim().length > 0;
+
                 if (hasMembers) {
                     instructionText.textContent = "※最大2コマまで選択可能です。";
                     instructionText.classList.remove('text-orange-600');
@@ -218,7 +317,6 @@
                     instructionText.classList.remove('text-blue-600');
                 }
 
-                // 現在チェックされている追加のコマ数（メイン以外）を数える
                 let extraCheckedCount = 0;
                 checkboxes.forEach(cb => {
                     if (cb.dataset.original === "0" && cb.checked) {
@@ -226,77 +324,78 @@
                     }
                 });
 
-                // 各チェックボックスの制御
-                checkboxes.forEach(cb => {
+                for (const cb of checkboxes) {
                     const isOriginal = cb.dataset.original === "1";
                     const isReserved = cb.dataset.reserved === "1";
                     const label = document.getElementById('label-' + cb.value);
                     const currentPeriod = parseInt(cb.value, 10);
 
-                    // 1. メインのコマは何もしない（常にdisabled checked）
-                    if (isOriginal) return;
+                    if (isOriginal) continue;
 
-                    // 2. すでに予約済み（または授業）のコマは常に無効
                     if (isReserved) {
                         cb.disabled = true;
-                        // デザイン調整
                         label.classList.add('bg-gray-100', 'opacity-50', 'cursor-not-allowed');
-                        return; 
+                        continue;
                     }
 
-                    // 3. メンバー入力がない場合（1人利用）
                     if (!hasMembers) {
-                        cb.disabled = true;   // 無効化
-                        cb.checked = false;   // チェックも外す
-                        label.classList.remove('bg-blue-50', 'border-blue-400');
+                        cb.disabled = true;
+                        // ★ チェックを外す時にselectingも解除
+                        await uncheckWithUnlock(cb, label);
                         label.classList.add('border-gray-200');
-                        return;
+                        continue;
                     }
 
-                    // 4. メンバー入力がある場合（2人以上利用）
-                    // ▼追加：メインの時限から「±1」離れている（連続していない）時限は無効化する
                     const isConsecutive = (currentPeriod === mainPeriod - 1) || (currentPeriod === mainPeriod + 1);
 
                     if (!isConsecutive) {
                         cb.disabled = true;
-                        cb.checked = false;
-                        label.classList.remove('bg-blue-50', 'border-blue-400');
+                        // ★ チェックを外す時にselectingも解除
+                        await uncheckWithUnlock(cb, label);
                         label.classList.add('opacity-50', 'cursor-not-allowed');
-                    } 
-                    // ▼追加：連続している時限で、かつすでに1つ追加でチェック済みの場合は、他の未チェックを無効化する
-                    else if (extraCheckedCount >= 1 && !cb.checked) {
-                        cb.disabled = true; 
+                    } else if (extraCheckedCount >= 1 && !cb.checked) {
+                        cb.disabled = true;
                         label.classList.add('opacity-50', 'cursor-not-allowed');
                     } else {
-                        // 選択可能な状態に戻す
                         cb.disabled = false;
                         label.classList.remove('opacity-50', 'cursor-not-allowed');
                     }
-                });
+                }
             }
 
-            // イベントリスナー
-            if(membersInput) {
-                membersInput.addEventListener('input', updateFormState);
-            }
-            
+            membersProxy.addEventListener('input', updateFormState);
+
             checkboxes.forEach(cb => {
-                cb.addEventListener('change', function() {
-                    // デザイン更新
+                cb.addEventListener('change', async function() {
                     const label = document.getElementById('label-' + this.value);
-                    if(this.checked) {
+                    const period = parseInt(this.value, 10);
+                    const isOriginal = this.dataset.original === "1";
+
+                    if (isOriginal) return;
+
+                    if (this.checked) {
+                        const success = await toggleSelectingApi(period, 'lock');
+
+                        if (!success) {
+                            this.checked = false;
+                            alert('その時間帯はすでに他の人が選択中です。');
+                            updateFormState();
+                            return;
+                        }
+
                         label.classList.add('bg-blue-50', 'border-blue-400');
                         label.classList.remove('border-gray-200');
                     } else {
+                        await toggleSelectingApi(period, 'unlock');
+
                         label.classList.remove('bg-blue-50', 'border-blue-400');
                         label.classList.add('border-gray-200');
                     }
-                    // ルール再計算
+
                     updateFormState();
                 });
             });
 
-            // サイドバー等の既存JS
             let list = document.querySelectorAll('.list');
             function activeLink() {
                 list.forEach((item) => item.classList.remove('active'));
@@ -306,13 +405,12 @@
 
             let toggle = document.querySelector('.nav-toggle');
             let navigation = document.querySelector('.navigation');
-            if(toggle){
+            if (toggle) {
                 toggle.onclick = function() {
                     navigation.classList.toggle('active');
                 }
             }
 
-            // 初期実行
             updateFormState();
         });
     </script>
