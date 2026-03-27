@@ -45,7 +45,7 @@
 
             <div class="max-w-4xl mx-auto mb-8">
                 <form action="{{ route('user.home.index') }}" method="GET" class="search-card">
-                    @if(request('floor'))
+                    @if (request('floor'))
                         <input type="hidden" name="floor" value="{{ request('floor') }}">
                     @endif
 
@@ -59,17 +59,23 @@
                         <div class="md:col-span-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">利用時限 (開始〜終了)</label>
                             <div class="flex items-center space-x-2">
-                                <select name="start_period" class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                                <select name="start_period"
+                                    class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
                                     <option value="">指定なし</option>
-                                    @for($i=1; $i<=6; $i++)
-                                        <option value="{{ $i }}" {{ ($startPeriod ?? '') == $i ? 'selected' : '' }}>{{ $i }}限</option>
+                                    @for ($i = 1; $i <= 6; $i++)
+                                        <option value="{{ $i }}"
+                                            {{ ($startPeriod ?? '') == $i ? 'selected' : '' }}>{{ $i }}限
+                                        </option>
                                     @endfor
                                 </select>
                                 <span class="text-gray-400">〜</span>
-                                <select name="end_period" class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                                <select name="end_period"
+                                    class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
                                     <option value="">指定なし</option>
-                                    @for($i=1; $i<=6; $i++)
-                                        <option value="{{ $i }}" {{ ($endPeriod ?? '') == $i ? 'selected' : '' }}>{{ $i }}限</option>
+                                    @for ($i = 1; $i <= 6; $i++)
+                                        <option value="{{ $i }}"
+                                            {{ ($endPeriod ?? '') == $i ? 'selected' : '' }}>{{ $i }}限
+                                        </option>
                                     @endfor
                                 </select>
                             </div>
@@ -96,7 +102,8 @@
                 <div class="day-tabs">
                     <button type="button" class="strip-btn strip-prev" aria-label="前日へ">
                         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </button>
 
@@ -115,7 +122,8 @@
 
                     <button type="button" class="strip-btn strip-next" aria-label="翌日へ">
                         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                            <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </button>
                 </div>
@@ -147,7 +155,8 @@
             </div>
 
             @if (session('success'))
-                <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <div
+                    class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                     {{ session('success') }}
                 </div>
             @endif
@@ -161,9 +170,11 @@
             <div class="floor-filter-container">
                 <div class="floor-filter-label">階数で絞り込み</div>
                 <div class="floor-filter-list">
-                    <a href="{{ request()->fullUrlWithoutQuery('floor') }}" class="floor-chip {{ (request()->query('floor') ?? '') === '' ? 'active' : '' }}">すべて</a>
-                    @for($f = 1; $f <= 5; $f++)
-                        <a href="{{ request()->fullUrlWithQuery(['floor' => $f]) }}" class="floor-chip {{ request()->query('floor') === (string)$f ? 'active' : '' }}">{{ $f }}F</a>
+                    <a href="{{ request()->fullUrlWithoutQuery('floor') }}"
+                        class="floor-chip {{ (request()->query('floor') ?? '') === '' ? 'active' : '' }}">すべて</a>
+                    @for ($f = 1; $f <= 5; $f++)
+                        <a href="{{ request()->fullUrlWithQuery(['floor' => $f]) }}"
+                            class="floor-chip {{ request()->query('floor') === (string) $f ? 'active' : '' }}">{{ $f }}F</a>
                     @endfor
                 </div>
             </div>
@@ -172,14 +183,15 @@
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
                 $loopStart = $startPeriod ?? 1;
-                $loopEnd   = $endPeriod ?? 6;
+                $loopEnd = $endPeriod ?? 6;
             @endphp
 
             @foreach ($rooms as $room)
                 <div class="room-group" data-room-id="{{ $room->id }}">
                     <div class="room-title">
                         {{ $room->name }}
-                        <span style="font-size:0.8em; font-weight:normal; margin-left:10px;">(定員:{{ $room->capacity }}人)</span>
+                        <span
+                            style="font-size:0.8em; font-weight:normal; margin-left:10px;">(定員:{{ $room->capacity }}人)</span>
                     </div>
 
                     {{-- 修正箇所1: cards-grid クラスを削除 --}}
@@ -188,22 +200,28 @@
                             @php
                                 $status = $room->getStatusForPeriod($displayDate, $period, auth()->id());
                                 $times = [
-                                    1 => ['09:10', '10:40'], 2 => ['10:50', '12:20'], 3 => ['13:00', '14:30'],
-                                    4 => ['14:40', '16:10'], 5 => ['16:20', '17:50'], 6 => ['18:00', '19:30'],
+                                    1 => ['09:10', '10:40'],
+                                    2 => ['10:50', '12:20'],
+                                    3 => ['13:00', '14:30'],
+                                    4 => ['14:40', '16:10'],
+                                    5 => ['16:20', '17:50'],
+                                    6 => ['18:00', '19:30'],
                                 ];
                                 $isTarget = isset($startPeriod) || isset($endPeriod);
-                                $isAvailable = ($status === 'available');
-                                
-                                $nextPath = route('user.reservations.create', ['room_id' => $room->id, 'date' => $displayDate, 'period' => $period], false);
+                                $isAvailable = $status === 'available';
+
+                                $nextPath = route(
+                                    'user.reservations.create',
+                                    ['room_id' => $room->id, 'date' => $displayDate, 'period' => $period],
+                                    false,
+                                );
                                 $linkUrl = route('user.precautions', ['next' => $nextPath]);
                             @endphp
 
                             {{-- 修正箇所3: aria-disabled 属性の追加 --}}
                             <a class="time-card {{ $status }} {{ $isTarget ? 'target-period' : '' }} {{ !$isAvailable ? 'locked' : '' }}"
-                               data-period="{{ $period }}"
-                               data-base-href="{{ $linkUrl }}"
-                               @if($isAvailable) href="{{ $linkUrl }}" @else aria-disabled="true" @endif
-                            >
+                                data-period="{{ $period }}" data-base-href="{{ $linkUrl }}"
+                                @if ($isAvailable) href="{{ $linkUrl }}" @else aria-disabled="true" @endif>
                                 <div class="pc-layout">
                                     <div class="time-main">{{ $times[$period][0] }}</div>
                                     <div class="time-sub">~{{ $times[$period][1] }}</div>
@@ -213,10 +231,15 @@
                                         {{-- 修正箇所2: style="display: none;" をやめ、Tailwindの hidden クラスで制御 --}}
                                         <div class="available-label {{ !$isAvailable ? 'hidden' : '' }}">利用可能</div>
                                         <div class="unavailable-label {{ $isAvailable ? 'hidden' : '' }}">
-                                            @if($status === 'pending') 申請中
-                                            @elseif($status === 'reserved') 予約済み
-                                            @elseif($status === 'in_use') 利用中
-                                            @else 利用不可 @endif
+                                            @if ($status === 'pending')
+                                                申請中
+                                            @elseif($status === 'reserved')
+                                                予約済み
+                                            @elseif($status === 'in_use')
+                                                利用中
+                                            @else
+                                                利用不可
+                                            @endif
                                         </div>
                                     </div>
                                     <span class="reserve-btn pc-only hidden" data-href="{{ $linkUrl }}"></span>
@@ -235,12 +258,18 @@
                                         </div>
                                         <div class="sp-status-area">
                                             {{-- スマホ版も同様に hidden クラスに変更 --}}
-                                            <span class="available-label {{ !$isAvailable ? 'hidden' : '' }}">利用可能</span>
+                                            <span
+                                                class="available-label {{ !$isAvailable ? 'hidden' : '' }}">利用可能</span>
                                             <span class="unavailable-label {{ $isAvailable ? 'hidden' : '' }}">
-                                                @if($status === 'pending') 申請中
-                                                @elseif($status === 'reserved') 予約済み
-                                                @elseif($status === 'in_use') 利用中
-                                                @else 利用不可 @endif
+                                                @if ($status === 'pending')
+                                                    申請中
+                                                @elseif($status === 'reserved')
+                                                    予約済み
+                                                @elseif($status === 'in_use')
+                                                    利用中
+                                                @else
+                                                    利用不可
+                                                @endif
                                             </span>
                                         </div>
                                     </div>
@@ -263,4 +292,5 @@
 
     <script src="{{ asset('user/home.js') }}"></script>
 </body>
+
 </html>

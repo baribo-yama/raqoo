@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
+    /**
+     * ホーム画面：検索条件（日付・時限・人数・階数）を受け取り、条件に合う教室一覧を表示する
+     */
+    // メモ：indexメソッドとreservationcontrollerあたりをいじればいいっぽい
     public function index(Request $request)
     {
         // 1. フォームからの入力を取得
@@ -15,7 +19,7 @@ class RoomController extends Controller
         $startPeriod = $request->input('start_period'); // 開始時限
         $endPeriod = $request->input('end_period');     // 終了時限
         $people = $request->input('people');            // 利用人数
-        
+
         // ★追加: 階数フィルタの入力を取得
         $floor = $request->input('floor');
 
@@ -49,7 +53,7 @@ class RoomController extends Controller
         // --- 検索条件2: 日付と時限 ---
         // 日付・開始・終了がすべて入力されている場合のみチェック
         if ($date && $startPeriod && $endPeriod) {
-            
+
             // 「指定された期間内に、'available' (利用可能) ではないステータスを持つ部屋」を除外する
             // つまり、「期間中すべて available な部屋」だけが残る
             $query->whereDoesntHave('roomStatuses', function ($q) use ($date, $startPeriod, $endPeriod) {

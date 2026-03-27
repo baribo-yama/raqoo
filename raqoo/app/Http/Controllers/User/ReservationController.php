@@ -23,6 +23,9 @@ class ReservationController extends Controller
      */
     public function create(Request $request)
     {
+        // 今日から二週間分（14日分）の予定だけ表示させる
+        $maxDate = Carbon::today()->addDays(14)->toDateString();
+
         $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
 
         if (!$request->date) {
@@ -30,6 +33,12 @@ class ReservationController extends Controller
         }
         if (!$selectedRoom) {
             return redirect()->route('user.home.index')->with('error', '教室がみつかりません。');
+        }
+
+        // 2週間を超えていたらエラー表示
+        if ($request->date > $maxDate) {
+            return redirect()->route('user.home.index')
+                -> with('error', '予約できるのは2週間先までです。');
         }
 
         $date   = $request->date;
@@ -184,6 +193,9 @@ class ReservationController extends Controller
 
     // --- 以降の index, show, cancel, history, myReservations は変更なし ---
 
+    /**
+     * 予約詳細
+     */
     public function index()
     {
         $reservations = Reservation::where('user_id', Auth::id())
@@ -202,7 +214,9 @@ class ReservationController extends Controller
         return view('user.reservation-detail', compact('reservation'));
     }
 
-    // キャンセル処理
+    /**
+     * 学生側の予約キャンセル処理
+     */
     public function cancel(Reservation $reservation)
     {
         if ($reservation->user_id !== Auth::id()) abort(403);
@@ -217,6 +231,9 @@ class ReservationController extends Controller
             ->with('success', '予約をキャンセルしました。');
     }
 
+    /**
+     * 予約履歴
+     */
     public function history()
     {
         $historyReservations = Reservation::where(function ($query) {
@@ -231,6 +248,9 @@ class ReservationController extends Controller
         return view('user.reservations-history', compact('historyReservations'));
     }
 
+    /**
+     * 予約一覧
+     */
     public function myReservations(Request $request)
     {
         $request->validate([
