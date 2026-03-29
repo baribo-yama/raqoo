@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Room;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class RoomController extends Controller
@@ -11,24 +12,33 @@ class RoomController extends Controller
     /**
      * ホーム画面：検索条件（日付・時限・人数・階数）を受け取り、条件に合う教室一覧を表示する
      */
-    // メモ：indexメソッドとreservationcontrollerあたりをいじればいいっぽい
     public function index(Request $request)
     {
+        // 2週間の制限
+        $maxDate = Carbon::today()->addDays(14)->toDateString();
         // 1. フォームからの入力を取得
         $date = $request->input('date');         // 日付
         $startPeriod = $request->input('start_period'); // 開始時限
         $endPeriod = $request->input('end_period');     // 終了時限
         $people = $request->input('people');            // 利用人数
 
+        // 2週間を超えていたらエラー表示
+        if ($request->date > $maxDate) {
+            return redirect()->route('user.home.index')
+                -> with('error', '予約できるのは2週間先までです。');
+        }
+
         // ★追加: 階数フィルタの入力を取得
         $floor = $request->input('floor');
 
+        // ↓何これ　いつ使うやつ？
         // 開始時限が終了時限より大きい場合（例: 6〜2）、自動で入れ替える
         if ($startPeriod && $endPeriod && $startPeriod > $endPeriod) {
             $temp = $startPeriod;
             $startPeriod = $endPeriod;
             $endPeriod = $temp;
 
+            // ↓ 何これ　いつ使うやつ？
             // 自動修正したことをユーザーに通知（フラッシュメッセージ）
             session()->flash('info', '開始時限が終了時限より遅いため、自動的に順序を入れ替えました。');
         }

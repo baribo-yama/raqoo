@@ -103,7 +103,7 @@ Route::get('/admin/notifications', function() {
 
 /*======= ユーザー画面 ========*/
 Route::middleware('auth', 'verified')->group(function () {
-    // ユーザーホーム
+    // ユーザーホーム表示
     Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index');
 
     // 夜間注意事項ページ
