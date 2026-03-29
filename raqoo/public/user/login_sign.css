@@ -89,6 +89,7 @@ button{
 
 #up{
     text-align: right;
+    text-decoration: underline; 
 }
 
 /* プレースホルダーとフォーカス時のアクセント */

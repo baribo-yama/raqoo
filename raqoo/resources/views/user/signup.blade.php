@@ -34,12 +34,13 @@
               <input type="password" id="password" name="password" placeholder="パスワードを設定"><br>
               <font size="-1s">
               パスワードは以下の条件を満たす必要があります。<br>
-              ・英数字大文字含む8文字以上20文字以内（記号を含む）
+              ・英数字大文字含む8文字以上20文字以内
               </font>
               <br>
               
               <button type="submit">登録</button>
       </form>
+      <a href="{{ url('/login') }}">ログイン画面に戻る</a>
       </div>
     </div>
 </body>
