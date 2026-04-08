@@ -131,17 +131,17 @@ class ReservationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'room_id'    => 'required|exists:rooms,id',
-            'date'       => 'required|date|after_or_equal:today',
+            'room_id'    => 'required|exists:rooms,id',  // ちゃんと教室存在してるか
+            'date'       => 'required|date|after_or_equal:today',  // 今日以降
             // ▼ Copilot指摘対応: こちらにも max:2 を追加
-            'periods'    => 'required|array|min:1|max:2',
+            'periods'    => 'required|array|min:1|max:2',  // 最低1コマ、最大2コマ
             'periods.*'  => 'integer|min:1|max:6',
             'purpose'    => 'required|string|max:500',
-            'members'    => 'nullable|string',
+            'members'    => 'nullable|string', // 利用人数は空でもOK（nullable
         ]);
 
-        $periods = $validated['periods'];
-        sort($periods);
+        $periods = $validated['periods'];  // バリデーション（型）が正しいことが証明されたやつだけを使う
+        sort($periods);  // 下の$periods[$i] - $periods[$i - 1] !== 1が正しく動作するために昇順に並べ替え
 
         // ▼ Copilot指摘対応: DB保存前にも連続した時限かどうかのチェックを復活（二重チェック）
         for ($i = 1; $i < count($periods); $i++) {
@@ -153,14 +153,24 @@ class ReservationController extends Controller
         }
 
         return DB::transaction(function () use ($validated) {
-            // 保存直前の重複チェック
+            // 保存直前の重複チェック（今選択している時限の部屋に他の予約がないかチェック）
             $existing = Reservation::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
                 ->whereIn('period', $validated['periods'])
-                ->where('status', '!=', 'cancelled')
+                ->where('status', '!=', 'cancelled') // キャンセル以外(pending, in_use, reserved)が存在していないか→存在していたら予約できない＝重複になってしまうため
                 ->lockForUpdate()
                 ->exists();
 
+            // 同一ユーザーの同時刻の別教室予約の重複チェック
+            $conflict = Reservation::where('user_id', Auth::id())
+                ->where('date', $validated['date'])
+                ->whereIn('period', $validated['periods'])
+                ->whereIn('status', ['pending', 'reserved', 'in_use'])
+                ->where('room_id', '!=', $validated['room_id']) // 今予約しようとしている部屋「以外」ですでに予約をもっていないか
+                ->lockForUpdate()
+                ->exists();
+
+            // 授業が登録（存在）されているかチェック
             $existingLesson = RoomLesson::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
                 ->whereIn('period', $validated['periods'])
@@ -173,6 +183,19 @@ class ReservationController extends Controller
                     'date'    => $validated['date'],
                 ])->withErrors(['error' => 'タッチの差で予約または授業が埋まってしまいました。']);
             }
+
+            if ($conflict) {
+                return redirect()->route('user.reservations.create', [
+                    'room_id' => $validated['room_id'],
+                    'date' => $validated['date'],
+                    'period' => $validated['periods'][0] ?? null, // create手側がもしperiodを期待しているなら
+                ])->withErrors(['error' => '同時刻にすでにあなたの予約があるため予約できません']);
+            }
+
+            // ↑の代替案　リダイレクト方法が異なる
+            // if ($conflict) {
+            //     return back()->withErrors(['error' => '同時刻にすでに予約（申請含む）があるため予約できません。'])->withInput();
+            // }
 
             foreach ($validated['periods'] as $period) {
                 Reservation::create([

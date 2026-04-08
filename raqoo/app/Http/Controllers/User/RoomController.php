@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Room;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Models\Reservation;
+use Illuminate\Support\Facades\Auth;
 
 class RoomController extends Controller
 {
@@ -28,11 +30,14 @@ class RoomController extends Controller
                 -> with('error', '予約できるのは2週間先までです。');
         }
 
+
+
         // ★追加: 階数フィルタの入力を取得
         $floor = $request->input('floor');
 
         // ↓何これ　いつ使うやつ？
         // 開始時限が終了時限より大きい場合（例: 6〜2）、自動で入れ替える
+        // 検索フォームで指定された「利用時限（開始〜終了）」の入力が逆になっているときに、自動で正しい順序に直すためのコード
         if ($startPeriod && $endPeriod && $startPeriod > $endPeriod) {
             $temp = $startPeriod;
             $startPeriod = $endPeriod;
@@ -45,7 +50,7 @@ class RoomController extends Controller
 
         // 2. クエリの準備
         // N+1問題対策として with('roomStatuses') を追加
-        $query = Room::query()->with('roomStatuses');
+        $query = Room::query()->with('roomStatuses');  // ここから先SQLを組み立てていくよ、って意味でquery()を書いてる。これなしでRoom::with('roomStatuses')にしても動作は変らない
 
         // ★修正: 階数の絞り込み処理（セキュリティ対策追加）
         // URL等で不正な値（例: abc, 999）が入力された場合は無視し、
