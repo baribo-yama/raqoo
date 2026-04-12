@@ -15,6 +15,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\SignupController;
+use App\Http\Controllers\User\UnavailableController;
 use Illuminate\Auth\Events\Verified;
 
 require __DIR__.'/auth.php';
@@ -104,7 +105,9 @@ Route::get('/admin/notifications', function() {
 /*======= ユーザー画面 ========*/
 Route::middleware('auth', 'verified')->group(function () {
     // ユーザーホーム
-    Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index');
+    Route::get('/home', [UserRoomController::class, 'index'])
+    ->middleware('time.guard')
+    ->name('user.home.index');
 
     // 夜間注意事項ページ
     Route::get('/night-precautions', function () {
@@ -143,3 +146,6 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::get('/user/my-reservations', [UserReservationController::class, 'myReservations'])
         ->name('user.reservations.my');
 });
+
+// 予約申請できない時間帯に出す画面
+Route::get('/unavailable', [UnavailableController::class, 'showUnavailable'])->name('unavailable');

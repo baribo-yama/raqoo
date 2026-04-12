@@ -1,0 +1,11 @@
+/* 非表示画面で使いたかったもの */
+.main-un{
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-left: 200px;
+    padding: 0 24px 40px;
+}
+.unavailable{
+    text-align: center;
+    align-items: center;
+}
