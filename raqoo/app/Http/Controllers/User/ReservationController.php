@@ -24,13 +24,18 @@ class ReservationController extends Controller
      */
     public function create(Request $request)
     {
+
         /**
-         * 今日の予約がすでにある場合、予約の終了時刻に現在時刻が達していなければ予約できないようにする
+         * 今日の予約がすでにある場合、その終了時刻に達するまでその日の新たな予約はできないようにする
          */
+        //TODO: URL直接叩かれる可能性あるので、check()とstore()にも同様の処理をつける
+        //TODO: この「終了時刻まで予約ブロック処理」と、「二週間先のブロック処理」を関数にまとめる
+        //TODO: 2限連続で予約された場合の対処p_minとp_max ← これ優先的にテストしたほうがいい
+
         // 今日の予約があるかチェック
         $todayReservations = Reservation::where('user_id', Auth::id())
             ->whereDate('date', today())
-            ->where('status', '!=', 'cancelled')
+            ->whereIn('status', ['pending', 'reserved', 'in_use'])
             ->get();
 
         // 今日の自分の予約に対して1件ずつチェック
@@ -45,10 +50,26 @@ class ReservationController extends Controller
             $endTime = Carbon::parse($endTimeConfig);
 
             // 現在の時刻と比べて、もし「現在時刻 < 終了時刻」なら予約できないようにする
-            if (now()->lessThan($endTime)) {
+            if (Carbon::parse($request->date)->isSameDay(Carbon::today())) {
+                if (now()->lessThan($endTime)) {
+                    return redirect()
+                        ->route('user.home.index')
+                        ->with('error', '今日の予約の利用が終了してから新たに予約してください');
+                }
+            }
+        }
+
+        // 明日以降の各日は2件以上の予約不可 1件までしか予約できません！
+        $date = $request->date;
+        if (Carbon::parse($request->date)->greaterThan(Carbon::today())) {
+            $isExist = Reservation::where('user_id', Auth::id())
+                ->where('date', $date)
+                ->whereIn('status', ['pending', 'reserved', 'in_use'])
+                ->exists();
+            if ($isExist) {
                 return redirect()
                     ->route('user.home.index')
-                    ->with('error', '今日の予約の利用が終了してから新たに予約してください');
+                    ->with('error', '1件すでに予約が入っているのでできません');
             }
         }
 
