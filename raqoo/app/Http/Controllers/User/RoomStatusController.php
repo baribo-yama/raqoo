@@ -60,6 +60,7 @@ class RoomStatusController extends Controller
                 $lesson = $lessonMap[$room->id][$period] ?? null;
 
                 // もし同時刻に自分が予約をいれていればavailableをconflictに上書き
+                // conflictはすでに同時刻に予約あるよ、っていうステータス
                 if ($status === 'available' && isset($userReservedSet[$period])) {
                     $status = 'conflict';
                 }

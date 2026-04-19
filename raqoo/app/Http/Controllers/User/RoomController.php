@@ -30,12 +30,9 @@ class RoomController extends Controller
                 -> with('error', '予約できるのは2週間先までです。');
         }
 
-
-
         // ★追加: 階数フィルタの入力を取得
         $floor = $request->input('floor');
 
-        // ↓何これ　いつ使うやつ？
         // 開始時限が終了時限より大きい場合（例: 6〜2）、自動で入れ替える
         // 検索フォームで指定された「利用時限（開始〜終了）」の入力が逆になっているときに、自動で正しい順序に直すためのコード
         if ($startPeriod && $endPeriod && $startPeriod > $endPeriod) {

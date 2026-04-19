@@ -18,14 +18,45 @@ class ReservationController extends Controller
         $this->middleware('auth');
     }
 
+
     /**
      * 予約申請フォームの表示
      */
     public function create(Request $request)
     {
-        // 今日から二週間分（14日分）の予定だけ表示させる
-        $maxDate = Carbon::today()->addDays(14)->toDateString();
+        /**
+         * 今日の予約がすでにある場合、予約の終了時刻に現在時刻が達していなければ予約できないようにする
+         */
+        // 今日の予約があるかチェック
+        $todayReservations = Reservation::where('user_id', Auth::id())
+            ->whereDate('date', today())
+            ->where('status', '!=', 'cancelled')
+            ->get();
 
+        // 今日の自分の予約に対して1件ずつチェック
+        foreach ($todayReservations as $reservation) {
+            $endTimeConfig = config("period.{$reservation->period}.end_time");
+            // 終了時刻がconfigに存在しない場合は、この1件はブロックして次の予約をチェックする
+            if (!$endTimeConfig) {
+                continue;
+            }
+
+            // 日付（HH:MM）に変換
+            $endTime = Carbon::parse($endTimeConfig);
+
+            // 現在の時刻と比べて、もし「現在時刻 < 終了時刻」なら予約できないようにする
+            if (now()->lessThan($endTime)) {
+                return redirect()
+                    ->route('user.home.index')
+                    ->with('error', '今日の予約の利用が終了してから新たに予約してください');
+            }
+        }
+
+
+        /**
+         * 今日から二週間分（14日分）の予定だけ表示させる
+         */
+        $maxDate = Carbon::today()->addDays(14)->toDateString();
         $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
 
         if (!$request->date) {
@@ -41,6 +72,10 @@ class ReservationController extends Controller
                 -> with('error', '予約できるのは2週間先までです。');
         }
 
+
+        /**
+         * 予約と授業の取得
+         */
         $date   = $request->date;
         $room   = $selectedRoom;
         $period = (int) $request->period;
