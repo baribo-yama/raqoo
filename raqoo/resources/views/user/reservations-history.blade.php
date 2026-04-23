@@ -59,7 +59,7 @@
             {{-- ▼▼▼ ヘッダー（共通構造） ▼▼▼ --}}
             <div class="header" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div class="logo-wrapper">
-                    <h1 class="header-title" style="font-size: 24px; font-weight: bold; color: #1c2b4a;">利用履歴</h1>
+                    <h1 class="header-title page-title">利用履歴</h1>
                 </div>
             </div>
 

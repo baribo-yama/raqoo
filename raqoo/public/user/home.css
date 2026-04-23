@@ -992,3 +992,20 @@ body.with-sidebar {
         display: none !important;
     }
 }
+/* =========================================
+   ▼▼▼ 画面タイトル共通スタイル ▼▼▼
+========================================= */
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    font-family: "Meiryo", "Yu Gothic", Arial, sans-serif;
+    text-align: center;
+    margin: 30px 0;
+}
+
+@media (max-width: 560px) {
+    .page-title {
+        font-size: 24px;
+    }
+}

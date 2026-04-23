@@ -22,7 +22,7 @@
 
         <div class="content-area">
             <div class="cardHeader">
-                <h2>予約一覧（未来分）</h2>
+                <h2 class="page-title">予約一覧（未来分）</h2>
             </div>
 
             @if ($reservations->count() > 0)
