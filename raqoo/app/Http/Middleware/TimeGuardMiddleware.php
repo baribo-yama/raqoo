@@ -15,7 +15,7 @@ class TimeGuardMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $now = now(); // 現在時刻を取得する
+        $now = now(); // 現在時刻・曜日を取得する
         $time = $now -> format('H:i'); // 現在時刻を24時間で表示する
 
         // 平日は9:10～19:30までしか利用できない

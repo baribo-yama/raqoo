@@ -14,12 +14,16 @@
 
     <div class="main-un">
         <div class="unavailable">
+            <div class="un-1">
             現在の時間は、予約申請を受け付けておりません。<br>
             お手数ですが、明日以降に申請をお願いいたします。<br>
+            </div>
 
+            <div class="un-2">
             予約申請可能時間帯<br>
             月～金曜日：9:10～19:30<br>
             土・日・長期休暇期間：10:50～17:50<br>
+            </div>
         </div>
     </div>
 </body>
