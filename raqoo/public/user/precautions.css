@@ -47,7 +47,8 @@ body[data-mode] .content-area .terms-viewport{
     0 2px 10px rgba(15,23,42,.06);
   padding: 26px 26px 62px;
   position: relative;
-  /* cursor: pointer は削除 → カードはもうタップ対象ではない */
+  /* cursor: pointer は削除 → スマホではタップ対象ではない */
+  /* PC用は下の @media で cursor: pointer を復活させている */
   backdrop-filter: blur(6px);
 
   /* =========================================
@@ -339,4 +340,19 @@ body[data-mode] .content-area .terms-viewport{
   .terms-card{ padding: 22px 18px 60px; }
   .agree-form{ width: 100%; }
   .agree-btn{ min-width: 100%; }
+}
+
+/* =========================================
+   【変更②改】PCのみ：カードクリック有効 & 矢印非表示
+   -----------------------------------------
+   769px以上（PC）ではカードクリックで進めるので、
+   矢印ボタンは不要。非表示にする。
+========================================= */
+@media (min-width: 769px){
+  .terms-card{
+    cursor: pointer;
+  }
+  .terms-arrow{
+    display: none;
+  }
 }

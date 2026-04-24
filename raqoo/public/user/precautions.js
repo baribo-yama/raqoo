@@ -167,14 +167,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =========================================
-  // 【変更②】カード全面タップ → 削除
+  // 【変更②改】カードクリック → PCのみ有効
   // -----------------------------------------
-  // 以前はカードをタップすると次に進んでいたが、
-  // スワイプと併用すると誤操作になるため削除。
-  // 代わりにドットのタップと左右キーで移動できる。
+  // スマホではスワイプと競合して誤操作になるので無効。
+  // PCでは画面幅768px以上ならクリックで次に進める。
+  //
+  // window.matchMedia で画面幅を判定している。
+  // これはCSSの @media と同じ仕組みをJSから使うもの。
+  // ウィンドウをリサイズしても正しく切り替わる。
   // =========================================
+  const isPC = () => window.matchMedia("(min-width: 769px)").matches;
 
-  // （カードのクリック/キーダウンのイベントは登録しない）
+  cards.forEach((c) => {
+    c.addEventListener("click", (e) => {
+      if (!isPC()) return;                          // スマホなら何もしない
+      if (e.target.closest(".terms-dot")) return;   // ドットは別処理
+      if (e.target.closest(".terms-arrow")) return; // 矢印も別処理
+      if (Number(c.dataset.step) === currentStep) goNext();
+    });
+    c.addEventListener("keydown", (e) => {
+      if (!isPC()) return;
+      if ((e.key === "Enter" || e.key === " ") && Number(c.dataset.step) === currentStep) {
+        e.preventDefault();
+        goNext();
+      }
+    });
+  });
 
 
   // =========================================
