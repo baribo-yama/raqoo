@@ -44,7 +44,7 @@ class SignupController extends Controller
         ], $messages);
 
         // ドメイン制限（登録はtechもしくはssmの学生・先生のみができる）
-        $allowedDomains = ['@edu.sba.ac.jp', '@edu.ssm.ac.jp', '@sba.ac.jp', '`ssm.ac.jp'];
+        $allowedDomains = ['@edu.sba.ac.jp', '@edu.ssm.ac.jp', '@sba.ac.jp', '@ssm.ac.jp'];
         $emailDomain = substr(strrchr($request->email, "@"), 0); // 入力されたメールアドレスのドメイン
 
         if (!in_array($emailDomain, $allowedDomains)) {
