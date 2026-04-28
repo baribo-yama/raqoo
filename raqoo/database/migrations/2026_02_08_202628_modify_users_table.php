@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        // email_verified_atを追加（メール認証済みかどうかのカラム）、majorも
+        Schema::table('users', function (Blueprint $table) {
+            $table->timestamp('email_verified_at')->nullable()->after('email');
+            $table->char('major')->after('student_id'); // 専攻名
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        //
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('email_verified_at');
+        });
+    }
+};

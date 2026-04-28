@@ -1,0 +1,415 @@
+/* ========== リセット・ベース ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #f5f5f5;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color: #333;
+    overflow-x: hidden;
+}
+
+/* ========== ヘッダー ========== */
+.header {
+    display: flex;
+    height: 70px;
+    background-color: #1c2b4a;
+    color: #fff;
+    align-items: center;
+    padding: 0 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header .title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-right: auto;
+}
+
+.header .menu {
+    display: flex;
+    gap: 8px;
+    margin-right: 24px;
+}
+
+.header .menu-item {
+    padding: 8px 16px;
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.header .menu-item:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.logout-form {
+    margin-right: 12px;
+}
+
+.logout-btn {
+    background: transparent;
+    color: rgba(255,255,255,0.9);
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.logout-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.logout-logo ion-icon {
+    font-size: 18px;
+    color: rgba(255,255,255,0.9);
+    display: block;
+}
+
+/* 通知ボタン */
+.notification-btn {
+    position: relative;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.notification-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.notification-btn .badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: #ef4444;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+/* ========== ダッシュボードコンテナ ========== */
+.dashboard-container {
+    display: flex;
+    height: calc(100vh - 70px);
+    gap: 16px;
+    padding: 16px;
+}
+
+/* ========== 左カラム: カレンダー（20%） ========== */
+.calendar-section {
+    width: 20%;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.calendar-header button {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.calendar-header button:hover {
+    background: #f3f4f6;
+}
+
+.calendar-header h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    /* gap: 2px; */
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.calendar-day:hover {
+    background: #e5e7eb;
+}
+
+.calendar-day.selected {
+    background: #1c2b4a;
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.today {
+    border: 2px solid #1c2b4a;
+}
+
+.calendar-day.disabled {
+    color: #d1d5db;
+    cursor: default;
+}
+
+.calendar-day.disabled:hover {
+    background: transparent;
+}
+
+/* ========== 右カラム: 教室テーブル（80%） ========== */
+.room-table-section {
+    width: 80%;
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+}
+
+.table-header {
+    margin-bottom: 16px;
+}
+
+.table-header h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1c2b4a;
+}
+
+.table-wrapper {
+    overflow: auto;
+    flex: 1;
+}
+
+.room-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.room-table thead th {
+    background: #f9fafb;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.room-table thead th small {
+    display: block;
+    font-weight: 400;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.room-table tbody td {
+    padding: 0;
+    border: 1px solid #e5e7eb;
+    height: 80px;
+    vertical-align: top;
+}
+
+.room-table tbody td.room-col {
+    background: #f9fafb;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    color: #374151;
+}
+
+.time-slot {
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+}
+
+.time-slot:hover {
+    background: #f3f4f6;
+}
+
+.time-slot.reserved {
+    background: #dbeafe;
+    cursor: default;
+}
+
+.time-slot.reserved:hover {
+    background: #bfdbfe;
+}
+
+.slot-content {
+    font-size: 13px;
+    color: #1e40af;
+    font-weight: 500;
+}
+
+/* ========== 予約リクエストサイドバー ========== */
+.request-sidebar {
+    position: fixed;
+    top: 70px;
+    right: -400px;
+    width: 400px;
+    height: calc(100vh - 70px);
+    background: white;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+    transition: right 0.3s ease;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+}
+
+.request-sidebar.open {
+    right: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-header h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.close-btn:hover {
+    background: #f3f4f6;
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.request-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.request-card-header {
+    margin-bottom: 12px;
+}
+
+.request-card-header h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.request-card-info {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.request-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.btn {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-approve {
+    background: #10b981;
+    color: white;
+}
+
+.btn-approve:hover {
+    background: #059669;
+}
+
+.btn-reject {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-reject:hover {
+    background: #dc2626;
+}
+
+/* ========== オーバーレイ ========== */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    z-index: 150;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
