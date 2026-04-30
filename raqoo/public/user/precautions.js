@@ -25,14 +25,20 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
       if (!raw) return new Set();
+
       const arr = JSON.parse(raw);
       if (!Array.isArray(arr)) return new Set();
+
       return new Set(arr.map((n) => Number(n)).filter((n) => Number.isFinite(n)));
-    } catch { return new Set(); }
+    } catch {
+      return new Set();
+    }
   };
 
   const saveVisited = (set) => {
-    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(set))); } catch {}
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(set)));
+    } catch {}
   };
 
   const visited = mode === "confirm" ? loadVisited() : new Set();
@@ -41,29 +47,42 @@ document.addEventListener("DOMContentLoaded", () => {
   // ─── 同意ボタンの有効/無効を切り替える ───
   const updateAgree = () => {
     if (mode !== "confirm" || !agreeBtn) return;
+
     const ok = visited.size >= TOTAL;
     agreeBtn.disabled = !ok;
     agreeBtn.setAttribute("aria-disabled", ok ? "false" : "true");
   };
 
   // =========================================
-  // 【追加④】矢印の表示/非表示を切り替える
+  // 【修正】矢印の表示/非表示を切り替える
   // -----------------------------------------
-  // ステップ1 → 左矢印を隠す（もう前がないから）
-  // ステップ3 → 右矢印を隠す（もう次がないから）
-  // ステップ2 → 両方表示
+  // data-hidden だけだと見えない矢印にTabフォーカスできるため、
+  // hidden / disabled / aria-hidden / tabindex も同時に切り替える。
   // =========================================
+  const setArrowVisibility = (arrow, isHidden) => {
+    if (!arrow) return;
+
+    arrow.dataset.hidden = isHidden ? "true" : "false";
+    arrow.hidden = isHidden;
+    arrow.disabled = isHidden;
+    arrow.setAttribute("aria-hidden", isHidden ? "true" : "false");
+
+    if (isHidden) {
+      arrow.setAttribute("tabindex", "-1");
+    } else {
+      arrow.removeAttribute("tabindex");
+    }
+  };
+
   const updateArrows = () => {
-    if (arrowPrev) {
-      arrowPrev.dataset.hidden = currentStep === 1 ? "true" : "false";
-    }
-    if (arrowNext) {
-      arrowNext.dataset.hidden = currentStep === TOTAL ? "true" : "false";
-    }
+    setArrowVisibility(arrowPrev, currentStep === 1);
+    setArrowVisibility(arrowNext, currentStep === TOTAL);
   };
 
   // ─── 指定ステップをアクティブにする ───
   const setActive = (step) => {
+    if (step < 1 || step > TOTAL) return;
+
     currentStep = step;
 
     cards.forEach((c) => {
@@ -93,12 +112,20 @@ document.addEventListener("DOMContentLoaded", () => {
     saveVisited(visited);
     updateAgree();
   }
+
   setActive(currentStep);
 
   // ─── 次へ・前へ ───
-  const goNext = () => setActive((currentStep % TOTAL) + 1);
-  const goPrev = () => setActive(((currentStep - 2 + TOTAL) % TOTAL) + 1);
+  // modulo による循環をやめ、端では移動しないようにする
+  const goNext = () => {
+    if (currentStep >= TOTAL) return;
+    setActive(currentStep + 1);
+  };
 
+  const goPrev = () => {
+    if (currentStep <= 1) return;
+    setActive(currentStep - 1);
+  };
 
   // =========================================
   // 【追加①】スワイプで次・前に進む
@@ -123,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
     viewport.addEventListener("touchstart", (e) => {
       // ドットや矢印部分のタッチは除外（それぞれ別の処理がある）
       if (e.target.closest(".terms-dot") || e.target.closest(".terms-arrow")) return;
+
       const touch = e.touches[0];
       touchStartX = touch.clientX;
       touchStartY = touch.clientY;
@@ -130,11 +158,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { passive: true });
 
     // --- 指を動かしている間 ---
-    // 【修正ポイント】passive: false にすることで
+    // passive: false にすることで
     // 「ブラウザの横スワイプ（ページ戻る等）を止める権限」を得る。
-    // passive: true だとブラウザが先に反応してページごと動いてしまう。
     viewport.addEventListener("touchmove", (e) => {
       if (!isSwiping) return;
+
       const dx = Math.abs(e.touches[0].clientX - touchStartX);
       const dy = Math.abs(e.touches[0].clientY - touchStartY);
 
@@ -150,7 +178,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 指を離した瞬間 ---
     viewport.addEventListener("touchend", (e) => {
       if (!isSwiping) return;
+
       isSwiping = false;
+
       const touchEndX = e.changedTouches[0].clientX;
       const diff = touchStartX - touchEndX;
       const threshold = 50; // 50px以上動かしたらスワイプと判定
@@ -165,7 +195,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { passive: true });
   }
 
-
   // =========================================
   // 【変更②】カード全面タップ → 削除
   // -----------------------------------------
@@ -176,26 +205,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // （カードのクリック/キーダウンのイベントは登録しない）
 
-
   // =========================================
   // キーボード操作（←→キー）でも移動できるようにする
   // =========================================
   document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowRight") goNext();
-    if (e.key === "ArrowLeft") goPrev();
-  });
+    if (e.key === "ArrowRight") {
+      goNext();
+    }
 
+    if (e.key === "ArrowLeft") {
+      goPrev();
+    }
+  });
 
   // ─── ドットのクリックは従来通り ───
   dots.forEach((d) => {
     d.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
+
       const step = Number(d.dataset.stepjump);
-      if (Number.isFinite(step)) setActive(step);
+
+      if (Number.isFinite(step)) {
+        setActive(step);
+      }
     });
   });
-
 
   // =========================================
   // 【追加④】矢印ボタンのクリック
@@ -208,23 +243,26 @@ document.addEventListener("DOMContentLoaded", () => {
   if (arrowPrev) {
     arrowPrev.addEventListener("click", (e) => {
       e.preventDefault();
-      if (currentStep > 1) goPrev();
+      goPrev();
     });
   }
 
   if (arrowNext) {
     arrowNext.addEventListener("click", (e) => {
       e.preventDefault();
-      if (currentStep < TOTAL) goNext();
+      goNext();
     });
   }
 
   // ─── 同意フォーム送信時にセッション情報をクリア ───
   if (mode === "confirm" && agreeBtn) {
     const form = agreeBtn.closest("form");
+
     if (form) {
       form.addEventListener("submit", () => {
-        try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+        try {
+          sessionStorage.removeItem(STORAGE_KEY);
+        } catch {}
       });
     }
   }
