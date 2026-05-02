@@ -1,125 +1,231 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
+    {{-- =========================================================
+        基本設定・外部ファイル読み込み
+        - 文字コード / レスポンシブ設定
+        - 共通CSS
+        - Tailwind CSS
+        - Ionicons
+        - CSRFトークン
+    ========================================================= --}}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>予約申請フォーム - Raqoo</title>
+
+    {{-- 共通CSS --}}
     <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
+
+    {{-- ユーティリティCSS --}}
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+    {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    {{-- Ajax通信などでCSRFトークンを参照する場合に使用 --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
+    {{-- =========================================================
+        全体レイアウト
+        - 左側にサイドバー
+        - 右側に予約申請フォーム
+    ========================================================= --}}
     <div class="layout">
+        {{-- 共通サイドバー --}}
         <x-user.sidebar />
 
+        {{-- =====================================================
+            メインコンテンツエリア
+        ===================================================== --}}
         <div class="content-area">
             <div class="recentOrders">
+
+                {{-- -------------------------------------------------
+                    ページ見出し
+                ------------------------------------------------- --}}
                 <div class="cardHeader">
                     <h2>予約申請フォーム</h2>
                 </div>
 
+                {{-- -------------------------------------------------
+                    フォームカード
+                    - エラー表示
+                    - 成功メッセージ表示
+                    - 予約申請入力フォーム
+                ------------------------------------------------- --}}
                 <div class="bg-white p-6 rounded-lg shadow-lg">
+
+                    {{-- バリデーションエラー表示 --}}
                     @if ($errors->any())
-                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <div class="text-red-800 font-semibold mb-2">⚠️ エラーが発生しました</div>
-                        @foreach ($errors->all() as $error)
-                            <p class="text-red-700">• {{ $error }}</p>
-                        @endforeach
-                    </div>
+                        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="text-red-800 font-semibold mb-2">
+                                ⚠️ エラーが発生しました
+                            </div>
+
+                            @foreach ($errors->all() as $error)
+                                <p class="text-red-700">• {{ $error }}</p>
+                            @endforeach
+                        </div>
                     @endif
 
+                    {{-- 成功メッセージ表示 --}}
                     @if (session('success'))
-                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <p class="text-green-800">✅ {{ session('success') }}</p>
-                    </div>
+                        <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <p class="text-green-800">✅ {{ session('success') }}</p>
+                        </div>
                     @endif
 
+                    {{-- =================================================
+                        予約申請フォーム
+                        - 入力後、確認画面へ送信
+                        - room_id / date はhiddenで保持
+                    ================================================= --}}
                     <form action="{{ route('user.reservations.check') }}" method="POST" id="reservationForm">
                         @csrf
+
                         <input type="hidden" name="room_id" value="{{ $room->id }}">
                         <input type="hidden" name="date" value="{{ $date }}">
 
-                        <div id="selectingMeta"
+                        {{-- -------------------------------------------------
+                            JS連携用メタ情報
+                            - 連続予約の選択状態管理で使用
+                            - reservation-form.js から data-* を参照する想定
+                        ------------------------------------------------- --}}
+                        <div
+                            id="selectingMeta"
                             data-room-id="{{ $room->id }}"
                             data-date="{{ $date }}"
                             data-toggle-url="{{ route('user.reservations.selecting.toggle') }}"
                         ></div>
 
+                        {{-- =================================================
+                            基本情報
+                            - 教室
+                            - 日付
+                            - 選択中の時限
+                            - 設備
+                        ================================================= --}}
                         <div class="mb-6 p-4 bg-gray-100 rounded-lg border border-gray-200">
-                            <h3 class="text-lg font-bold mb-3 text-gray-800 border-b pb-2">基本情報</h3>
+                            <h3 class="text-lg font-bold mb-3 text-gray-800 border-b pb-2">
+                                基本情報
+                            </h3>
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <span class="text-gray-500 text-sm">教室</span>
-                                    <div class="font-bold text-lg text-gray-800">{{ $room->name }}</div>
+                                    <div class="font-bold text-lg text-gray-800">
+                                        {{ $room->name }}
+                                    </div>
                                 </div>
+
                                 <div>
                                     <span class="text-gray-500 text-sm">日付</span>
-                                    <div class="font-bold text-lg text-gray-800">{{ $date }}</div>
+                                    <div class="font-bold text-lg text-gray-800">
+                                        {{ $date }}
+                                    </div>
                                 </div>
+
                                 <div>
                                     <span class="text-gray-500 text-sm">選択中の時限</span>
                                     <div class="font-bold text-lg text-blue-600">
                                         {{ $period }}限
                                     </div>
                                 </div>
+
                                 <div>
                                     <span class="text-gray-500 text-sm">設備</span>
-                                    <div class="font-medium text-gray-800">{{ $room->equipment }}</div>
+                                    <div class="font-medium text-gray-800">
+                                        {{ $room->equipment }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
+                        {{-- =================================================
+                            連続予約オプション
+                            - 2名以上の場合、最大2コマまで連続予約可能
+                            - 授業中 / 予約済みの時限は選択不可
+                            - 元々選んだ時限は checked + disabled
+                            - disabled の値は送信されないため hidden でも送る
+                        ================================================= --}}
                         <div class="mb-6">
                             <label class="block text-gray-700 font-bold mb-2">
                                 連続して予約する（オプション）
                             </label>
+
                             <div class="p-4 border rounded-md bg-white">
                                 <p class="text-sm text-gray-600 mb-3">
                                     <span id="instructionText" class="font-bold text-orange-600">
                                         ※1名利用（メンバー未入力）の場合は連続予約できません。
                                     </span>
+
                                     <br>
+
                                     <span class="text-xs text-gray-500">
                                         ※2名以上での利用は最大2コマまで、かつ連続した時限のみ予約可能です。
                                     </span>
                                 </p>
+
                                 <div class="flex flex-wrap gap-4">
                                     @for($i = 1; $i <= 6; $i++)
                                         @php
+                                            /*
+                                                時限チェックボックスの状態判定
+                                                - $isOriginal     : 最初に選択していた時限
+                                                - $isReservedOnly : 予約済みで選択不可の時限
+                                                - $isLesson       : 授業中で選択不可の時限
+                                                - $isDisabledSlot : 予約済みまたは授業中で選択不可
+                                            */
                                             $isOriginal = ($i == $period);
                                             $isReservedOnly = in_array($i, $reservedPeriods) && !$isOriginal;
                                             $isLesson = in_array($i, $lessonPeriods) && !$isOriginal;
                                             $isDisabledSlot = ($isReservedOnly || $isLesson);
                                         @endphp
 
-                                        <label class="period-label flex items-center space-x-2 p-3 rounded border transition-colors duration-200 
-                                            {{ $isOriginal ? 'bg-blue-100 border-blue-500 cursor-not-allowed' : 'border-gray-200' }}
-                                            {{ $isDisabledSlot ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50' }}"
-                                            id="label-{{ $i }}">
-                                            
-                                            <input type="checkbox" name="periods[]" value="{{ $i }}" 
+                                        <label
+                                            class="period-label flex items-center space-x-2 p-3 rounded border transition-colors duration-200
+                                                {{ $isOriginal ? 'bg-blue-100 border-blue-500 cursor-not-allowed' : 'border-gray-200' }}
+                                                {{ $isDisabledSlot ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50' }}"
+                                            id="label-{{ $i }}"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                name="periods[]"
+                                                value="{{ $i }}"
                                                 class="period-checkbox form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
                                                 data-period="{{ $i }}"
                                                 data-reserved="{{ $isDisabledSlot ? 1 : 0 }}"
                                                 data-original="{{ $isOriginal ? 1 : 0 }}"
                                                 {{ $isOriginal ? 'checked disabled' : '' }}
-                                                {{ $isDisabledSlot ? 'disabled' : '' }}>
-                                            
+                                                {{ $isDisabledSlot ? 'disabled' : '' }}
+                                            >
+
                                             <span class="font-medium {{ $isDisabledSlot ? 'text-gray-400' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
-                                                <span class="{{ $isDisabledSlot ? 'line-through' : '' }}">{{ $i }}限</span>
+                                                <span class="{{ $isDisabledSlot ? 'line-through' : '' }}">
+                                                    {{ $i }}限
+                                                </span>
+
                                                 @if($isOriginal)
-                                                    <span class="text-xs ml-1 font-normal text-blue-600 inline-block">(選択中)</span>
+                                                    <span class="text-xs ml-1 font-normal text-blue-600 inline-block">
+                                                        (選択中)
+                                                    </span>
                                                 @elseif($isLesson)
-                                                    <span class="text-xs ml-1 text-red-500 font-bold inline-block">(授業)</span>
+                                                    <span class="text-xs ml-1 text-red-500 font-bold inline-block">
+                                                        (授業)
+                                                    </span>
                                                 @elseif($isReservedOnly)
-                                                    <span class="text-xs ml-1 font-normal text-red-400 inline-block">(予約済)</span>
+                                                    <span class="text-xs ml-1 font-normal text-red-400 inline-block">
+                                                        (予約済)
+                                                    </span>
                                                 @endif
                                             </span>
                                         </label>
 
+                                        {{-- disabled の checkbox は送信されないため、元の選択時限を hidden で送信する --}}
                                         @if($isOriginal)
                                             <input type="hidden" name="periods[]" value="{{ $i }}">
                                         @endif
@@ -128,20 +234,41 @@
                             </div>
                         </div>
 
+                        {{-- =================================================
+                            利用目的
+                            - 必須入力
+                            - 最大100文字
+                            - 文字数カウントは JS 側で制御
+                        ================================================= --}}
                         <div class="mb-6">
                             <label for="purpose" class="block text-sm font-medium text-gray-700 mb-2">
                                 利用目的 <span class="text-red-500">*</span>
                             </label>
-                            <textarea id="purpose" name="purpose" rows="3" maxlength="100"
+
+                            <textarea
+                                id="purpose"
+                                name="purpose"
+                                rows="3"
+                                maxlength="100"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="利用目的を入力してください（例：ゼミ発表の練習）" required>{{ old('purpose') }}</textarea>
+                                placeholder="利用目的を入力してください（例：ゼミ発表の練習）"
+                                required
+                            >{{ old('purpose') }}</textarea>
+
                             <div class="text-right text-sm text-gray-500 mt-1">
                                 <span id="purposeCount">0</span>/100文字
                             </div>
                         </div>
 
+                        {{-- =================================================
+                            代表者
+                            - ログイン中のユーザー情報を表示
+                        ================================================= --}}
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">代表者</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                代表者
+                            </label>
+
                             <div class="p-3 bg-gray-100 rounded-md text-gray-600">
                                 @auth
                                     {{ Auth::user()->major }}　{{ Auth::user()->name }} ({{ Auth::user()->student_id }})
@@ -151,28 +278,43 @@
                             </div>
                         </div>
 
+                        {{-- =================================================
+                            利用メンバー送信用 hidden
+                            - 画面上の30行入力欄を JS 側でまとめて membersHidden に入れる想定
+                        ================================================= --}}
                         <input type="hidden" id="members" value="">
                         <input type="hidden" name="members" id="membersHidden">
 
                         @php
+                            // バリデーションエラーで戻った場合、前回入力したメンバーを各行に復元する
                             $oldMembers = old('members') ? explode("\n", old('members')) : [];
                         @endphp
 
+                        {{-- =================================================
+                            利用メンバー入力
+                            - 代表者以外を最大30名まで入力
+                            - 空欄は JS / サーバー側でスキップする想定
+                        ================================================= --}}
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 利用メンバー（代表者以外、最大30名）
                             </label>
 
                             <div class="border border-gray-300 rounded-md overflow-hidden">
+                                {{-- 入力欄ヘッダー --}}
                                 <div class="grid grid-cols-12 bg-gray-100 border-b border-gray-300 px-3 py-2 text-sm font-bold text-gray-600">
                                     <div class="col-span-1 text-center">No.</div>
                                     <div class="col-span-11 pl-2">氏名</div>
                                 </div>
 
+                                {{-- メンバー入力欄 --}}
                                 <div class="divide-y divide-gray-200">
                                     @for ($i = 1; $i <= 30; $i++)
                                         <div class="grid grid-cols-12 items-center px-3 py-1">
-                                            <div class="col-span-1 text-center text-sm text-gray-400 font-mono">{{ $i }}</div>
+                                            <div class="col-span-1 text-center text-sm text-gray-400 font-mono">
+                                                {{ $i }}
+                                            </div>
+
                                             <div class="col-span-11 pl-2">
                                                 <input
                                                     type="text"
@@ -193,13 +335,23 @@
                             </div>
                         </div>
 
+                        {{-- =================================================
+                            フォーム下部ボタン
+                            - キャンセル：ホームへ戻る
+                            - 確認画面へ：入力内容を確認画面へ送信
+                        ================================================= --}}
                         <div class="flex justify-between">
-                            <a href="{{ route('user.home.index') }}"
-                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200">
+                            <a
+                                href="{{ route('user.home.index') }}"
+                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200"
+                            >
                                 キャンセル
                             </a>
-                            <button type="submit"
-                                class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 flex items-center shadow-lg">
+
+                            <button
+                                type="submit"
+                                class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 flex items-center shadow-lg"
+                            >
                                 確認画面へ
                                 <ion-icon name="arrow-forward-outline" class="ml-2"></ion-icon>
                             </button>
@@ -210,7 +362,8 @@
         </div>
     </div>
 
-    {{-- ★ インラインJSを外部ファイルに移動 --}}
+    {{-- 予約申請フォーム専用JavaScript --}}
     <script src="{{ asset('user/reservation-form.js') }}?v={{ time() }}"></script>
 </body>
+
 </html>

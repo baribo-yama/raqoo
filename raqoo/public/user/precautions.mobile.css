@@ -1,55 +1,135 @@
 @charset "utf-8";
 
 /* =========================================
-   Precautions Mobile UI (<=1024px)
-   ※メニュー（サイドバー）のCSSは home.mobile.css に任せるためここには書かない
-   ※ここは「注意事項カード」のデザインのみ
+   precautions.mobile.css
+   注意事項ページ タブレット・スマホ用スタイル
+
+   対象：
+   - 1024px以下の画面
+
+   注意：
+   - サイドバー / ハンバーガーメニューのCSSは home.mobile.css 側で管理
+   - このファイルでは注意事項カードと同意フォームだけを調整
 ========================================= */
 
 @media (max-width: 1024px) {
+    /* =========================================
+       01. 注意事項ページ全体の表示エリア
+       - 上部に余白を確保
+       - カードを中央寄せ
+       - 縦方向に並べる
+    ========================================= */
+    body[data-mode] .content-area .terms-viewport {
+        padding: 80px 16px 40px !important;
+        min-height: 100vh;
+        box-sizing: border-box;
+        display: flex !important;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+    }
 
-  /* ビューポート（背景エリア） */
-  body[data-mode] .content-area .terms-viewport {
-    padding: 80px 16px 40px !important;
-    min-height: 100vh;
-    box-sizing: border-box;
-    display: flex !important;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-  }
 
-  /* --- カードデザイン --- */
-  .terms-card {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    padding: 28px 24px 70px !important;
-    box-sizing: border-box;
-    margin-bottom: 20px;
-  }
+    /* =========================================
+       02. 注意事項カード
+       - 横幅いっぱいで表示
+       - スマホでも文字が詰まらないよう余白を調整
+       - 下部のドットと被らないよう下paddingを広めに確保
+    ========================================= */
+    .terms-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding: 28px 24px 70px !important;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+    }
 
-  .terms-title { font-size: 22px !important; margin-bottom: 14px !important; }
-  .terms-lead { font-size: 19px !important; margin: 10px 0 !important; }
-  
-  .terms-desc { 
-    font-size: 14px !important; 
-    line-height: 1.8 !important; 
-    text-align: center !important; 
-    width: 100% !important; 
-    white-space: normal !important; 
-  }
 
-  .terms-panel { padding: 20px 16px !important; margin: 0 !important; }
-  .terms-badge { width: 48px !important; height: 48px !important; font-size: 20px !important; margin-bottom: 10px !important; }
-  .terms-dots { bottom: 24px !important; gap: 16px !important; }
-  
-  .terms-dot { width: 12px !important; height: 12px !important; }
-  .terms-dot[data-active="true"] { transform: scale(1.1) !important; }
+    /* =========================================
+       03. カード内テキスト
+       - タイトル
+       - 見出し
+       - 説明文
+    ========================================= */
+    .terms-title {
+        font-size: 22px !important;
+        margin-bottom: 14px !important;
+    }
 
-  /* 同意フォーム周り */
-  .agree-wrap { width: 100%; padding: 0 16px; box-sizing: border-box; }
-  .agree-form { width: 100% !important; max-width: none !important; }
-  .skip-check { font-size: 13px !important; justify-content: center; }
-  .agree-btn { width: 100% !important; padding: 16px !important; font-size: 16px !important; }
+    .terms-lead {
+        font-size: 19px !important;
+        margin: 10px 0 !important;
+    }
+
+    .terms-desc {
+        font-size: 14px !important;
+        line-height: 1.8 !important;
+        text-align: center !important;
+        width: 100% !important;
+        white-space: normal !important;
+    }
+
+
+    /* =========================================
+       04. 説明パネル・ステップ番号
+    ========================================= */
+    .terms-panel {
+        padding: 20px 16px !important;
+        margin: 0 !important;
+    }
+
+    .terms-badge {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 20px !important;
+        margin-bottom: 10px !important;
+    }
+
+
+    /* =========================================
+       05. ステップドット
+       - スマホで押しやすいように少し大きくする
+    ========================================= */
+    .terms-dots {
+        bottom: 24px !important;
+        gap: 16px !important;
+    }
+
+    .terms-dot {
+        width: 12px !important;
+        height: 12px !important;
+    }
+
+    .terms-dot[data-active="true"] {
+        transform: scale(1.1) !important;
+    }
+
+
+    /* =========================================
+       06. 同意フォーム
+       - 横幅いっぱいに表示
+       - ボタンも押しやすいサイズにする
+    ========================================= */
+    .agree-wrap {
+        width: 100%;
+        padding: 0 16px;
+        box-sizing: border-box;
+    }
+
+    .agree-form {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    .skip-check {
+        font-size: 13px !important;
+        justify-content: center;
+    }
+
+    .agree-btn {
+        width: 100% !important;
+        padding: 16px !important;
+        font-size: 16px !important;
+    }
 }

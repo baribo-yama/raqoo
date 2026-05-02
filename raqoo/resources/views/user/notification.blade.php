@@ -1,97 +1,147 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>お知らせ - Raqoo</title>
-  {{-- ベースのCSS --}}
-  <link rel="stylesheet" href="{{ asset('user/home.css') }}">
-  <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}">
 
-  {{-- Tailwind (ユーティリティ用) --}}
-  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-  {{-- Ionicons --}}
-  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-  
-  {{-- 今回のCSS --}}
-  <link rel="stylesheet" href="{{ asset('user/notification.css') }}">
+<head>
+    {{-- =========================================================
+        基本設定・外部ファイル読み込み
+        - 文字コード / レスポンシブ設定
+        - 共通CSS
+        - Tailwind CSS
+        - Ionicons
+        - お知らせ画面専用CSS
+    ========================================================= --}}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お知らせ - Raqoo</title>
+
+    {{-- 共通CSS --}}
+    <link rel="stylesheet" href="{{ asset('user/home.css') }}">
+    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}">
+
+    {{-- ユーティリティCSS --}}
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+    {{-- アイコンライブラリ --}}
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    {{-- お知らせ画面専用CSS --}}
+    <link rel="stylesheet" href="{{ asset('user/notification.css') }}">
 </head>
 
-{{-- class名を変更して既存CSSとの予期せぬ衝突を回避 --}}
 <body class="with-sidebar notification-page">
-  <div class="main-wrapper">
+    {{-- =========================================================
+        全体レイアウト
+        - 左側にサイドバー
+        - 右側にお知らせ一覧のメインコンテンツ
+        ※ body class は既存CSSとの衝突回避・画面判別用
+    ========================================================= --}}
+    <div class="main-wrapper">
 
-    {{-- サイドバーコンポーネント --}}
-    <x-user.sidebar />
+        {{-- 共通サイドバー --}}
+        <x-user.sidebar />
 
-    {{-- メインコンテンツエリア --}}
-    <div class="main-content">
-      <div class="content-container">
-          
-        {{-- タイトルエリア --}}
-        <div class="page-title-area">
-          <h2 class="page-title">お知らせ一覧</h2>
-        </div>
+        {{-- =====================================================
+            メインコンテンツエリア
+        ===================================================== --}}
+        <div class="main-content">
+            <div class="content-container">
 
-        {{-- 検索・フィルターエリア（フォーム化して機能するように修正） --}}
-        <div class="filter-card">
-          <div class="search-box-wrapper">
-              <label for="search" class="search-label">お知らせ検索</label>
-              
-              {{-- GETメソッドで検索を実行 --}}
-              <form method="GET" action="{{ url()->current() }}" class="search-form">
-                  <div class="search-input-group">
-                      <input type="text" id="search" name="keyword" value="{{ request('keyword') }}" placeholder="キーワードを入力..." class="custom-input">
-                      <button type="submit" class="search-btn">検索</button>
-                  </div>
-              </form>
-          </div>
-        </div>
-
-        {{-- お知らせリスト --}}
-        <div class="notification-section">
-          
-          @if (isset($notifications) && $notifications->count() > 0)
-            {{-- CSSで制御できるようクラスを明示 --}}
-            <div class="notification-list">
-              @foreach ($notifications as $notification)
-                <div class="notification-card">
-                  <div class="card-left">
-                      <div class="time-badge">
-                          <span class="time-text">{{ $notification->created_at->format('H:i') }}</span>
-                          <span class="date-sub">{{ $notification->created_at->format('m/d') }}</span>
-                      </div>
-                  </div>
-                  <div class="card-right">
-                      <p class="notif-message">{{ $notification->message }}</p>
-                      <div class="notif-footer">
-                          {{-- バッジのデザインをCSSで制御 --}}
-                          <span class="status-badge">重要</span>
-                      </div>
-                  </div>
+                {{-- -------------------------------------------------
+                    ページタイトル
+                ------------------------------------------------- --}}
+                <div class="page-title-area">
+                    <h2 class="page-title">お知らせ一覧</h2>
                 </div>
-              @endforeach
-            </div>
 
-            {{-- ページネーション --}}
-            @if ($notifications->hasPages())
-              <div class="pagination-wrapper">
-                {{ $notifications->links() }}
-              </div>
-            @endif
-          @else
-            <div class="empty-state">
-              <p>現在、新しいお知らせはありません。</p>
+                {{-- -------------------------------------------------
+                    検索エリア
+                    - keyword パラメータでお知らせを検索
+                    - GET送信なのでURLに検索条件が残る
+                    - request('keyword') で検索後も入力値を保持
+                ------------------------------------------------- --}}
+                <div class="filter-card">
+                    <div class="search-box-wrapper">
+                        <label for="search" class="search-label">お知らせ検索</label>
+
+                        <form method="GET" action="{{ url()->current() }}" class="search-form">
+                            <div class="search-input-group">
+                                <input
+                                    type="text"
+                                    id="search"
+                                    name="keyword"
+                                    value="{{ request('keyword') }}"
+                                    placeholder="キーワードを入力..."
+                                    class="custom-input"
+                                >
+
+                                <button type="submit" class="search-btn">
+                                    検索
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {{-- -------------------------------------------------
+                    お知らせ一覧エリア
+                    - $notifications がある場合はカード形式で表示
+                    - データがない場合は空状態メッセージを表示
+                ------------------------------------------------- --}}
+                <div class="notification-section">
+
+                    @if (isset($notifications) && $notifications->count() > 0)
+                        {{-- お知らせカード一覧 --}}
+                        <div class="notification-list">
+                            @foreach ($notifications as $notification)
+                                <div class="notification-card">
+                                    {{-- 左側：作成時刻・日付 --}}
+                                    <div class="card-left">
+                                        <div class="time-badge">
+                                            <span class="time-text">
+                                                {{ $notification->created_at->format('H:i') }}
+                                            </span>
+
+                                            <span class="date-sub">
+                                                {{ $notification->created_at->format('m/d') }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {{-- 右側：お知らせ本文・ステータス --}}
+                                    <div class="card-right">
+                                        <p class="notif-message">
+                                            {{ $notification->message }}
+                                        </p>
+
+                                        <div class="notif-footer">
+                                            {{-- 現状は固定表示。重要度をDB管理する場合はここを条件分岐に変更する --}}
+                                            <span class="status-badge">重要</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- ページネーション --}}
+                        @if ($notifications->hasPages())
+                            <div class="pagination-wrapper">
+                                {{ $notifications->links() }}
+                            </div>
+                        @endif
+                    @else
+                        {{-- お知らせが存在しない場合の表示 --}}
+                        <div class="empty-state">
+                            <p>現在、新しいお知らせはありません。</p>
+                        </div>
+                    @endif
+                </div>
             </div>
-          @endif
         </div>
-      </div>
     </div>
 
-  </div>
-
-  {{-- JS読み込み --}}
-  <script src="{{ asset('user/notification.js') }}"></script>
+    {{-- お知らせ画面専用JavaScript --}}
+    <script src="{{ asset('user/notification.js') }}"></script>
 </body>
+
 </html>

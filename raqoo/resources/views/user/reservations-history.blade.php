@@ -2,152 +2,89 @@
 <html lang="ja">
 
 <head>
+    {{-- =========================================================
+        基本設定・外部ファイル読み込み
+        - 文字コード / レスポンシブ設定
+        - 共通CSS
+        - 利用履歴ページ専用CSS
+        - Tailwind CSS
+        - Ionicons
+    ========================================================= --}}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>利用履歴 - Raqoo</title>
 
-    {{-- 共通CSS（ホームと同じデザイン） --}}
+    {{-- 共通CSS --}}
     <link rel="stylesheet" href="{{ asset('user/home.css') }}">
     <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}">
 
-    {{-- Tailwind --}}
+    {{-- 利用履歴ページ専用CSS --}}
+    <link rel="stylesheet" href="{{ asset('user/reservations-history.css') }}">
+
+    {{-- ユーティリティCSS --}}
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 
-    {{-- Ionicons --}}
+    {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
-    <style>
-        /* ===========================
-           Layout
-           利用履歴ページ全体の余白と中央寄せ
-           =========================== */
-        .content-area {
-            padding-top: 40px;
-            padding-left: 40px;
-            padding-right: 40px;
-            box-sizing: border-box;
-        }
-
-        .history-container {
-            max-width: 1100px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        /* ===========================
-           Page Title
-           お知らせページと同じ見た目に統一
-           =========================== */
-        .page-title-area {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .page-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #333;
-            margin: 0;
-            line-height: 1.4;
-        }
-
-        /* ===========================
-           History Card
-           =========================== */
-        .history-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e5e7eb;
-        }
-
-        /* ステータスラベル */
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        .status-completed {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-
-        .status-cancelled {
-            background-color: #f3f4f6;
-            color: #374151;
-        }
-
-        .status-rejected {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* ===========================
-           Responsive
-           =========================== */
-        @media (max-width: 1024px) {
-            .content-area {
-                padding-top: 30px;
-                padding-left: 20px;
-                padding-right: 20px;
-            }
-        }
-
-        @media (max-width: 560px) {
-            .content-area {
-                padding-top: 24px;
-                padding-left: 16px;
-                padding-right: 16px;
-            }
-
-            .page-title {
-                font-size: 24px;
-            }
-        }
-    </style>
 </head>
 
 <body>
-    {{-- スマホ用オーバーレイ --}}
+    {{-- =========================================================
+        全体レイアウト
+        - スマホ用オーバーレイ
+        - 左側にサイドバー
+        - 右側に利用履歴一覧
+    ========================================================= --}}
+
+    {{-- スマホメニュー表示時の背景オーバーレイ --}}
     <div id="mobileOverlay" class="mobile-overlay"></div>
 
     <div class="layout">
-
-        {{-- サイドバー --}}
+        {{-- 共通サイドバー --}}
         <x-user.sidebar />
 
-        {{-- 右：メインコンテンツエリア --}}
+        {{-- =====================================================
+            メインコンテンツエリア
+        ===================================================== --}}
         <div class="content-area">
             <div class="history-container">
 
-                {{-- タイトルエリア：お知らせページと同じ構造 --}}
+                {{-- -------------------------------------------------
+                    ページタイトル
+                ------------------------------------------------- --}}
                 <div class="page-title-area">
                     <h2 class="page-title">利用履歴</h2>
                 </div>
 
-                {{-- 利用履歴リスト --}}
+                {{-- -------------------------------------------------
+                    利用履歴一覧
+                    - 履歴がある場合はカード形式で表示
+                    - 履歴がない場合は空状態メッセージを表示
+                ------------------------------------------------- --}}
                 <div class="history-list">
                     @if($historyReservations->count() > 0)
                         @foreach($historyReservations as $reservation)
                             <div class="history-card">
+
+                                {{-- =================================================
+                                    カード上部
+                                    - 教室名
+                                    - 利用ステータス
+                                ================================================= --}}
                                 <div class="flex justify-between items-start mb-3">
                                     <div class="flex items-center gap-3 flex-wrap">
                                         <h3 class="text-lg font-bold text-gray-800">
                                             {{ $reservation->room->name }}
                                         </h3>
 
-                                        <span class="status-badge
-                                            @if($reservation->status === 'completed') status-completed
-                                            @elseif($reservation->status === 'cancelled') status-cancelled
-                                            @elseif($reservation->status === 'rejected') status-rejected
-                                            @endif">
-
+                                        <span
+                                            class="status-badge
+                                                @if($reservation->status === 'completed') status-completed
+                                                @elseif($reservation->status === 'cancelled') status-cancelled
+                                                @elseif($reservation->status === 'rejected') status-rejected
+                                                @endif"
+                                        >
                                             @if($reservation->status === 'completed')
                                                 利用完了
                                             @elseif($reservation->status === 'cancelled')
@@ -159,9 +96,17 @@
                                     </div>
                                 </div>
 
+                                {{-- =================================================
+                                    履歴の基本情報
+                                    - 利用日
+                                    - 時限
+                                    - 申請日
+                                    - 人数
+                                ================================================= --}}
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4 text-sm text-gray-600 mb-3">
                                     <div class="flex items-center">
                                         <span class="w-16 inline-block font-medium">日付:</span>
+
                                         <span class="text-black font-medium">
                                             {{ \Carbon\Carbon::parse($reservation->date)->format('Y/m/d') }}
                                             ({{ \Carbon\Carbon::parse($reservation->date)->locale('ja')->dayName }})
@@ -170,6 +115,7 @@
 
                                     <div class="flex items-center">
                                         <span class="w-16 inline-block font-medium">時限:</span>
+
                                         <span class="text-black font-medium">
                                             {{ $reservation->period }}限
                                         </span>
@@ -177,6 +123,7 @@
 
                                     <div class="flex items-center">
                                         <span class="w-16 inline-block font-medium">申請日:</span>
+
                                         <span>
                                             {{ $reservation->created_at->format('Y/m/d') }}
                                         </span>
@@ -184,20 +131,29 @@
 
                                     <div class="flex items-center">
                                         <span class="w-16 inline-block font-medium">人数:</span>
+
                                         <span>
                                             {{ $reservation->member_count }}名
                                         </span>
                                     </div>
                                 </div>
 
+                                {{-- =================================================
+                                    利用目的
+                                ================================================= --}}
                                 <div class="mb-3">
                                     <p class="text-xs text-gray-500 mb-1">利用目的</p>
+
                                     <p class="text-sm text-gray-800 bg-gray-50 p-2 rounded border border-gray-100">
                                         {{ $reservation->purpose }}
                                     </p>
                                 </div>
 
-                                {{-- メンバー表示 --}}
+                                {{-- =================================================
+                                    メンバー表示
+                                    - 代表者を先頭に表示
+                                    - members がある場合は改行区切りで分割して表示
+                                ================================================= --}}
                                 @if($reservation->members)
                                     <div class="mb-3">
                                         <p class="text-xs text-gray-500 mb-1">メンバー</p>
@@ -221,10 +177,16 @@
                                     </div>
                                 @endif
 
-                                {{-- 却下理由 --}}
+                                {{-- =================================================
+                                    却下理由
+                                    - ステータスが rejected かつ却下理由がある場合のみ表示
+                                ================================================= --}}
                                 @if($reservation->status === 'rejected' && $reservation->rejection_reason)
                                     <div class="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg">
-                                        <p class="text-xs font-bold text-red-800 mb-1">却下理由</p>
+                                        <p class="text-xs font-bold text-red-800 mb-1">
+                                            却下理由
+                                        </p>
+
                                         <p class="text-sm text-red-700">
                                             {{ $reservation->rejection_reason }}
                                         </p>
@@ -239,8 +201,11 @@
                                 {{ $historyReservations->links() }}
                             </div>
                         @endif
-
                     @else
+                        {{-- =================================================
+                            空状態表示
+                            - 利用履歴が存在しない場合
+                        ================================================= --}}
                         <div class="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
                             <ion-icon name="document-text-outline" class="text-6xl text-gray-300 mb-4"></ion-icon>
 
@@ -252,19 +217,20 @@
                                 過去の利用実績がここに表示されます
                             </p>
 
-                            <a href="{{ route('user.home.index') }}"
-                               class="inline-block px-6 py-3 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition duration-200 font-bold shadow-md">
+                            <a
+                                href="{{ route('user.home.index') }}"
+                                class="inline-block px-6 py-3 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition duration-200 font-bold shadow-md"
+                            >
                                 教室を予約する
                             </a>
                         </div>
                     @endif
                 </div>
-
             </div>
         </div>
     </div>
 
-    {{-- 共通JS（ハンバーガーメニュー機能） --}}
+    {{-- 共通JS：ハンバーガーメニューなど --}}
     <script src="{{ asset('user/home.js') }}"></script>
 </body>
 

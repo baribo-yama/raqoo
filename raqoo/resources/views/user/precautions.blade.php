@@ -1,144 +1,276 @@
 @php
-  $showAgree = (bool)($showAgree ?? false);
-  $next      = $next ?? null;
-  $startStep = (int)($startStep ?? 1);
-  $mode = $showAgree ? 'confirm' : 'terms';
-  if ($startStep < 1 || $startStep > 3) $startStep = 1;
+    /*
+        注意事項ページの表示制御用変数
+        - $showAgree : 同意フォームを表示するかどうか
+        - $next      : 同意後に遷移するURL
+        - $startStep : 初期表示するステップ番号
+        - $mode      : 注意事項確認のみ / 同意あり の表示モード
+    */
+    $showAgree = (bool)($showAgree ?? false);
+    $next = $next ?? null;
+    $startStep = (int)($startStep ?? 1);
+    $mode = $showAgree ? 'confirm' : 'terms';
+
+    // 想定外のステップ番号が渡された場合は、STEP1から表示する
+    if ($startStep < 1 || $startStep > 3) {
+        $startStep = 1;
+    }
 @endphp
 
 <!doctype html>
 <html lang="ja">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>注意事項｜3ステップ案内</title>
+    {{-- =========================================================
+        基本設定・外部ファイル読み込み
+        - 文字コード / レスポンシブ設定
+        - 共通CSS
+        - 注意事項ページ専用CSS
+        - Tailwind CSS
+        - Ionicons
+    ========================================================= --}}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  {{-- ▼▼▼ 1. home系CSSを読み込む（これが土台） ▼▼▼ --}}
-  <link rel="stylesheet" href="{{ asset('user/home.css') }}?v=999">
-  <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}?v=999">
-  
-  {{-- ▼▼▼ 2. 注意事項ページ専用CSS（中身のカード装飾のみ） ▼▼▼ --}}
-  <link rel="stylesheet" href="{{ asset('user/precautions.css') }}?v=999">
-  <link rel="stylesheet" href="{{ asset('user/precautions.mobile.css') }}?v=999">
+    <title>注意事項｜3ステップ案内</title>
 
-  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    {{-- 共通CSS：サイドバーや全体レイアウトの土台 --}}
+    <link rel="stylesheet" href="{{ asset('user/home.css') }}?v=999">
+    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}?v=999">
+
+    {{-- 注意事項ページ専用CSS：カード・矢印・同意UIなどの装飾 --}}
+    <link rel="stylesheet" href="{{ asset('user/precautions.css') }}?v=999">
+    <link rel="stylesheet" href="{{ asset('user/precautions.mobile.css') }}?v=999">
+
+    {{-- ユーティリティCSS --}}
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+    {{-- アイコンライブラリ --}}
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
 <body data-start-step="{{ $startStep }}" data-mode="{{ $mode }}">
+    {{-- =========================================================
+        画面全体
+        - data-start-step は JS 側で初期表示ステップを判定するために使用
+        - data-mode は JS / CSS 側で通常表示か同意モードかを判定するために使用
+    ========================================================= --}}
 
-  <div id="mobileOverlay" class="m-backdrop"></div>
-  
-  <div class="layout">
-    
-    <x-user.sidebar />
+    {{-- スマホメニュー表示時の背景オーバーレイ --}}
+    <div id="mobileOverlay" class="m-backdrop"></div>
 
-    <div class="content-area">
-      
-      <main class="terms-viewport">
+    <div class="layout">
+        {{-- 共通サイドバー --}}
+        <x-user.sidebar />
 
-        {{-- ================================================================
-             【追加④】カードと矢印をまとめるラッパー
-             ─────────────────────────────────────────────
-             カードの左右に ← → の矢印ボタンを配置するための囲み。
-        ================================================================ --}}
-        <div class="terms-card-wrap">
+        {{-- =====================================================
+            メインコンテンツエリア
+        ===================================================== --}}
+        <div class="content-area">
+            <main class="terms-viewport">
 
-          {{-- 左矢印（前のステップへ） --}}
-          <button type="button" class="terms-arrow terms-arrow--prev" id="arrowPrev" aria-label="前のステップへ">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
+                {{-- -------------------------------------------------
+                    注意事項カード全体
+                    - STEP1〜STEP3 のカードを横並び / 切り替え表示する想定
+                    - 左右の矢印ボタンで前後のステップへ移動
+                    - data-step / data-active は JS 側のステップ制御で使用
+                ------------------------------------------------- --}}
+                <div class="terms-card-wrap">
 
-          {{-- STEP 1 --}}
-          <article class="terms-card" data-step="1" data-active="true">
-            <div class="terms-kicker">注意事項</div>
-            <h1 class="terms-title">3ステップで確認しよう！</h1>
-            <div class="terms-panel">
-              <div class="terms-badge" aria-hidden="true">1</div>
-              <div class="terms-lead">空き時間を確認・選択する</div>
-              <p class="terms-desc">
-                教室カレンダーから希望の日付・時限を選択してください。<br>
-                申請可能な時間帯は、平日 9:10〜19:30、土日 10:50〜17:50（授業時間内）に限ります。<br>
-                また、２名以上での利用の場合、１教室につき２コマまで借りることができます。
-              </p>
-            </div>
-            <div class="terms-dots">
-              <button type="button" class="terms-dot" data-stepjump="1" data-active="true" aria-label="ステップ1へ"></button>
-              <button type="button" class="terms-dot" data-stepjump="2" aria-label="ステップ2へ"></button>
-              <button type="button" class="terms-dot" data-stepjump="3" aria-label="ステップ3へ"></button>
-            </div>
-          </article>
+                    {{-- 前のステップへ戻る矢印 --}}
+                    <button
+                        type="button"
+                        class="terms-arrow terms-arrow--prev"
+                        id="arrowPrev"
+                        aria-label="前のステップへ"
+                    >
+                        <ion-icon name="chevron-back-outline"></ion-icon>
+                    </button>
 
-          {{-- STEP 2 --}}
-          <article class="terms-card" data-step="2">
-            <div class="terms-kicker">注意事項</div>
-            <h1 class="terms-title">3ステップで確認しよう！</h1>
-            <div class="terms-panel">
-              <div class="terms-badge" aria-hidden="true">2</div>
-              <div class="terms-lead">申請フォームを入力して送信する</div>
-              <p class="terms-desc">
-                利用目的・代表者・利用メンバー（氏名と学籍番号）を入力し申請を送信。<br>
-                管理者が確認後、承認または却下というメッセージがアプリの「お知らせ」に届きます。
-              </p>
-            </div>
-            <div class="terms-dots">
-              <button type="button" class="terms-dot" data-stepjump="1" aria-label="ステップ1へ"></button>
-              <button type="button" class="terms-dot" data-stepjump="2" data-active="true" aria-label="ステップ2へ"></button>
-              <button type="button" class="terms-dot" data-stepjump="3" aria-label="ステップ3へ"></button>
-            </div>
-          </article>
+                    {{-- =================================================
+                        STEP 1：空き時間を確認・選択
+                    ================================================= --}}
+                    <article class="terms-card" data-step="1" data-active="true">
+                        <div class="terms-kicker">注意事項</div>
 
-          {{-- STEP 3 --}}
-          <article class="terms-card" data-step="3">
-            <div class="terms-kicker">注意事項</div>
-            <h1 class="terms-title">3ステップで確認しよう！</h1>
-            <div class="terms-panel">
-              <div class="terms-badge" aria-hidden="true">3</div>
-              <div class="terms-lead">当日・受け取りと返却</div>
-              <p class="terms-desc">
-                利用開始10分前に受付で手続きし、教室の鍵などを受領。<br>
-                また、鍵の受け取り時には全員分の学生証の提出が必要です。<br>
-                学生証は鍵の返却時にお返しします。<br>
-                利用後は速やかに退室し、返却・清掃を行ってください。
-              </p>
-            </div>
-            <div class="terms-dots">
-              <button type="button" class="terms-dot" data-stepjump="1" aria-label="ステップ1へ"></button>
-              <button type="button" class="terms-dot" data-stepjump="2" aria-label="ステップ2へ"></button>
-              <button type="button" class="terms-dot" data-stepjump="3" data-active="true" aria-label="ステップ3へ"></button>
-            </div>
-          </article>
+                        <h1 class="terms-title">3ステップで確認しよう！</h1>
 
-          {{-- 右矢印（次のステップへ） --}}
-          <button type="button" class="terms-arrow terms-arrow--next" id="arrowNext" aria-label="次のステップへ">
-            <ion-icon name="chevron-forward-outline"></ion-icon>
-          </button>
+                        <div class="terms-panel">
+                            <div class="terms-badge" aria-hidden="true">1</div>
 
-        </div>{{-- /.terms-card-wrap --}}
+                            <div class="terms-lead">空き時間を確認・選択する</div>
 
-        {{-- 同意UI --}}
-        @if($showAgree && $next)
-          <div class="agree-wrap" id="agreeSection" aria-hidden="true">
-            <form method="POST" action="{{ route('user.precautions.agree') }}" class="agree-form">
-              @csrf
-              <input type="hidden" name="next" value="{{ $next }}">
-              <label class="skip-check">
-                <input type="checkbox" name="skip_next_time" value="1">
-                次回からこの注意事項を表示しない
-              </label>
-              <button type="submit" class="agree-btn" id="agreeBtn" disabled>
-                同意して予約へ進む
-              </button>
-            </form>
-          </div>
-        @endif
+                            <p class="terms-desc">
+                                教室カレンダーから希望の日付・時限を選択してください。<br>
+                                申請可能な時間帯は、平日 9:10〜19:30、土日 10:50〜17:50（授業時間内）に限ります。<br>
+                                また、２名以上での利用の場合、１教室につき２コマまで借りることができます。
+                            </p>
+                        </div>
 
-      </main>
+                        {{-- ステップ移動用ドット --}}
+                        <div class="terms-dots">
+                            <button
+                                type="button"
+                                class="terms-dot"
+                                data-stepjump="1"
+                                data-active="true"
+                                aria-label="ステップ1へ"
+                            ></button>
+
+                            <button
+                                type="button"
+                                class="terms-dot"
+                                data-stepjump="2"
+                                aria-label="ステップ2へ"
+                            ></button>
+
+                            <button
+                                type="button"
+                                class="terms-dot"
+                                data-stepjump="3"
+                                aria-label="ステップ3へ"
+                            ></button>
+                        </div>
+                    </article>
+
+                    {{-- =================================================
+                        STEP 2：申請フォームを入力・送信
+                    ================================================= --}}
+                    <article class="terms-card" data-step="2">
+                        <div class="terms-kicker">注意事項</div>
+
+                        <h1 class="terms-title">3ステップで確認しよう！</h1>
+
+                        <div class="terms-panel">
+                            <div class="terms-badge" aria-hidden="true">2</div>
+
+                            <div class="terms-lead">申請フォームを入力して送信する</div>
+
+                            <p class="terms-desc">
+                                利用目的・代表者・利用メンバー（氏名と学籍番号）を入力し申請を送信。<br>
+                                管理者が確認後、承認または却下というメッセージがアプリの「お知らせ」に届きます。
+                            </p>
+                        </div>
+
+                        {{-- ステップ移動用ドット --}}
+                        <div class="terms-dots">
+                            <button
+                                type="button"
+                                class="terms-dot"
+                                data-stepjump="1"
+                                aria-label="ステップ1へ"
+                            ></button>
+
+                            <button
+                                type="button"
+                                class="terms-dot"
+                                data-stepjump="2"
+                                data-active="true"
+                                aria-label="ステップ2へ"
+                            ></button>
+
+                            <button
+                                type="button"
+                                class="terms-dot"
+                                data-stepjump="3"
+                                aria-label="ステップ3へ"
+                            ></button>
+                        </div>
+                    </article>
+
+                    {{-- =================================================
+                        STEP 3：当日の受け取り・返却
+                    ================================================= --}}
+                    <article class="terms-card" data-step="3">
+                        <div class="terms-kicker">注意事項</div>
+
+                        <h1 class="terms-title">3ステップで確認しよう！</h1>
+
+                        <div class="terms-panel">
+                            <div class="terms-badge" aria-hidden="true">3</div>
+
+                            <div class="terms-lead">当日・受け取りと返却</div>
+
+                            <p class="terms-desc">
+                                利用開始10分前に受付で手続きし、教室の鍵などを受領。<br>
+                                また、鍵の受け取り時には全員分の学生証の提出が必要です。<br>
+                                学生証は鍵の返却時にお返しします。<br>
+                                利用後は速やかに退室し、返却・清掃を行ってください。
+                            </p>
+                        </div>
+
+                        {{-- ステップ移動用ドット --}}
+                        <div class="terms-dots">
+                            <button
+                                type="button"
+                                class="terms-dot"
+                                data-stepjump="1"
+                                aria-label="ステップ1へ"
+                            ></button>
+
+                            <button
+                                type="button"
+                                class="terms-dot"
+                                data-stepjump="2"
+                                aria-label="ステップ2へ"
+                            ></button>
+
+                            <button
+                                type="button"
+                                class="terms-dot"
+                                data-stepjump="3"
+                                data-active="true"
+                                aria-label="ステップ3へ"
+                            ></button>
+                        </div>
+                    </article>
+
+                    {{-- 次のステップへ進む矢印 --}}
+                    <button
+                        type="button"
+                        class="terms-arrow terms-arrow--next"
+                        id="arrowNext"
+                        aria-label="次のステップへ"
+                    >
+                        <ion-icon name="chevron-forward-outline"></ion-icon>
+                    </button>
+                </div>
+
+                {{-- -------------------------------------------------
+                    同意フォーム
+                    - $showAgree が true かつ $next が存在する場合のみ表示
+                    - 注意事項確認後、同意して予約画面へ進む
+                    - skip_next_time にチェックすると次回以降の注意事項表示を省略
+                    - agreeBtn は JS 側で有効化される想定
+                ------------------------------------------------- --}}
+                @if($showAgree && $next)
+                    <div class="agree-wrap" id="agreeSection" aria-hidden="true">
+                        <form method="POST" action="{{ route('user.precautions.agree') }}" class="agree-form">
+                            @csrf
+
+                            <input type="hidden" name="next" value="{{ $next }}">
+
+                            <label class="skip-check">
+                                <input type="checkbox" name="skip_next_time" value="1">
+                                次回からこの注意事項を表示しない
+                            </label>
+
+                            <button type="submit" class="agree-btn" id="agreeBtn" disabled>
+                                同意して予約へ進む
+                            </button>
+                        </form>
+                    </div>
+                @endif
+            </main>
+        </div>
     </div>
-  </div>
 
-  <script src="{{ asset('user/home.js') }}?v=999"></script>
-  <script src="{{ asset('user/precautions.js') }}?v=999"></script>
+    {{-- 共通JS：サイドバーや共通UIの操作 --}}
+    <script src="{{ asset('user/home.js') }}?v=999"></script>
+
+    {{-- 注意事項ページ専用JS：ステップ切り替え・同意ボタン制御 --}}
+    <script src="{{ asset('user/precautions.js') }}?v=999"></script>
 </body>
+
 </html>

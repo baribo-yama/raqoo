@@ -1,208 +1,315 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
+    {{-- =========================================================
+        基本設定・外部ファイル読み込み
+        - 文字コード / レスポンシブ設定
+        - キャッシュ無効化
+        - 共通CSS
+        - 予約詳細画面専用CSS
+        - Tailwind CSS
+        - Ionicons
+        - CSRFトークン
+    ========================================================= --}}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+
     <title>予約詳細 - Raqoo</title>
+
+    {{-- 共通CSS --}}
     <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
+
+    {{-- 予約詳細画面専用CSS --}}
+    <link rel="stylesheet" href="{{ asset('user/reservation-detail.css') }}?v={{ time() }}">
+
+    {{-- ユーティリティCSS --}}
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+    {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    {{-- Ajax通信などでCSRFトークンを参照する場合に使用 --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <style>
-        .topbar {
-            height: 60px;
-            display: none;
-        }
-        .details {
-            width: 100%;
-            margin-left: 0;
-            padding: 24px;
-        }
-        .recentOrders {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .cardHeader {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .cardHeader h2 {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-    </style>
 </head>
+
 <body>
+    {{-- =========================================================
+        全体レイアウト
+        - 左側にサイドバー
+        - 右側に予約詳細画面
+    ========================================================= --}}
     <div class="layout">
-        <!-- ナビゲーション -->
+        {{-- 共通サイドバー --}}
         <x-user.sidebar />
 
-        <!-- メインコンテンツ -->
+        {{-- =====================================================
+            メインコンテンツエリア
+        ===================================================== --}}
         <div class="content-area">
-            <!-- トップバー -->
+
+            {{-- -------------------------------------------------
+                トップバー
+                ※ 現在はCSSで非表示
+                ※ スマホメニューや検索欄として使う想定の残りコード
+            ------------------------------------------------- --}}
             <div class="topbar">
                 <div class="toggle">
                     <ion-icon name="menu-outline"></ion-icon>
                 </div>
+
                 <div class="search">
                     <label>
                         <input type="text" placeholder="検索...">
                         <ion-icon name="search-outline"></ion-icon>
                     </label>
                 </div>
+
                 <div class="user">
                     <img src="assets/customer01.jpg" alt="">
                 </div>
             </div>
 
-            <!-- 予約詳細 -->
+            {{-- -------------------------------------------------
+                予約詳細エリア
+            ------------------------------------------------- --}}
             <div class="details">
                 <div class="recentOrders">
+
+                    {{-- ページ見出し・戻るボタン --}}
                     <div class="cardHeader">
                         <h2>予約詳細</h2>
-                        <a href="{{ route('user.reservations.index') }}"
-                           class="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition duration-200">
+
+                        <a
+                            href="{{ route('user.reservations.index') }}"
+                            class="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition duration-200"
+                        >
                             一覧に戻る
                         </a>
                     </div>
 
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <!-- ステータス表示 -->
-                    <div class="mb-6 text-center">
-                        <span class="inline-block px-4 py-2 text-lg font-semibold rounded-lg
-                            @if($reservation->status === 'pending') bg-yellow-100 text-yellow-800
-                            @elseif($reservation->status === 'approved') bg-green-100 text-green-800
-                            @elseif($reservation->status === 'rejected') bg-red-100 text-red-800
-                            @elseif($reservation->status === 'cancelled') bg-gray-100 text-gray-800
-                            @elseif($reservation->status === 'in_use') bg-blue-100 text-blue-800
-                            @endif">
-                            @if($reservation->status === 'pending') 承認待ち
-                            @elseif($reservation->status === 'approved') 承認済み
-                            @elseif($reservation->status === 'rejected') 却下
-                            @elseif($reservation->status === 'cancelled') キャンセル済み
-                            @elseif($reservation->status === 'in_use') 利用中
-                            @endif
-                        </span>
-                    </div>
+                    {{-- -------------------------------------------------
+                        詳細カード
+                        - ステータス
+                        - 予約情報
+                        - 利用目的
+                        - 代表者
+                        - 利用メンバー
+                        - 申請日時
+                        - 却下理由
+                        - キャンセルボタン
+                    ------------------------------------------------- --}}
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
 
-                    <!-- 予約情報 -->
-                    <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-4">予約情報</h3>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <span class="text-gray-600">教室:</span>
-                                    <span class="font-semibold">{{ $reservation->room->name }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600">階層:</span>
-                                    <span class="font-semibold">{{ $reservation->room->floor }}階</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600">日付:</span>
-                                    <span class="font-semibold">{{ \Carbon\Carbon::parse($reservation->date)->format('Y年m月d日') }}({{ \Carbon\Carbon::parse($reservation->date)->locale('ja')->dayName }})</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600">時限:</span>
-                                    <span class="font-semibold">{{ $reservation->period }}限</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600">収容人数:</span>
-                                    <span class="font-semibold">{{ $reservation->room->capacity }}名</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600">設備:</span>
-                                    <span class="font-semibold">{{ $reservation->room->equipment }}</span>
+                        {{-- =================================================
+                            予約ステータス表示
+                            - status の値に応じて色と表示文言を切り替える
+                        ================================================= --}}
+                        <div class="mb-6 text-center">
+                            <span
+                                class="inline-block px-4 py-2 text-lg font-semibold rounded-lg
+                                    @if($reservation->status === 'pending') bg-yellow-100 text-yellow-800
+                                    @elseif($reservation->status === 'approved') bg-green-100 text-green-800
+                                    @elseif($reservation->status === 'rejected') bg-red-100 text-red-800
+                                    @elseif($reservation->status === 'cancelled') bg-gray-100 text-gray-800
+                                    @elseif($reservation->status === 'in_use') bg-blue-100 text-blue-800
+                                    @endif"
+                            >
+                                @if($reservation->status === 'pending')
+                                    承認待ち
+                                @elseif($reservation->status === 'approved')
+                                    承認済み
+                                @elseif($reservation->status === 'rejected')
+                                    却下
+                                @elseif($reservation->status === 'cancelled')
+                                    キャンセル済み
+                                @elseif($reservation->status === 'in_use')
+                                    利用中
+                                @endif
+                            </span>
+                        </div>
+
+                        {{-- =================================================
+                            予約情報
+                            - 教室
+                            - 階層
+                            - 日付
+                            - 時限
+                            - 収容人数
+                            - 設備
+                        ================================================= --}}
+                        <div class="mb-6">
+                            <h3 class="text-xl font-semibold mb-4">予約情報</h3>
+
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <span class="text-gray-600">教室:</span>
+                                        <span class="font-semibold">
+                                            {{ $reservation->room->name }}
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span class="text-gray-600">階層:</span>
+                                        <span class="font-semibold">
+                                            {{ $reservation->room->floor }}階
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span class="text-gray-600">日付:</span>
+                                        <span class="font-semibold">
+                                            {{ \Carbon\Carbon::parse($reservation->date)->format('Y年m月d日') }}({{ \Carbon\Carbon::parse($reservation->date)->locale('ja')->dayName }})
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span class="text-gray-600">時限:</span>
+                                        <span class="font-semibold">
+                                            {{ $reservation->period }}限
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span class="text-gray-600">収容人数:</span>
+                                        <span class="font-semibold">
+                                            {{ $reservation->room->capacity }}名
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span class="text-gray-600">設備:</span>
+                                        <span class="font-semibold">
+                                            {{ $reservation->room->equipment }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- 利用目的 -->
-                    <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-2">利用目的</h3>
-                        <div class="p-4 bg-gray-50 rounded-lg">
-                            <p>{{ $reservation->purpose }}</p>
+                        {{-- =================================================
+                            利用目的
+                        ================================================= --}}
+                        <div class="mb-6">
+                            <h3 class="text-xl font-semibold mb-2">利用目的</h3>
+
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p>{{ $reservation->purpose }}</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- 代表者情報 -->
-                    <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-2">代表者</h3>
-                        <div class="p-4 bg-gray-50 rounded-lg">
-                            <p>{{ $reservation->user->name }} ({{ $reservation->user->student_id }})</p>
+                        {{-- =================================================
+                            代表者情報
+                        ================================================= --}}
+                        <div class="mb-6">
+                            <h3 class="text-xl font-semibold mb-2">代表者</h3>
+
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p>
+                                    {{ $reservation->user->name }} ({{ $reservation->user->student_id }})
+                                </p>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- 利用メンバー -->
-                    @if($reservation->members)
-                    <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-2">利用メンバー</h3>
-                        <div class="p-4 bg-gray-50 rounded-lg">
-                            <pre class="whitespace-pre-wrap">{{ $reservation->members }}</pre>
-                        </div>
-                    </div>
-                    @endif
+                        {{-- =================================================
+                            利用メンバー
+                            - 入力がある場合のみ表示
+                            - 改行を保持するため pre を使用
+                        ================================================= --}}
+                        @if($reservation->members)
+                            <div class="mb-6">
+                                <h3 class="text-xl font-semibold mb-2">利用メンバー</h3>
 
-                    <!-- 申請日時 -->
-                    <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-2">申請日時</h3>
-                        <div class="p-4 bg-gray-50 rounded-lg">
-                            <p>{{ $reservation->created_at->format('Y年m月d日 H:i') }}</p>
-                        </div>
-                    </div>
-
-                    <!-- 却下理由（却下の場合のみ）(未使用) -->
-                    @if($reservation->status === 'rejected' && $reservation->rejection_reason)
-                    <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-2 text-red-700">却下理由</h3>
-                        <div class="p-4 bg-red-50 rounded-lg border border-red-200">
-                            <p class="text-red-800">{{ $reservation->rejection_reason }}</p>
-                        </div>
-                    </div>
-                    @endif
-
-                    <!-- 予約キャンセルボタン -->
-                    <div class="flex justify-center space-x-4">
-                        {{-- 必要であれば@ifにこれ入れる→ && \Carbon\Carbon::parse($reservation->date)->isFuture() で予約が今日よりも未来なのかどうかチェック --}}
-                        @if(in_array($reservation->status, ['pending', 'reserved']))
-                            <!-- キャンセルボタン -->
-                            <button onclick="confirmCancel()"
-                                    class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
-                                <ion-icon name="close-circle-outline" class="mr-2"></ion-icon>
-                                予約をキャンセル
-                            </button>
+                                <div class="p-4 bg-gray-50 rounded-lg">
+                                    <pre class="whitespace-pre-wrap">{{ $reservation->members }}</pre>
+                                </div>
+                            </div>
                         @endif
+
+                        {{-- =================================================
+                            申請日時
+                        ================================================= --}}
+                        <div class="mb-6">
+                            <h3 class="text-xl font-semibold mb-2">申請日時</h3>
+
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p>{{ $reservation->created_at->format('Y年m月d日 H:i') }}</p>
+                            </div>
+                        </div>
+
+                        {{-- =================================================
+                            却下理由
+                            - 却下済み かつ 却下理由が登録されている場合のみ表示
+                        ================================================= --}}
+                        @if($reservation->status === 'rejected' && $reservation->rejection_reason)
+                            <div class="mb-6">
+                                <h3 class="text-xl font-semibold mb-2 text-red-700">却下理由</h3>
+
+                                <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                                    <p class="text-red-800">{{ $reservation->rejection_reason }}</p>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- =================================================
+                            予約キャンセルボタン
+                            - pending / reserved の予約のみキャンセル可能
+                            - 押下時は確認モーダルを表示
+                        ================================================= --}}
+                        <div class="flex justify-center space-x-4">
+                            @if(in_array($reservation->status, ['pending', 'reserved']))
+                                <button
+                                    type="button"
+                                    id="openCancelModal"
+                                    class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200"
+                                >
+                                    <ion-icon name="close-circle-outline" class="mr-2"></ion-icon>
+                                    予約をキャンセル
+                                </button>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- キャンセル確認モーダル -->
+    {{-- =========================================================
+        キャンセル確認モーダル
+        - キャンセルボタン押下時に表示
+        - 確定すると PATCH でキャンセル処理を実行
+    ========================================================= --}}
     <div id="cancelModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg max-w-md mx-4">
             <h3 class="text-lg font-semibold mb-4">予約キャンセルの確認</h3>
-            <p class="text-gray-600 mb-6">本当にこの予約をキャンセルしますか？<br>この操作は取り消すことができません。</p>
+
+            <p class="text-gray-600 mb-6">
+                本当にこの予約をキャンセルしますか？<br>
+                この操作は取り消すことができません。
+            </p>
+
             <div class="flex justify-end space-x-3">
-                <button onclick="closeModal()"
-                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition duration-200">
+                <button
+                    type="button"
+                    id="closeCancelModal"
+                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition duration-200"
+                >
                     キャンセル
                 </button>
+
                 <form action="{{ route('user.reservations.cancel', $reservation->id) }}" method="POST" class="inline">
                     @csrf
                     @method('PATCH')
-                    <button type="submit"
-                            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-200">
+
+                    <button
+                        type="submit"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-200"
+                    >
                         予約をキャンセル
                     </button>
                 </form>
@@ -210,33 +317,8 @@
         </div>
     </div>
 
-    <script>
-        function confirmCancel() {
-            document.getElementById('cancelModal').classList.remove('hidden');
-            document.getElementById('cancelModal').classList.add('flex');
-        }
-
-        function closeModal() {
-            document.getElementById('cancelModal').classList.add('hidden');
-            document.getElementById('cancelModal').classList.remove('flex');
-        }
-
-        // ナビゲーション切り替え
-        let list = document.querySelectorAll('.list');
-        function activeLink() {
-            list.forEach((item) => item.classList.remove('active'));
-            this.classList.add('active');
-        }
-        list.forEach((item) => item.addEventListener('click', activeLink));
-
-        // トグルメニュー
-        let toggle = document.querySelector('.toggle');
-        let navigation = document.querySelector('.navigation');
-        let main = document.querySelector('.layout');
-        toggle.onclick = function() {
-            navigation.classList.toggle('active');
-            main.classList.toggle('nav-open');
-        }
-    </script>
+    {{-- 予約詳細画面専用JavaScript --}}
+    <script src="{{ asset('user/reservation-detail.js') }}?v={{ time() }}"></script>
 </body>
+
 </html>

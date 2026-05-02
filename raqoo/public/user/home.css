@@ -1,7 +1,12 @@
 /* =========================================
-   user/home.css (PC用・共通スタイル)
+   user/home.css
+   PC用・共通スタイル
 ========================================= */
 
+
+/* =========================================
+   01. 初期化・基本設定
+========================================= */
 * {
     margin: 0;
     padding: 0;
@@ -19,7 +24,28 @@ body.with-sidebar {
     transition: padding-left 0.25s ease;
 }
 
-/* スマホ用パーツはPCで非表示にするクラス */
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+.content-area {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-left: 200px;
+    padding: 0 24px 40px;
+}
+
+
+/* =========================================
+   02. 表示切り替え用の共通クラス
+========================================= */
 .sp-only {
     display: none !important;
 }
@@ -28,7 +54,10 @@ body.with-sidebar {
     display: inline-block;
 }
 
-/* ========== サイドバー ========== */
+
+/* =========================================
+   03. サイドバー
+========================================= */
 .navigation {
     width: 200px;
     height: 100vh;
@@ -114,7 +143,6 @@ body.with-sidebar {
 .logout-btn {
     background: none;
     border: none;
-    padding: 0;
     width: 100%;
     height: 100%;
     text-align: left;
@@ -123,9 +151,13 @@ body.with-sidebar {
     color: inherit;
     font: inherit;
     cursor: pointer;
-    padding-left: 0;
+    padding: 0 0 0 0;
 }
 
+
+/* =========================================
+   04. サイドバー内のお知らせバッジ
+========================================= */
 .navigation .notification-icon {
     position: relative;
     display: inline-flex;
@@ -151,6 +183,10 @@ body.with-sidebar {
     border: 1px solid #fff;
 }
 
+
+/* =========================================
+   05. スマホ用ナビゲーションボタン
+========================================= */
 .nav-toggle {
     display: none;
     position: fixed;
@@ -173,7 +209,10 @@ body.with-sidebar {
     font-size: 26px;
 }
 
-/* ========== ヘッダー周り ========== */
+
+/* =========================================
+   06. ヘッダー・ロゴ
+========================================= */
 .header {
     width: 100%;
     background: #f5f6fa;
@@ -201,6 +240,10 @@ body.with-sidebar {
     display: block;
 }
 
+
+/* =========================================
+   07. プロフィール表示
+========================================= */
 .profile-box {
     position: fixed;
     top: 16px;
@@ -252,16 +295,18 @@ body.with-sidebar {
     font-weight: bold;
 }
 
-/* ========== 検索フォーム ========== */
+
+/* =========================================
+   08. 検索フォーム
+========================================= */
 .search-container {
     background: #fff;
     border: 1.5px solid #eee;
     border-radius: 14px;
     width: 100%;
     max-width: 700px;
-    margin: 30px auto;
-    padding: 28px 24px 24px 24px;
-    margin-bottom: 24px;
+    margin: 30px auto 24px;
+    padding: 28px 24px 24px;
 }
 
 .search-form {
@@ -324,7 +369,7 @@ body.with-sidebar {
     font-weight: bold;
     border-radius: 10px;
     cursor: pointer;
-    box-shadow: 0px 2px 8px rgba(80, 120, 180, 0.10);
+    box-shadow: 0 2px 8px rgba(80, 120, 180, 0.10);
     transition: background 0.2s, transform 0.1s;
 }
 
@@ -337,15 +382,18 @@ body.with-sidebar {
     transform: translateY(0);
 }
 
-/* ========== 日付タブ ========== */
+
+/* =========================================
+   09. 日付タブ
+========================================= */
 .card-section {
     background: #fff;
     border-radius: 14px;
     box-shadow: 0 2px 10px rgba(80, 80, 120, 0.06);
     width: 900px;
     max-width: 95vw;
-    margin: 32px auto 0 auto;
-    padding: 0 0 20px 0;
+    margin: 32px auto 0;
+    padding: 0 0 20px;
     box-sizing: border-box;
 }
 
@@ -354,7 +402,7 @@ body.with-sidebar {
     justify-content: center;
     align-items: flex-end;
     gap: 1px;
-    margin: 30px auto 8px auto;
+    margin: 30px auto 8px;
     padding: 0;
     width: fit-content;
     border-bottom: 6px solid #707070;
@@ -389,11 +437,7 @@ body.with-sidebar {
     box-sizing: border-box;
 }
 
-.day-tab:hover:not(.active) {
-    background: #4c85b6;
-    color: #fff;
-}
-
+.day-tab:hover:not(.active),
 .day-tab.active {
     background: #4c85b6;
     color: #fff;
@@ -444,9 +488,12 @@ body.with-sidebar {
     opacity: 0.95;
 }
 
-/* ========== 日付表示・ステータスバー ========== */
+
+/* =========================================
+   10. 日付表示・ステータス凡例
+========================================= */
 .date-section {
-    margin: 18px auto 8px auto;
+    margin: 18px auto 8px;
     width: 90%;
     max-width: 840px;
     display: flex;
@@ -511,37 +558,19 @@ body.with-sidebar {
     border-radius: 3px;
 }
 
-.layout {
-    display: flex;
-    min-height: 100vh;
-}
-
-.main-content {
-    max-width: none;
-    margin: 0;
-    padding: 0;
-}
-
-.content-area {
-    flex: 1 1 auto;
-    min-width: 0;
-    margin-left: 200px;
-    padding: 0 24px 40px;
-}
-
 
 /* =========================================
-   ▼▼▼ 階数フィルター ▼▼▼
+   11. 階数フィルター
 ========================================= */
-.floor-filter-container { 
+.floor-filter-container {
     width: 100%;
     max-width: 1100px;
-    margin: 40px auto 20px auto; 
-    display: flex; 
-    align-items: center; 
+    margin: 40px auto 20px;
+    display: flex;
+    align-items: center;
     justify-content: flex-start;
-    gap: 16px; 
-    padding: 0; 
+    gap: 16px;
+    padding: 0;
 }
 
 .floor-filter-label {
@@ -571,7 +600,7 @@ body.with-sidebar {
     font-weight: bold;
     text-decoration: none;
     border: 1px solid #d1d5db;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     transition: all 0.2s ease;
     cursor: pointer;
 }
@@ -579,7 +608,7 @@ body.with-sidebar {
 .floor-chip:hover {
     background-color: #f3f4f6;
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     color: #1f2937;
 }
 
@@ -592,7 +621,7 @@ body.with-sidebar {
 
 
 /* =========================================
-   ▼▼▼ 教室カード（PC版） ▼▼▼
+   12. 教室カード共通・PCレイアウト
 ========================================= */
 .sp-layout {
     display: none;
@@ -647,10 +676,10 @@ body.with-sidebar {
     color: #999;
     border-radius: 12px;
     text-decoration: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     transition: all 0.2s ease;
     cursor: default;
-    position: relative; 
+    position: relative;
 }
 
 .time-card:not(.locked) {
@@ -668,6 +697,14 @@ body.with-sidebar {
     pointer-events: none !important;
 }
 
+.reserve-btn {
+    display: none;
+}
+
+
+/* =========================================
+   13. 教室カード内テキスト
+========================================= */
 .pc-layout .time-main {
     font-size: 32px;
     font-weight: 900;
@@ -691,8 +728,8 @@ body.with-sidebar {
     color: #f3f4f6;
 }
 
-.pc-layout .floor { 
-    font-size: 14px; 
+.pc-layout .floor {
+    font-size: 14px;
     font-weight: bold;
     color: #9ca3af;
     margin-top: 6px;
@@ -700,7 +737,7 @@ body.with-sidebar {
 }
 
 .time-card:hover:not(.locked) .pc-layout .floor {
-    color: rgba(255,255,255,0.8);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .pc-layout .status-area {
@@ -718,11 +755,10 @@ body.with-sidebar {
     color: #fff;
 }
 
-/* 予約ボタン（PC版はカード全体がリンクのため要素としては非表示） */
-.reserve-btn {
-    display: none;
-}
 
+/* =========================================
+   14. 教室カードのステータス別カラー
+========================================= */
 .time-card.unavailable {
     background: #f3f4f6;
     color: #9ca3af;
@@ -779,23 +815,37 @@ body.with-sidebar {
     z-index: 10;
 }
 
+
 /* =========================================
-   Responsive Adjustments (Media Queries)
+   15. ページタイトル共通スタイル
+========================================= */
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    font-family: "Meiryo", "Yu Gothic", Arial, sans-serif;
+    text-align: center;
+    margin: 30px 0;
+}
+
+
+/* =========================================
+   16. レスポンシブ：タブレット・スマホ共通
 ========================================= */
 @media (max-width: 1024px) {
     body.with-sidebar {
         padding-left: 0;
     }
-    
+
     .layout {
         flex-direction: column;
     }
-    
+
     .content-area {
         margin-left: 0 !important;
         padding: 18px 18px 28px !important;
     }
-    
+
     .navigation {
         position: fixed;
         width: 240px;
@@ -804,41 +854,41 @@ body.with-sidebar {
         box-shadow: 4px 0 14px rgba(0, 0, 0, 0.12);
         z-index: 1000;
     }
-    
+
     body.nav-open .navigation {
         transform: translateX(0);
     }
-    
+
     .nav-toggle {
         display: flex;
     }
-    
+
     .header {
         padding-top: 24px;
     }
-    
+
     .profile-box {
         position: static !important;
         margin: 10px 0 10px auto !important;
         transform: none !important;
     }
-    
+
     .search-form {
         max-width: 820px !important;
     }
-    
+
     .form-row {
         grid-template-columns: 1fr 1fr !important;
     }
-    
+
     .form-row-btn {
         grid-column: 1 / -1 !important;
     }
-    
+
     .search-btn {
         width: min(360px, 100%) !important;
     }
-    
+
     .m-backdrop {
         display: none;
         position: fixed;
@@ -846,17 +896,21 @@ body.with-sidebar {
         background: rgba(0, 0, 0, 0.45);
         z-index: 900;
     }
-    
+
     body.nav-open .m-backdrop {
         display: block;
     }
-    
+
     .floor-filter-container {
         padding: 0 16px;
-        margin: 30px auto 16px auto;
+        margin: 30px auto 16px;
     }
 }
 
+
+/* =========================================
+   17. レスポンシブ：タブレットの日付タブ
+========================================= */
 @media (min-width: 561px) and (max-width: 1024px) {
     .day-tabs {
         flex-wrap: nowrap !important;
@@ -871,7 +925,7 @@ body.with-sidebar {
         border: 1px solid #999999 !important;
         border-bottom: none !important;
     }
-    
+
     .day-tab {
         flex: 1 1 0 !important;
         height: 70px !important;
@@ -885,73 +939,78 @@ body.with-sidebar {
         border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
         box-sizing: border-box !important;
     }
-    
+
     .day-tab:last-child {
         border-right: none !important;
     }
-    
+
     .day-tab.active {
         background: #4C85B6 !important;
     }
-    
-    .day-label, .date-label {
+
+    .day-label,
+    .date-label {
         color: #fff !important;
         line-height: 1 !important;
         white-space: nowrap !important;
     }
-    
+
     .day-label {
         margin-top: 0 !important;
         font-size: 13px !important;
     }
-    
+
     .date-label {
         margin-top: 0 !important;
         font-size: 14px !important;
     }
-    
+
     .day-tabs .strip-btn {
         position: absolute !important;
         top: 50% !important;
         transform: translateY(-50%) !important;
         z-index: 9999 !important;
     }
-    
+
     .day-tabs .strip-prev {
         left: -16px !important;
     }
-    
+
     .day-tabs .strip-next {
         right: -16px !important;
     }
 }
 
+
+/* =========================================
+   18. レスポンシブ：横幅720px以下
+========================================= */
 @media (max-width: 720px) {
     .search-form .form-row {
         grid-template-columns: 1fr !important;
     }
-    
+
     .search-btn {
         width: 100% !important;
     }
-    
+
     .date-display .date-year {
         font-size: 22px;
     }
-    
+
     .date-display .date-main {
         font-size: 32px;
     }
-    
+
     .date-display .date-weekday {
         font-size: 20px;
     }
-    
+
     .room-times {
         flex-wrap: wrap;
         justify-content: flex-start;
     }
-    
+
     .time-card {
         flex: none;
         width: calc(50% - 10px);
@@ -960,6 +1019,10 @@ body.with-sidebar {
     }
 }
 
+
+/* =========================================
+   19. レスポンシブ：スマホの日付タブ
+========================================= */
 @media (max-width: 560px) {
     .day-tabs {
         flex-wrap: wrap !important;
@@ -967,45 +1030,36 @@ body.with-sidebar {
         padding: 0 8px;
         background: #fff !important;
     }
-    
+
     .day-tab {
         flex: 1 1 calc(50% - 8px) !important;
         min-width: 120px;
         height: 52px !important;
         background: #888 !important;
     }
-    
+
     .day-tab.active {
         background: #4c85b6 !important;
     }
-    
+
     .day-tabs .strip-btn {
         display: none !important;
     }
+
+    .page-title {
+        font-size: 24px;
+    }
 }
 
+
+/* =========================================
+   20. PC表示時にスマホ専用パーツを非表示
+========================================= */
 @media (min-width: 561px) {
     .m-hamburger,
     .m-status-btn,
     .m-status-sheet,
     .m-backdrop {
         display: none !important;
-    }
-}
-/* =========================================
-   ▼▼▼ 画面タイトル共通スタイル ▼▼▼
-========================================= */
-.page-title {
-    font-size: 28px;
-    font-weight: bold;
-    color: #333;
-    font-family: "Meiryo", "Yu Gothic", Arial, sans-serif;
-    text-align: center;
-    margin: 30px 0;
-}
-
-@media (max-width: 560px) {
-    .page-title {
-        font-size: 24px;
     }
 }
