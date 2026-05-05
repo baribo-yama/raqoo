@@ -39,19 +39,47 @@
       <main class="terms-viewport">
 
         {{-- ================================================================
-             【追加④】カードと矢印をまとめるラッパー
-             ─────────────────────────────────────────────
-             カードの左右に ← → の矢印ボタンを配置するための囲み。
+             カード・スマホ用矢印・PC用クリックエリアをまとめるラッパー
         ================================================================ --}}
         <div class="terms-card-wrap">
 
-          {{-- 左矢印（前のステップへ） --}}
+          {{-- ================================================================
+               スマホ用：左矢印
+               ※PCではCSSで非表示
+          ================================================================ --}}
           <button type="button" class="terms-arrow terms-arrow--prev" id="arrowPrev" aria-label="前のステップへ">
             <ion-icon name="chevron-back-outline"></ion-icon>
           </button>
 
+          {{-- ================================================================
+               PC用：カード左側クリックで前へ
+               ※スマホではCSSで非表示
+          ================================================================ --}}
+          <button type="button" class="terms-click-zone terms-click-zone--prev" id="pcZonePrev" aria-label="前のステップへ">
+            <span class="terms-click-zone__icon">
+              <ion-icon name="chevron-back-outline"></ion-icon>
+            </span>
+          </button>
+
+          {{-- ================================================================
+               PC用：カード右側クリックで次へ
+               ※スマホではCSSで非表示
+          ================================================================ --}}
+          <button type="button" class="terms-click-zone terms-click-zone--next" id="pcZoneNext" aria-label="次のステップへ">
+            <span class="terms-click-zone__icon">
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </span>
+          </button>
+
           {{-- STEP 1 --}}
-          <article class="terms-card" data-step="1" data-active="true">
+          <article
+            class="terms-card"
+            data-step="1"
+            data-active="true"
+            tabindex="0"
+            role="button"
+            aria-label="ステップ1: 空き時間を確認・選択する"
+          >
             <div class="terms-kicker">注意事項</div>
             <h1 class="terms-title">3ステップで確認しよう！</h1>
             <div class="terms-panel">
@@ -71,7 +99,13 @@
           </article>
 
           {{-- STEP 2 --}}
-          <article class="terms-card" data-step="2">
+          <article
+            class="terms-card"
+            data-step="2"
+            tabindex="0"
+            role="button"
+            aria-label="ステップ2: 申請フォームを入力して送信する"
+          >
             <div class="terms-kicker">注意事項</div>
             <h1 class="terms-title">3ステップで確認しよう！</h1>
             <div class="terms-panel">
@@ -90,7 +124,13 @@
           </article>
 
           {{-- STEP 3 --}}
-          <article class="terms-card" data-step="3">
+          <article
+            class="terms-card"
+            data-step="3"
+            tabindex="0"
+            role="button"
+            aria-label="ステップ3: 当日・受け取りと返却"
+          >
             <div class="terms-kicker">注意事項</div>
             <h1 class="terms-title">3ステップで確認しよう！</h1>
             <div class="terms-panel">
@@ -110,7 +150,10 @@
             </div>
           </article>
 
-          {{-- 右矢印（次のステップへ） --}}
+          {{-- ================================================================
+               スマホ用：右矢印
+               ※PCではCSSで非表示
+          ================================================================ --}}
           <button type="button" class="terms-arrow terms-arrow--next" id="arrowNext" aria-label="次のステップへ">
             <ion-icon name="chevron-forward-outline"></ion-icon>
           </button>
