@@ -11,10 +11,15 @@
     --sidebar-width: 260px;
 }
 
+/*
+   お知らせ画面専用body
+   ※ここで font-family を指定しない
+   理由：<x-user.sidebar /> も body.notification-page の中にあるため、
+   サイドバーのロゴや文字まで巻き込んで見た目がズレる
+*/
 body.notification-page {
     margin: 0;
     background: var(--bg-gray);
-    font-family: 'Segoe UI', 'Meiryo', sans-serif;
     color: var(--text-dark);
 }
 
@@ -28,6 +33,12 @@ body.notification-page {
     padding-top: 40px;
     padding-left: 0;
     box-sizing: border-box;
+
+    /*
+       お知らせ画面の本文エリアだけフォント指定
+       サイドバーには影響させない
+    */
+    font-family: 'Segoe UI', 'Meiryo', sans-serif;
 }
 
 /* ===========================
@@ -63,7 +74,7 @@ body.notification-page {
     background: #fff;
     border-radius: 15px;
     padding: 30px 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
     margin-bottom: 40px;
     display: flex;
     justify-content: center;
@@ -106,7 +117,6 @@ body.notification-page {
     box-shadow: 0 0 0 2px rgba(26, 43, 75, 0.1);
 }
 
-/* ★ここだけ変更 */
 .notification-search-btn {
     background: #2d3748;
     color: #fff;
@@ -134,7 +144,7 @@ body.notification-page {
 .notification-card {
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     display: flex;
     overflow: hidden;
     transition: transform 0.2s;
@@ -142,7 +152,7 @@ body.notification-page {
 
 .notification-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .card-left {
@@ -235,7 +245,6 @@ body.notification-page {
         flex-direction: column;
     }
 
-    /* ★ここも変更 */
     .notification-search-btn {
         width: 100%;
         padding: 12px;
