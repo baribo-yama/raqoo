@@ -36,23 +36,6 @@
         }
 
         /* ===========================
-           Page Title
-           お知らせページと同じ見た目に統一
-           =========================== */
-        .page-title-area {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .page-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #333;
-            margin: 0;
-            line-height: 1.4;
-        }
-
-        /* ===========================
            History Card
            =========================== */
         .history-card {
@@ -104,10 +87,6 @@
                 padding-top: 24px;
                 padding-left: 16px;
                 padding-right: 16px;
-            }
-
-            .page-title {
-                font-size: 24px;
             }
         }
     </style>
