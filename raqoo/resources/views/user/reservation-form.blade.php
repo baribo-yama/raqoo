@@ -214,44 +214,57 @@
         document.addEventListener('DOMContentLoaded', function() {
             const purposeTextarea = document.getElementById('purpose');
             const purposeCount = document.getElementById('purposeCount');
-            if (purposeTextarea) {
+
+            if (purposeTextarea && purposeCount) {
                 purposeTextarea.addEventListener('input', function() {
                     purposeCount.textContent = this.value.length;
                 });
+
                 purposeCount.textContent = purposeTextarea.value.length;
             }
 
+            const reservationForm = document.getElementById('reservationForm');
             const membersHidden = document.getElementById('membersHidden');
             const membersProxy = document.getElementById('members');
             const memberInputs = document.querySelectorAll('.member-name-input');
 
-            const hasOldMembers = Array.from(memberInputs).some(i => i.value.trim() !== '');
+            const hasOldMembers = Array.from(memberInputs).some(input => input.value.trim() !== '');
             if (hasOldMembers) {
                 membersProxy.value = 'dummy';
             }
 
             memberInputs.forEach(input => {
                 input.addEventListener('input', function() {
-                    const hasAny = Array.from(memberInputs).some(i => i.value.trim() !== '');
+                    const hasAny = Array.from(memberInputs).some(memberInput => memberInput.value.trim() !== '');
                     membersProxy.value = hasAny ? 'dummy' : '';
                     membersProxy.dispatchEvent(new Event('input'));
                 });
             });
 
-            document.getElementById('reservationForm').addEventListener('submit', function() {
-                const filled = Array.from(memberInputs)
-                    .map(input => input.value.trim())
-                    .filter(val => val !== '');
-                membersHidden.value = filled.join('\n');
-            });
+            if (reservationForm) {
+                reservationForm.addEventListener('submit', function() {
+                    const filled = Array.from(memberInputs)
+                        .map(input => input.value.trim())
+                        .filter(value => value !== '');
+
+                    membersHidden.value = filled.join('\n');
+                });
+            }
 
             const selectingMeta = document.getElementById('selectingMeta');
-            const roomId = selectingMeta.dataset.roomId;
-            const date = selectingMeta.dataset.date;
-            const toggleUrl = selectingMeta.dataset.toggleUrl;
-            const csrf = document.querySelector('meta[name="csrf-token"]').content;
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+
+            const roomId = selectingMeta ? selectingMeta.dataset.roomId : null;
+            const date = selectingMeta ? selectingMeta.dataset.date : null;
+            const toggleUrl = selectingMeta ? selectingMeta.dataset.toggleUrl : null;
+            const csrf = csrfMeta ? csrfMeta.content : null;
 
             async function toggleSelectingApi(period, action) {
+                if (!roomId || !date || !toggleUrl || !csrf) {
+                    console.error('selecting toggle meta is missing.');
+                    return false;
+                }
+
                 try {
                     const res = await fetch(toggleUrl, {
                         method: 'POST',
@@ -284,94 +297,124 @@
             const instructionText = document.getElementById('instructionText');
 
             let mainPeriod = 0;
-            checkboxes.forEach(cb => {
-                if (cb.dataset.original === "1") {
-                    mainPeriod = parseInt(cb.value, 10);
+            checkboxes.forEach(checkbox => {
+                if (checkbox.dataset.original === '1') {
+                    mainPeriod = parseInt(checkbox.value, 10);
                 }
             });
 
-            // ★ Copilot指摘対応: プログラム的にチェックを外す時にもselectingを解除する関数
-            // updateFormState()内でcb.checked = falseするとchangeイベントが発火しないため
-            // チェックを外す前にこの関数でAPIを呼ぶ
-            async function uncheckWithUnlock(cb, label) {
-                if (cb.checked) {
-                    const period = parseInt(cb.value, 10);
-                    cb.checked = false;
+            // プログラム側でチェックを外すと change イベントが発火しないため、
+            // チェック解除と同時に selecting も解除する
+            async function uncheckWithUnlock(checkbox, label) {
+                if (!checkbox.checked) {
+                    return;
+                }
+
+                const period = parseInt(checkbox.value, 10);
+
+                checkbox.checked = false;
+
+                if (label) {
                     label.classList.remove('bg-blue-50', 'border-blue-400');
                     label.classList.add('border-gray-200');
-                    // selectingをDBから削除
-                    await toggleSelectingApi(period, 'unlock');
                 }
+
+                await toggleSelectingApi(period, 'unlock');
             }
 
             async function updateFormState() {
+                if (!instructionText || !membersProxy) {
+                    return;
+                }
+
                 const hasMembers = membersProxy.value.trim().length > 0;
 
                 if (hasMembers) {
-                    instructionText.textContent = "※最大2コマまで選択可能です。";
+                    instructionText.textContent = '※最大2コマまで選択可能です。';
                     instructionText.classList.remove('text-orange-600');
                     instructionText.classList.add('text-blue-600');
                 } else {
-                    instructionText.textContent = "※1名利用（メンバー未入力）の場合は連続予約できません。";
+                    instructionText.textContent = '※1名利用（メンバー未入力）の場合は連続予約できません。';
                     instructionText.classList.add('text-orange-600');
                     instructionText.classList.remove('text-blue-600');
                 }
 
                 let extraCheckedCount = 0;
-                checkboxes.forEach(cb => {
-                    if (cb.dataset.original === "0" && cb.checked) {
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.dataset.original === '0' && checkbox.checked) {
                         extraCheckedCount++;
                     }
                 });
 
-                for (const cb of checkboxes) {
-                    const isOriginal = cb.dataset.original === "1";
-                    const isReserved = cb.dataset.reserved === "1";
-                    const label = document.getElementById('label-' + cb.value);
-                    const currentPeriod = parseInt(cb.value, 10);
+                for (const checkbox of checkboxes) {
+                    const isOriginal = checkbox.dataset.original === '1';
+                    const isReserved = checkbox.dataset.reserved === '1';
+                    const label = document.getElementById('label-' + checkbox.value);
+                    const currentPeriod = parseInt(checkbox.value, 10);
 
-                    if (isOriginal) continue;
+                    if (isOriginal) {
+                        continue;
+                    }
 
                     if (isReserved) {
-                        cb.disabled = true;
-                        label.classList.add('bg-gray-100', 'opacity-50', 'cursor-not-allowed');
+                        checkbox.disabled = true;
+
+                        if (label) {
+                            label.classList.add('bg-gray-100', 'opacity-50', 'cursor-not-allowed');
+                        }
+
                         continue;
                     }
 
                     if (!hasMembers) {
-                        cb.disabled = true;
-                        // ★ チェックを外す時にselectingも解除
-                        await uncheckWithUnlock(cb, label);
-                        label.classList.add('border-gray-200');
+                        checkbox.disabled = true;
+                        await uncheckWithUnlock(checkbox, label);
+
+                        if (label) {
+                            label.classList.add('border-gray-200');
+                        }
+
                         continue;
                     }
 
-                    const isConsecutive = (currentPeriod === mainPeriod - 1) || (currentPeriod === mainPeriod + 1);
+                    const isConsecutive = currentPeriod === mainPeriod - 1 || currentPeriod === mainPeriod + 1;
 
                     if (!isConsecutive) {
-                        cb.disabled = true;
-                        // ★ チェックを外す時にselectingも解除
-                        await uncheckWithUnlock(cb, label);
-                        label.classList.add('opacity-50', 'cursor-not-allowed');
-                    } else if (extraCheckedCount >= 1 && !cb.checked) {
-                        cb.disabled = true;
-                        label.classList.add('opacity-50', 'cursor-not-allowed');
+                        checkbox.disabled = true;
+                        await uncheckWithUnlock(checkbox, label);
+
+                        if (label) {
+                            label.classList.add('opacity-50', 'cursor-not-allowed');
+                        }
+                    } else if (extraCheckedCount >= 1 && !checkbox.checked) {
+                        checkbox.disabled = true;
+
+                        if (label) {
+                            label.classList.add('opacity-50', 'cursor-not-allowed');
+                        }
                     } else {
-                        cb.disabled = false;
-                        label.classList.remove('opacity-50', 'cursor-not-allowed');
+                        checkbox.disabled = false;
+
+                        if (label) {
+                            label.classList.remove('opacity-50', 'cursor-not-allowed');
+                        }
                     }
                 }
             }
 
-            membersProxy.addEventListener('input', updateFormState);
+            if (membersProxy) {
+                membersProxy.addEventListener('input', updateFormState);
+            }
 
-            checkboxes.forEach(cb => {
-                cb.addEventListener('change', async function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', async function() {
                     const label = document.getElementById('label-' + this.value);
                     const period = parseInt(this.value, 10);
-                    const isOriginal = this.dataset.original === "1";
+                    const isOriginal = this.dataset.original === '1';
 
-                    if (isOriginal) return;
+                    if (isOriginal) {
+                        return;
+                    }
 
                     if (this.checked) {
                         const success = await toggleSelectingApi(period, 'lock');
@@ -383,32 +426,39 @@
                             return;
                         }
 
-                        label.classList.add('bg-blue-50', 'border-blue-400');
-                        label.classList.remove('border-gray-200');
+                        if (label) {
+                            label.classList.add('bg-blue-50', 'border-blue-400');
+                            label.classList.remove('border-gray-200');
+                        }
                     } else {
                         await toggleSelectingApi(period, 'unlock');
 
-                        label.classList.remove('bg-blue-50', 'border-blue-400');
-                        label.classList.add('border-gray-200');
+                        if (label) {
+                            label.classList.remove('bg-blue-50', 'border-blue-400');
+                            label.classList.add('border-gray-200');
+                        }
                     }
 
                     updateFormState();
                 });
             });
 
-            let list = document.querySelectorAll('.list');
+            const list = document.querySelectorAll('.list');
+
             function activeLink() {
-                list.forEach((item) => item.classList.remove('active'));
+                list.forEach(item => item.classList.remove('active'));
                 this.classList.add('active');
             }
-            list.forEach((item) => item.addEventListener('click', activeLink));
 
-            let toggle = document.querySelector('.nav-toggle');
-            let navigation = document.querySelector('.navigation');
-            if (toggle) {
+            list.forEach(item => item.addEventListener('click', activeLink));
+
+            const toggle = document.querySelector('.nav-toggle');
+            const navigation = document.querySelector('.navigation');
+
+            if (toggle && navigation) {
                 toggle.onclick = function() {
                     navigation.classList.toggle('active');
-                }
+                };
             }
 
             updateFormState();
