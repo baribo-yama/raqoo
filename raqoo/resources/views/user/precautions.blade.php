@@ -76,8 +76,6 @@
             class="terms-card"
             data-step="1"
             data-active="true"
-            tabindex="0"
-            role="button"
             aria-label="ステップ1: 空き時間を確認・選択する"
           >
             <div class="terms-kicker">注意事項</div>
@@ -102,8 +100,6 @@
           <article
             class="terms-card"
             data-step="2"
-            tabindex="0"
-            role="button"
             aria-label="ステップ2: 申請フォームを入力して送信する"
           >
             <div class="terms-kicker">注意事項</div>
@@ -127,8 +123,6 @@
           <article
             class="terms-card"
             data-step="3"
-            tabindex="0"
-            role="button"
             aria-label="ステップ3: 当日・受け取りと返却"
           >
             <div class="terms-kicker">注意事項</div>

@@ -230,10 +230,6 @@ body[data-mode] .content-area .terms-viewport{
   }
 }
 
-.terms-card:focus-visible{
-  outline: 3px solid rgba(31,111,255,.35);
-  outline-offset: 4px;
-}
 
 .terms-kicker{
   text-align:center;
@@ -299,6 +295,7 @@ body[data-mode] .content-area .terms-viewport{
   left:0;
   right:0;
   bottom:18px;
+  z-index: 20;
   display:flex;
   justify-content:center;
   gap:10px;

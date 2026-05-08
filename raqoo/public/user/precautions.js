@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const mode = document.body.dataset.mode;
   const startStep = Number(document.body.dataset.startStep || 1);
 
+  const viewport = document.querySelector(".terms-viewport");
   const cards = Array.from(document.querySelectorAll(".terms-card"));
   const dots = Array.from(document.querySelectorAll(".terms-dot"));
   const agreeBtn = document.getElementById("agreeBtn");
@@ -23,6 +24,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const TOTAL = cards.length || 3;
   const STORAGE_KEY = "precautions_visited_steps_v1";
+
+  // =========================================
+  // PC判定
+  // =========================================
+  const isPC = () => window.matchMedia("(min-width: 769px)").matches;
 
   // ─── セッション中に訪問済みのステップを記録する ───
   const loadVisited = () => {
@@ -95,21 +101,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // ─── 表示中ステップ内の操作できる要素へフォーカスを移す ───
+  const focusActiveStep = (activeCard) => {
+    if (!activeCard) return;
+
+    const focusTarget = activeCard.querySelector(
+      ".terms-dot[data-active='true'], button:not([disabled]), a, input, select, textarea, [tabindex]:not([tabindex='-1'])"
+    );
+
+    focusTarget?.focus?.({ preventScroll: true });
+  };
+
   // ─── 指定ステップをアクティブにする ───
-  const setActive = (step) => {
+  const setActive = (step, options = {}) => {
     if (step < 1 || step > TOTAL) return;
 
+    const shouldFocus = options.focus !== false;
     currentStep = step;
 
-    cards.forEach((c) => {
-      const isActive = Number(c.dataset.step) === step;
-      c.dataset.active = isActive ? "true" : "false";
-      c.style.display = isActive ? "" : "none";
+    let activeCard = null;
+
+    cards.forEach((card) => {
+      const isActive = Number(card.dataset.step) === step;
+      card.dataset.active = isActive ? "true" : "false";
+      card.style.display = isActive ? "" : "none";
+
+      if (isActive) {
+        activeCard = card;
+      }
     });
 
-    dots.forEach((d) => {
-      const isActive = Number(d.dataset.stepjump) === step;
-      d.dataset.active = isActive ? "true" : "false";
+    dots.forEach((dot) => {
+      const isActive = Number(dot.dataset.stepjump) === step;
+      dot.dataset.active = isActive ? "true" : "false";
     });
 
     updateMoveZones();
@@ -118,6 +142,10 @@ document.addEventListener("DOMContentLoaded", () => {
       visited.add(step);
       saveVisited(visited);
       updateAgree();
+    }
+
+    if (shouldFocus) {
+      focusActiveStep(activeCard);
     }
   };
 
@@ -128,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateAgree();
   }
 
-  setActive(currentStep);
+  setActive(currentStep, { focus: false });
 
   // ─── 次へ・前へ ───
   const goNext = () => {
@@ -149,8 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let touchStartX = 0;
   let touchStartY = 0;
   let isSwiping = false;
-
-  const viewport = document.querySelector(".terms-viewport");
 
   if (viewport) {
     // --- 指が触れた瞬間 ---
@@ -205,31 +231,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================================
-  // PC判定
-  // =========================================
-  const isPC = () => window.matchMedia("(min-width: 769px)").matches;
-
-  // =========================================
-  // カードのキーボード操作
+  // キーボード操作（PCのみ）
   // -----------------------------------------
-  // カード全体クリックでは移動しない。
-  // Enter / Space では次へ進める。
-  // =========================================
-  cards.forEach((c) => {
-    c.addEventListener("keydown", (e) => {
-      if (!isPC()) return;
-
-      if ((e.key === "Enter" || e.key === " ") && Number(c.dataset.step) === currentStep) {
-        e.preventDefault();
-        goNext();
-      }
-    });
-  });
-
-  // =========================================
-  // キーボード操作（←→キー）でも移動できるようにする
+  // .terms-viewport 内にフォーカスがある時だけ、
+  // ← → キーでステップ移動できるようにする。
+  // フォーム要素やボタン操作中は邪魔しない。
   // =========================================
   document.addEventListener("keydown", (e) => {
+    if (!isPC()) return;
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+
+    const target = e.target;
+
+    if (!viewport || !viewport.contains(target)) return;
+
+    if (target.closest("input, textarea, select, button, a")) return;
+
+    e.preventDefault();
+
     if (e.key === "ArrowRight") {
       goNext();
     }
@@ -240,12 +259,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ─── ドットのクリック ───
-  dots.forEach((d) => {
-    d.addEventListener("click", (e) => {
+  dots.forEach((dot) => {
+    dot.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      const step = Number(d.dataset.stepjump);
+      const step = Number(dot.dataset.stepjump);
 
       if (Number.isFinite(step)) {
         setActive(step);
