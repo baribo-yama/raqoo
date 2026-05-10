@@ -124,6 +124,8 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
     Route::get('/reservations-history', [UserReservationController::class, 'history'])->name('user.reservations.history');
 
+    // ★ チェックボックスON/OFF時のselecting作成・削除API
+    Route::post('/reservations/selecting/toggle', [UserReservationController::class, 'toggleSelecting'])->name('user.reservations.selecting.toggle');
 
     // ユーザー通知
     Route::get('/notifications', [UserNotificationController::class, 'index'])->name('user.notifications.index');
@@ -145,7 +147,7 @@ Route::middleware('auth', 'verified')->group(function () {
     // 自分の予約一覧取得 (JSON)
     Route::get('/user/my-reservations', [UserReservationController::class, 'myReservations'])
         ->name('user.reservations.my');
-});
 
-// 予約申請できない時間帯に出す画面
-Route::get('/unavailable', [UnavailableController::class, 'showUnavailable'])->name('unavailable');
+    // 予約申請できない時間帯に出す画面
+    Route::get('/unavailable', [UnavailableController::class, 'showUnavailable'])->name('unavailable');
+});
