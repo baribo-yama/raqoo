@@ -57,7 +57,7 @@ body.notification-page {
 
 /* ===========================
    Page Title
-   ※ .page-title の文字サイズ・太さは home.css の共通スタイルで管理
+   ※ .page-title の基本的な文字サイズ・太さは home.css の共通スタイルで管理
 =========================== */
 .page-title-area {
     text-align: center;
