@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   // ここにはハンバーガーメニューのコードは書きません
-  // (home.js が自動でやってくれます)
+  // home.js が自動でやってくれます
   // ==========================================
 
   // --- 以下、注意事項（3ステップ）のロジックのみ ---
@@ -9,16 +9,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const mode = document.body.dataset.mode;
   const startStep = Number(document.body.dataset.startStep || 1);
 
+  const viewport = document.querySelector(".terms-viewport");
   const cards = Array.from(document.querySelectorAll(".terms-card"));
   const dots = Array.from(document.querySelectorAll(".terms-dot"));
   const agreeBtn = document.getElementById("agreeBtn");
 
-  // 【追加④】左右の矢印ボタン
+  // スマホ用：丸矢印ボタン
   const arrowPrev = document.getElementById("arrowPrev");
   const arrowNext = document.getElementById("arrowNext");
 
+  // PC用：カード左半分・右半分クリックエリア
+  const pcZonePrev = document.getElementById("pcZonePrev");
+  const pcZoneNext = document.getElementById("pcZoneNext");
+
   const TOTAL = cards.length || 3;
   const STORAGE_KEY = "precautions_visited_steps_v1";
+
+  // =========================================
+  // PC判定
+  // =========================================
+  const isPC = () => window.matchMedia("(min-width: 769px)").matches;
 
   // ─── セッション中に訪問済みのステップを記録する ───
   const loadVisited = () => {
@@ -54,55 +64,94 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // =========================================
-  // 【修正】矢印の表示/非表示を切り替える
+  // 要素の表示/非表示を切り替える
   // -----------------------------------------
-  // data-hidden だけだと見えない矢印にTabフォーカスできるため、
+  // data-hidden だけだと見えない要素にTabフォーカスできるため、
   // hidden / disabled / aria-hidden / tabindex も同時に切り替える。
   // =========================================
-  const setArrowVisibility = (arrow, isHidden) => {
-    if (!arrow) return;
+  const setMoveElementVisibility = (el, isHidden, useDisabled = false) => {
+    if (!el) return;
 
-    arrow.dataset.hidden = isHidden ? "true" : "false";
-    arrow.hidden = isHidden;
-    arrow.disabled = isHidden;
-    arrow.setAttribute("aria-hidden", isHidden ? "true" : "false");
+    el.dataset.hidden = isHidden ? "true" : "false";
+    el.hidden = isHidden;
+    el.setAttribute("aria-hidden", isHidden ? "true" : "false");
+
+    if (useDisabled) {
+      el.disabled = isHidden;
+    }
 
     if (isHidden) {
-      arrow.setAttribute("tabindex", "-1");
+      el.setAttribute("tabindex", "-1");
     } else {
-      arrow.removeAttribute("tabindex");
+      el.removeAttribute("tabindex");
     }
   };
 
-  const updateArrows = () => {
-    setArrowVisibility(arrowPrev, currentStep === 1);
-    setArrowVisibility(arrowNext, currentStep === TOTAL);
+  // =========================================
+  // 移動ボタン・クリックエリアの表示/非表示を切り替える
+  // -----------------------------------------
+  // ステップ1 → 左移動を隠す
+  // ステップ3 → 右移動を隠す
+  // ステップ2 → 両方表示
+  // =========================================
+  const updateMoveZones = () => {
+    const isFirst = currentStep === 1;
+    const isLast = currentStep === TOTAL;
+
+    // スマホ用：丸矢印の表示制御
+    setMoveElementVisibility(arrowPrev, isFirst, true);
+    setMoveElementVisibility(arrowNext, isLast, true);
+
+    // PC用：左右クリックエリアの表示制御
+    setMoveElementVisibility(pcZonePrev, isFirst, false);
+    setMoveElementVisibility(pcZoneNext, isLast, false);
+  };
+
+  // ─── 表示中ステップ内の操作できる要素へフォーカスを移す ───
+  const focusActiveStep = (activeCard) => {
+    if (!activeCard) return;
+
+    const focusTarget = activeCard.querySelector(
+      ".terms-dot[data-active='true'], button:not([disabled]), a, input, select, textarea, [tabindex]:not([tabindex='-1'])"
+    );
+
+    focusTarget?.focus?.({ preventScroll: true });
   };
 
   // ─── 指定ステップをアクティブにする ───
-  const setActive = (step) => {
+  const setActive = (step, options = {}) => {
     if (step < 1 || step > TOTAL) return;
 
+    const shouldFocus = options.focus !== false;
     currentStep = step;
 
-    cards.forEach((c) => {
-      const isActive = Number(c.dataset.step) === step;
-      c.dataset.active = isActive ? "true" : "false";
-      c.style.display = isActive ? "" : "none";
+    let activeCard = null;
+
+    cards.forEach((card) => {
+      const isActive = Number(card.dataset.step) === step;
+      card.dataset.active = isActive ? "true" : "false";
+      card.style.display = isActive ? "" : "none";
+
+      if (isActive) {
+        activeCard = card;
+      }
     });
 
-    dots.forEach((d) => {
-      const isActive = Number(d.dataset.stepjump) === step;
-      d.dataset.active = isActive ? "true" : "false";
+    dots.forEach((dot) => {
+      const isActive = Number(dot.dataset.stepjump) === step;
+      dot.dataset.active = isActive ? "true" : "false";
     });
 
-    // 矢印の表示も更新
-    updateArrows();
+    updateMoveZones();
 
     if (mode === "confirm") {
       visited.add(step);
       saveVisited(visited);
       updateAgree();
+    }
+
+    if (shouldFocus) {
+      focusActiveStep(activeCard);
     }
   };
 
@@ -113,10 +162,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateAgree();
   }
 
-  setActive(currentStep);
+  setActive(currentStep, { focus: false });
 
   // ─── 次へ・前へ ───
-  // modulo による循環をやめ、端では移動しないようにする
+  // 端では移動しない
   const goNext = () => {
     if (currentStep >= TOTAL) return;
     setActive(currentStep + 1);
@@ -128,28 +177,25 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // =========================================
-  // 【追加①】スワイプで次・前に進む
-  // -----------------------------------------
-  // 仕組み：
-  //   指が画面に触れた瞬間の位置を記録（touchstart）
-  //   → 指を動かしている間、横移動か縦移動かを判定（touchmove）
-  //   → 指を離したとき、横に50px以上動いていたらスワイプと判定（touchend）
-  //     左スワイプ → 次のステップへ
-  //     右スワイプ → 前のステップへ
-  //     縦方向の動きが大きい場合は通常のスクロール扱い
+  // スワイプで次・前に進む
+  // スマホ向け
   // =========================================
 
   let touchStartX = 0;
   let touchStartY = 0;
   let isSwiping = false;
 
-  const viewport = document.querySelector(".terms-viewport");
-
   if (viewport) {
     // --- 指が触れた瞬間 ---
     viewport.addEventListener("touchstart", (e) => {
-      // ドットや矢印部分のタッチは除外（それぞれ別の処理がある）
-      if (e.target.closest(".terms-dot") || e.target.closest(".terms-arrow")) return;
+      // ドット・スマホ矢印・PCクリックエリア部分のタッチは除外
+      if (
+        e.target.closest(".terms-dot") ||
+        e.target.closest(".terms-arrow") ||
+        e.target.closest(".terms-click-zone")
+      ) {
+        return;
+      }
 
       const touch = e.touches[0];
       touchStartX = touch.clientX;
@@ -167,10 +213,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const dy = Math.abs(e.touches[0].clientY - touchStartY);
 
       if (dy > dx) {
-        // 縦方向の動きが大きい → 普通のスクロール扱い、何もしない
         isSwiping = false;
       } else if (dx > 10) {
-        // 横方向の動きが大きい → ブラウザの「戻る」や横スクロールを止める
         e.preventDefault();
       }
     }, { passive: false });
@@ -183,32 +227,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const touchEndX = e.changedTouches[0].clientX;
       const diff = touchStartX - touchEndX;
-      const threshold = 50; // 50px以上動かしたらスワイプと判定
+      const threshold = 50;
 
       if (Math.abs(diff) < threshold) return;
 
       if (diff > 0) {
-        goNext();  // ← 左にスワイプ → 次へ
+        goNext();
       } else {
-        goPrev();  // → 右にスワイプ → 前へ
+        goPrev();
       }
     }, { passive: true });
   }
 
   // =========================================
-  // 【変更②】カード全面タップ → 削除
+  // キーボード操作（PCのみ）
   // -----------------------------------------
-  // 以前はカードをタップすると次に進んでいたが、
-  // スワイプと併用すると誤操作になるため削除。
-  // 代わりにドットのタップと左右キーで移動できる。
-  // =========================================
-
-  // （カードのクリック/キーダウンのイベントは登録しない）
-
-  // =========================================
-  // キーボード操作（←→キー）でも移動できるようにする
+  // .terms-viewport 内にフォーカスがある時だけ、
+  // ← → キーでステップ移動できるようにする。
+  // フォーム要素やボタン操作中は邪魔しない。
   // =========================================
   document.addEventListener("keydown", (e) => {
+    if (!isPC()) return;
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+
+    const target = e.target;
+
+    if (!viewport || !viewport.contains(target)) return;
+
+    if (target.closest("input, textarea, select, button, a")) return;
+
+    e.preventDefault();
+
     if (e.key === "ArrowRight") {
       goNext();
     }
@@ -218,13 +267,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ─── ドットのクリックは従来通り ───
-  dots.forEach((d) => {
-    d.addEventListener("click", (e) => {
+  // ─── ドットのクリック ───
+  dots.forEach((dot) => {
+    dot.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      const step = Number(d.dataset.stepjump);
+      const step = Number(dot.dataset.stepjump);
 
       if (Number.isFinite(step)) {
         setActive(step);
@@ -233,16 +282,15 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // =========================================
-  // 【追加④】矢印ボタンのクリック
-  // -----------------------------------------
-  // 左矢印 → 前のステップへ
-  // 右矢印 → 次のステップへ
-  // ステップ1で左、ステップ3で右は
-  // updateArrows() で非表示にしているので押せない。
+  // スマホ用：丸矢印ボタンのクリック
+  // 左矢印 → 前へ
+  // 右矢印 → 次へ
   // =========================================
   if (arrowPrev) {
     arrowPrev.addEventListener("click", (e) => {
       e.preventDefault();
+      e.stopPropagation();
+
       goPrev();
     });
   }
@@ -250,6 +298,35 @@ document.addEventListener("DOMContentLoaded", () => {
   if (arrowNext) {
     arrowNext.addEventListener("click", (e) => {
       e.preventDefault();
+      e.stopPropagation();
+
+      goNext();
+    });
+  }
+
+  // =========================================
+  // PC用：カード左半分・右半分クリック
+  // 左側 → 前へ
+  // 右側 → 次へ
+  // =========================================
+  if (pcZonePrev) {
+    pcZonePrev.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!isPC()) return;
+
+      goPrev();
+    });
+  }
+
+  if (pcZoneNext) {
+    pcZoneNext.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!isPC()) return;
+
       goNext();
     });
   }
