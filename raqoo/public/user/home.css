@@ -992,3 +992,34 @@ body.with-sidebar {
         display: none !important;
     }
 }
+/* =========================================
+   ▼▼▼ 画面タイトル共通スタイル ▼▼▼
+   お知らせ一覧を基準に統一
+========================================= */
+.page-title-area,
+.cardHeader {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    font-family: "Meiryo", "Yu Gothic", Arial, sans-serif;
+    text-align: center;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+@media (max-width: 560px) {
+    .page-title {
+        font-size: 24px;
+    }
+
+    .page-title-area,
+    .cardHeader {
+        margin-bottom: 24px;
+    }
+}
