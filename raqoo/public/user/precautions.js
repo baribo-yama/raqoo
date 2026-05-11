@@ -64,6 +64,30 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // =========================================
+  // 要素の表示/非表示を切り替える
+  // -----------------------------------------
+  // data-hidden だけだと見えない要素にTabフォーカスできるため、
+  // hidden / disabled / aria-hidden / tabindex も同時に切り替える。
+  // =========================================
+  const setMoveElementVisibility = (el, isHidden, useDisabled = false) => {
+    if (!el) return;
+
+    el.dataset.hidden = isHidden ? "true" : "false";
+    el.hidden = isHidden;
+    el.setAttribute("aria-hidden", isHidden ? "true" : "false");
+
+    if (useDisabled) {
+      el.disabled = isHidden;
+    }
+
+    if (isHidden) {
+      el.setAttribute("tabindex", "-1");
+    } else {
+      el.removeAttribute("tabindex");
+    }
+  };
+
+  // =========================================
   // 移動ボタン・クリックエリアの表示/非表示を切り替える
   // -----------------------------------------
   // ステップ1 → 左移動を隠す
@@ -75,30 +99,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const isLast = currentStep === TOTAL;
 
     // スマホ用：丸矢印の表示制御
-    if (arrowPrev) {
-      arrowPrev.dataset.hidden = isFirst ? "true" : "false";
-      arrowPrev.setAttribute("aria-hidden", isFirst ? "true" : "false");
-      arrowPrev.tabIndex = isFirst ? -1 : 0;
-    }
-
-    if (arrowNext) {
-      arrowNext.dataset.hidden = isLast ? "true" : "false";
-      arrowNext.setAttribute("aria-hidden", isLast ? "true" : "false");
-      arrowNext.tabIndex = isLast ? -1 : 0;
-    }
+    setMoveElementVisibility(arrowPrev, isFirst, true);
+    setMoveElementVisibility(arrowNext, isLast, true);
 
     // PC用：左右クリックエリアの表示制御
-    if (pcZonePrev) {
-      pcZonePrev.dataset.hidden = isFirst ? "true" : "false";
-      pcZonePrev.setAttribute("aria-hidden", isFirst ? "true" : "false");
-      pcZonePrev.tabIndex = isFirst ? -1 : 0;
-    }
-
-    if (pcZoneNext) {
-      pcZoneNext.dataset.hidden = isLast ? "true" : "false";
-      pcZoneNext.setAttribute("aria-hidden", isLast ? "true" : "false");
-      pcZoneNext.tabIndex = isLast ? -1 : 0;
-    }
+    setMoveElementVisibility(pcZonePrev, isFirst, false);
+    setMoveElementVisibility(pcZoneNext, isLast, false);
   };
 
   // ─── 表示中ステップ内の操作できる要素へフォーカスを移す ───
@@ -159,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setActive(currentStep, { focus: false });
 
   // ─── 次へ・前へ ───
+  // 端では移動しない
   const goNext = () => {
     if (currentStep >= TOTAL) return;
     setActive(currentStep + 1);
@@ -197,6 +204,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { passive: true });
 
     // --- 指を動かしている間 ---
+    // passive: false にすることで
+    // 「ブラウザの横スワイプ（ページ戻る等）を止める権限」を得る。
     viewport.addEventListener("touchmove", (e) => {
       if (!isSwiping) return;
 
@@ -281,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
     arrowPrev.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
+
       goPrev();
     });
   }
@@ -289,6 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     arrowNext.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
+
       goNext();
     });
   }
