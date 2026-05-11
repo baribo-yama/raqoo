@@ -19,50 +19,81 @@ class ReservationController extends Controller
     }
 
     /**
-     * 予約申請フォームの表示
-     * ★ フォームを開いた瞬間に 'selecting'（選択中）レコードを作成してスロットをロック
+     * 期限切れ selecting を削除
+     * selecting は10分以内だけ有効な一時ロックとして扱う
      */
-    public function create(Request $request)
+    private function cleanupExpiredSelecting(): void
     {
-        $request->validate([
-            'room_id' => 'required|exists:rooms,id',
-            'date'    => 'required|date|after_or_equal:today',
-            'period'  => 'required|integer|min:1|max:6',
-        ]);
-
-        $selectedRoom = Room::find($request->room_id);
-
-        if (!$selectedRoom) {
-            return redirect()->route('user.home.index')->with('error', '教室がみつかりません。');
-        }
-
-        $date   = $request->date;
-        $room   = $selectedRoom;
-        $period = (int) $request->period;
-
-        // ★ 10分以上経過した期限切れselectingレコードを全体で削除
         Reservation::where('status', 'selecting')
             ->where('created_at', '<', now()->subMinutes(10))
             ->delete();
+    }
 
-        // ★ 自分の既存selectingを全削除（別の時間帯を選び直した場合のクリーンアップ）
+    /**
+     * 予約申請フォームの表示
+     * フォームを開いた時点で selecting レコードを作成して一時ロックする
+     */
+    public function create(Request $request)
+    {
+        $validated = $request->validate([
+            'room_id'   => 'required|exists:rooms,id',
+            'date'      => 'required|date|after_or_equal:today',
+
+            // 通常導線は period、確認画面からの修正導線は periods[] を許容する
+            'period'    => 'nullable|integer|min:1|max:6|required_without:periods',
+            'periods'   => 'nullable|array|min:1|max:2',
+            'periods.*' => 'integer|min:1|max:6',
+        ]);
+
+        $selectedRoom = Room::find($validated['room_id']);
+
+        if (!$selectedRoom) {
+            return redirect()->route('user.home.index')
+                ->with('error', '教室がみつかりません。');
+        }
+
+        $date = $validated['date'];
+        $room = $selectedRoom;
+
+        // period が無い場合は periods[] の先頭を代表時限として扱う
+        $period = $validated['period'] ?? null;
+
+        if (!$period && !empty($validated['periods'])) {
+            $periods = array_map('intval', $validated['periods']);
+            sort($periods);
+            $period = $periods[0];
+        }
+
+        $period = (int) $period;
+
+        // develop側の良い点：期限切れ selecting を掃除する
+        $this->cleanupExpiredSelecting();
+
+        // 自分の既存 selecting のみ削除する
+        // 別の枠を選び直した場合に、古い自分の選択中データを残さない
         Reservation::where('user_id', Auth::id())
             ->where('status', 'selecting')
             ->delete();
 
-        // ★ トランザクション内でロックを取りながらselectingを作成（同時クリック競合防止）
         $result = DB::transaction(function () use ($room, $date, $period) {
             $alreadyTaken = Reservation::where('room_id', $room->id)
                 ->where('date', $date)
                 ->where('period', $period)
                 ->where('user_id', '!=', Auth::id())
-                ->whereIn('status', ['selecting', 'pending', 'reserved', 'in_use'])
+                ->where(function ($query) {
+                    $query->whereIn('status', ['pending', 'reserved', 'in_use'])
+                        ->orWhere(function ($q) {
+                            $q->where('status', 'selecting')
+                                ->where('created_at', '>=', now()->subMinutes(10));
+                        });
+                })
                 ->lockForUpdate()
                 ->exists();
 
             $lessonExists = RoomLesson::where('room_id', $room->id)
                 ->where('date', $date)
                 ->where('period', $period)
+                ->lockForUpdate()
                 ->exists();
 
             if ($alreadyTaken || $lessonExists) {
@@ -88,7 +119,13 @@ class ReservationController extends Controller
 
         $reservedPeriods = Reservation::where('room_id', $room->id)
             ->where('date', $date)
-            ->where('status', '!=', 'cancelled')
+            ->where(function ($query) {
+                $query->whereIn('status', ['pending', 'reserved', 'in_use'])
+                    ->orWhere(function ($q) {
+                        $q->where('status', 'selecting')
+                            ->where('created_at', '>=', now()->subMinutes(10));
+                    });
+            })
             ->pluck('period')
             ->toArray();
 
@@ -114,30 +151,16 @@ class ReservationController extends Controller
             'members'    => 'nullable|string',
         ]);
 
+        $this->cleanupExpiredSelecting();
+
         $selectedRoom = Room::find($validated['room_id']);
 
-        $existing = Reservation::where('room_id', $validated['room_id'])
-            ->where('date', $validated['date'])
-            ->whereIn('period', $validated['periods'])
-            ->where('status', '!=', 'cancelled')
-            ->where(function ($q) {
-                $q->where('user_id', '!=', Auth::id())
-                  ->orWhereNotIn('status', ['selecting']);
-            })
-            ->exists();
-
-        $existingLesson = RoomLesson::where('room_id', $validated['room_id'])
-            ->where('date', $validated['date'])
-            ->whereIn('period', $validated['periods'])
-            ->exists();
-
-        if ($existing || $existingLesson) {
-            return back()
-                ->withErrors(['periods' => '選択された時間帯の中に、すでに予約済みまたは授業が登録されている枠が含まれています。'])
-                ->withInput();
+        if (!$selectedRoom) {
+            return redirect()->route('user.home.index')
+                ->with('error', '教室がみつかりません。');
         }
 
-        $periods = $validated['periods'];
+        $periods = array_map('intval', $validated['periods']);
         sort($periods);
 
         for ($i = 1; $i < count($periods); $i++) {
@@ -148,55 +171,85 @@ class ReservationController extends Controller
             }
         }
 
+        $existing = Reservation::where('room_id', $validated['room_id'])
+            ->where('date', $validated['date'])
+            ->whereIn('period', $periods)
+            ->where('user_id', '!=', Auth::id())
+            ->where(function ($query) {
+                $query->whereIn('status', ['pending', 'reserved', 'in_use'])
+                    ->orWhere(function ($q) {
+                        $q->where('status', 'selecting')
+                            ->where('created_at', '>=', now()->subMinutes(10));
+                    });
+            })
+            ->exists();
+
+        $existingLesson = RoomLesson::where('room_id', $validated['room_id'])
+            ->where('date', $validated['date'])
+            ->whereIn('period', $periods)
+            ->exists();
+
+        if ($existing || $existingLesson) {
+            return back()
+                ->withErrors(['periods' => '選択された時間帯の中に、すでに予約済みまたは授業が登録されている枠が含まれています。'])
+                ->withInput();
+        }
+
+        // 複数時限の場合、足りない selecting を追加で作成する
         if (count($periods) > 1) {
             $existingSelectingPeriods = Reservation::where('user_id', Auth::id())
                 ->where('status', 'selecting')
                 ->where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
                 ->whereIn('period', $periods)
+                ->where('created_at', '>=', now()->subMinutes(10))
                 ->pluck('period')
+                ->map(fn ($period) => (int) $period)
                 ->toArray();
 
-            $missingPeriods = array_diff($periods, $existingSelectingPeriods);
+            $missingPeriods = array_values(array_diff($periods, $existingSelectingPeriods));
 
-            foreach ($missingPeriods as $missingPeriod) {
-                $created = DB::transaction(function () use ($validated, $missingPeriod) {
-                    // ★ Copilot指摘対応: selectingは10分以内のものだけブロック対象にする
-                    $alreadyTaken = Reservation::where('room_id', $validated['room_id'])
-                        ->where('date', $validated['date'])
-                        ->where('period', $missingPeriod)
-                        ->where('user_id', '!=', Auth::id())
-                        ->where(function ($query) {
-                            $query->whereIn('status', ['pending', 'reserved', 'in_use'])
-                                ->orWhere(function ($q) {
-                                    $q->where('status', 'selecting')
-                                        ->where('created_at', '>=', now()->subMinutes(10));
-                                });
-                        })
-                        ->lockForUpdate()
-                        ->exists();
+            try {
+                DB::transaction(function () use ($validated, $missingPeriods) {
+                    foreach ($missingPeriods as $missingPeriod) {
+                        $alreadyTaken = Reservation::where('room_id', $validated['room_id'])
+                            ->where('date', $validated['date'])
+                            ->where('period', $missingPeriod)
+                            ->where('user_id', '!=', Auth::id())
+                            ->where(function ($query) {
+                                $query->whereIn('status', ['pending', 'reserved', 'in_use'])
+                                    ->orWhere(function ($q) {
+                                        $q->where('status', 'selecting')
+                                            ->where('created_at', '>=', now()->subMinutes(10));
+                                    });
+                            })
+                            ->lockForUpdate()
+                            ->exists();
 
-                    if ($alreadyTaken) {
-                        return false;
+                        $lessonExists = RoomLesson::where('room_id', $validated['room_id'])
+                            ->where('date', $validated['date'])
+                            ->where('period', $missingPeriod)
+                            ->lockForUpdate()
+                            ->exists();
+
+                        if ($alreadyTaken || $lessonExists) {
+                            throw new \RuntimeException('Selected period is already taken.');
+                        }
+
+                        Reservation::create([
+                            'user_id' => Auth::id(),
+                            'room_id' => $validated['room_id'],
+                            'date'    => $validated['date'],
+                            'period'  => $missingPeriod,
+                            'purpose' => '選択中',
+                            'status'  => 'selecting',
+                        ]);
                     }
-
-                    Reservation::create([
-                        'user_id' => Auth::id(),
-                        'room_id' => $validated['room_id'],
-                        'date'    => $validated['date'],
-                        'period'  => $missingPeriod,
-                        'purpose' => '選択中',
-                        'status'  => 'selecting',
-                    ]);
-
-                    return true;
                 });
-
-                if (!$created) {
-                    return back()
-                        ->withErrors(['periods' => 'タッチの差で選択した時間帯が埋まってしまいました。もう一度選び直してください。'])
-                        ->withInput();
-                }
+            } catch (\RuntimeException $e) {
+                return back()
+                    ->withErrors(['periods' => 'タッチの差で選択した時間帯が埋まってしまいました。もう一度選び直してください。'])
+                    ->withInput();
             }
         }
 
@@ -229,7 +282,9 @@ class ReservationController extends Controller
             'members'    => 'nullable|string',
         ]);
 
-        $periods = $validated['periods'];
+        $this->cleanupExpiredSelecting();
+
+        $periods = array_map('intval', $validated['periods']);
         sort($periods);
 
         for ($i = 1; $i < count($periods); $i++) {
@@ -244,39 +299,45 @@ class ReservationController extends Controller
             ->where('status', 'selecting')
             ->where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
-            ->whereIn('period', $validated['periods'])
+            ->whereIn('period', $periods)
             ->where('created_at', '>=', now()->subMinutes(10))
             ->count();
 
-        $hasValidSelecting = ($matchingSelectingCount === count($validated['periods']));
+        $hasValidSelecting = ($matchingSelectingCount === count($periods));
 
         if (!$hasValidSelecting) {
-            return redirect()->route('user.home.index')
-                ->with('error', '申請に失敗しました。選択から10分が経過したため、もう一度最初からやり直してください。');
-        }
-
-        return DB::transaction(function () use ($validated) {
             Reservation::where('user_id', Auth::id())
                 ->where('status', 'selecting')
                 ->delete();
 
+            return redirect()->route('user.home.index')
+                ->with('error', '申請に失敗しました。選択から10分が経過したため、もう一度最初からやり直してください。');
+        }
+
+        return DB::transaction(function () use ($validated, $periods) {
             $existing = Reservation::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
-                ->whereIn('period', $validated['periods'])
-                ->where('status', '!=', 'cancelled')
+                ->whereIn('period', $periods)
                 ->where('user_id', '!=', Auth::id())
+                ->where(function ($query) {
+                    $query->whereIn('status', ['pending', 'reserved', 'in_use'])
+                        ->orWhere(function ($q) {
+                            $q->where('status', 'selecting')
+                                ->where('created_at', '>=', now()->subMinutes(10));
+                        });
+                })
                 ->lockForUpdate()
                 ->exists();
 
             $existingLesson = RoomLesson::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
-                ->whereIn('period', $validated['periods'])
+                ->whereIn('period', $periods)
                 ->lockForUpdate()
                 ->exists();
 
             if ($existing || $existingLesson) {
-                // ★ Copilot指摘対応: periodを渡すことでcreate()のバリデーションエラーを防ぐ
-                $firstPeriod = min($validated['periods']);
+                $firstPeriod = min($periods);
+
                 return redirect()->route('user.reservations.create', [
                     'room_id' => $validated['room_id'],
                     'date'    => $validated['date'],
@@ -284,12 +345,20 @@ class ReservationController extends Controller
                 ])->withErrors(['error' => 'タッチの差で予約または授業が埋まってしまいました。']);
             }
 
-            foreach ($validated['periods'] as $period) {
+            // 有効な selecting を削除してから pending の予約申請を作成
+            Reservation::where('user_id', Auth::id())
+                ->where('status', 'selecting')
+                ->where('room_id', $validated['room_id'])
+                ->where('date', $validated['date'])
+                ->whereIn('period', $periods)
+                ->delete();
+
+            foreach ($periods as $period) {
                 Reservation::create([
                     'user_id' => Auth::id(),
                     'room_id' => $validated['room_id'],
                     'date'    => $validated['date'],
-                    'period'  => (int) $period,
+                    'period'  => $period,
                     'purpose' => $validated['purpose'],
                     'members' => $validated['members'],
                     'status'  => 'pending',
@@ -316,13 +385,18 @@ class ReservationController extends Controller
 
     public function show(Reservation $reservation)
     {
-        if ($reservation->user_id !== Auth::id()) abort(403);
+        if ($reservation->user_id !== Auth::id()) {
+            abort(403);
+        }
+
         return view('user.reservation-detail', compact('reservation'));
     }
 
     public function cancel(Reservation $reservation)
     {
-        if ($reservation->user_id !== Auth::id()) abort(403);
+        if ($reservation->user_id !== Auth::id()) {
+            abort(403);
+        }
 
         if (!in_array($reservation->status, ['pending', 'reserved'], true)) {
             return back()->withErrors(['error' => 'この予約はキャンセルできません。']);
@@ -386,7 +460,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * チェックボックスON/OFF時のselecting作成・削除
+     * チェックボックスON/OFF時の selecting 作成・削除
      */
     public function toggleSelecting(Request $request)
     {
@@ -396,6 +470,8 @@ class ReservationController extends Controller
             'period'  => 'required|integer|min:1|max:6',
             'action'  => 'required|in:lock,unlock',
         ]);
+
+        $this->cleanupExpiredSelecting();
 
         if ($validated['action'] === 'unlock') {
             Reservation::where('user_id', Auth::id())
@@ -409,7 +485,6 @@ class ReservationController extends Controller
         }
 
         $result = DB::transaction(function () use ($validated) {
-            // ★ Copilot指摘対応: selectingは10分以内のものだけロック対象にする
             $alreadyTaken = Reservation::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
                 ->where('period', $validated['period'])
@@ -427,6 +502,7 @@ class ReservationController extends Controller
             $lessonExists = RoomLesson::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
                 ->where('period', $validated['period'])
+                ->lockForUpdate()
                 ->exists();
 
             if ($alreadyTaken || $lessonExists) {
@@ -438,6 +514,7 @@ class ReservationController extends Controller
                 ->where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
                 ->where('period', $validated['period'])
+                ->where('created_at', '>=', now()->subMinutes(10))
                 ->exists();
 
             if (!$alreadyMine) {
