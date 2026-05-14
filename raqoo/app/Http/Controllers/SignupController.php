@@ -38,7 +38,7 @@ class SignupController extends Controller
                 ->letters()   // 文字を入れる
                 ->mixedCase() // 大文字小文字両方入れる
                 ->numbers()   // 数字入れる
-                ->symbols()   // 記号
+                // ->symbols()   // 記号
                 ->uncompromised(), // 漏洩済みのパスワードじゃないかどうか
                 ],
         ], $messages);
