@@ -27,7 +27,7 @@
 
     {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons/ionicons.js"></script>
 </head>
 
 <body>
@@ -47,8 +47,9 @@
 
             {{-- -------------------------------------------------
                 ページ見出し
+                - お知らせ一覧・利用履歴とタイトルデザインを統一
             ------------------------------------------------- --}}
-            <div class="cardHeader">
+            <div class="page-title-area">
                 <h2 class="page-title">予約一覧（未来分）</h2>
             </div>
 
@@ -81,18 +82,18 @@
                                         <span
                                             class="px-2 py-1 text-xs rounded-full
                                                 @if ($reservation->status === 'pending') bg-yellow-100 text-yellow-800
-                                                @elseif($reservation->status === 'reserved') bg-green-100 text-green-800
-                                                @elseif($reservation->status === 'rejected') bg-red-100 text-red-800
-                                                @elseif($reservation->status === 'cancelled') bg-gray-100 text-gray-800
+                                                @elseif ($reservation->status === 'reserved') bg-green-100 text-green-800
+                                                @elseif ($reservation->status === 'rejected') bg-red-100 text-red-800
+                                                @elseif ($reservation->status === 'cancelled') bg-gray-100 text-gray-800
                                                 @endif"
                                         >
                                             @if ($reservation->status === 'pending')
                                                 承認待ち
-                                            @elseif($reservation->status === 'reserved')
+                                            @elseif ($reservation->status === 'reserved')
                                                 予約済み
-                                            @elseif($reservation->status === 'rejected')
+                                            @elseif ($reservation->status === 'rejected')
                                                 却下
-                                            @elseif($reservation->status === 'cancelled')
+                                            @elseif ($reservation->status === 'cancelled')
                                                 キャンセル
                                             @endif
                                         </span>

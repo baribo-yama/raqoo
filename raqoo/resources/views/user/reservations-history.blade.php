@@ -15,18 +15,18 @@
     <title>利用履歴 - Raqoo</title>
 
     {{-- 共通CSS --}}
-    <link rel="stylesheet" href="{{ asset('user/home.css') }}">
-    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}">
+    <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}?v={{ time() }}">
 
     {{-- 利用履歴ページ専用CSS --}}
-    <link rel="stylesheet" href="{{ asset('user/reservations-history.css') }}">
+    <link rel="stylesheet" href="{{ asset('user/reservations-history.css') }}?v={{ time() }}">
 
     {{-- ユーティリティCSS --}}
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 
     {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons/ionicons.js"></script>
 </head>
 
 <body>
@@ -52,6 +52,7 @@
 
                 {{-- -------------------------------------------------
                     ページタイトル
+                    - お知らせ一覧・予約一覧とタイトルデザインを統一
                 ------------------------------------------------- --}}
                 <div class="page-title-area">
                     <h2 class="page-title">利用履歴</h2>
@@ -63,8 +64,8 @@
                     - 履歴がない場合は空状態メッセージを表示
                 ------------------------------------------------- --}}
                 <div class="history-list">
-                    @if($historyReservations->count() > 0)
-                        @foreach($historyReservations as $reservation)
+                    @if ($historyReservations->count() > 0)
+                        @foreach ($historyReservations as $reservation)
                             <div class="history-card">
 
                                 {{-- =================================================
@@ -80,17 +81,19 @@
 
                                         <span
                                             class="status-badge
-                                                @if($reservation->status === 'completed') status-completed
-                                                @elseif($reservation->status === 'cancelled') status-cancelled
-                                                @elseif($reservation->status === 'rejected') status-rejected
+                                                @if ($reservation->status === 'completed' || $reservation->status === 'finished') status-completed
+                                                @elseif ($reservation->status === 'cancelled') status-cancelled
+                                                @elseif ($reservation->status === 'rejected') status-rejected
                                                 @endif"
                                         >
-                                            @if($reservation->status === 'completed')
+                                            @if ($reservation->status === 'completed' || $reservation->status === 'finished')
                                                 利用完了
-                                            @elseif($reservation->status === 'cancelled')
+                                            @elseif ($reservation->status === 'cancelled')
                                                 キャンセル
-                                            @elseif($reservation->status === 'rejected')
+                                            @elseif ($reservation->status === 'rejected')
                                                 却下
+                                            @else
+                                                {{ $reservation->status }}
                                             @endif
                                         </span>
                                     </div>
@@ -133,7 +136,7 @@
                                         <span class="w-16 inline-block font-medium">人数:</span>
 
                                         <span>
-                                            {{ $reservation->member_count }}名
+                                            {{ $reservation->member_count ?? '-' }}名
                                         </span>
                                     </div>
                                 </div>
@@ -154,21 +157,21 @@
                                     - 代表者を先頭に表示
                                     - members がある場合は改行区切りで分割して表示
                                 ================================================= --}}
-                                @if($reservation->members)
+                                @if ($reservation->members)
                                     <div class="mb-3">
                                         <p class="text-xs text-gray-500 mb-1">メンバー</p>
 
                                         <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border border-gray-100">
                                             <span class="font-medium">
-                                                {{ Auth::user()->name }} (代表)
+                                                {{ Auth::user()->name }}（代表）
                                             </span>
 
                                             @php
                                                 $members = array_filter(explode("\n", $reservation->members));
                                             @endphp
 
-                                            @if(count($members) > 0)
-                                                @foreach($members as $member)
+                                            @if (count($members) > 0)
+                                                @foreach ($members as $member)
                                                     <span class="mx-1 text-gray-300">|</span>
                                                     {{ trim($member) }}
                                                 @endforeach
@@ -181,7 +184,7 @@
                                     却下理由
                                     - ステータスが rejected かつ却下理由がある場合のみ表示
                                 ================================================= --}}
-                                @if($reservation->status === 'rejected' && $reservation->rejection_reason)
+                                @if ($reservation->status === 'rejected' && $reservation->rejection_reason)
                                     <div class="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg">
                                         <p class="text-xs font-bold text-red-800 mb-1">
                                             却下理由
@@ -196,7 +199,7 @@
                         @endforeach
 
                         {{-- ページネーション --}}
-                        @if($historyReservations->hasPages())
+                        @if ($historyReservations->hasPages())
                             <div class="mt-6">
                                 {{ $historyReservations->links() }}
                             </div>
@@ -231,7 +234,7 @@
     </div>
 
     {{-- 共通JS：ハンバーガーメニューなど --}}
-    <script src="{{ asset('user/home.js') }}"></script>
+    <script src="{{ asset('user/home.js') }}?v={{ time() }}"></script>
 </body>
 
 </html>

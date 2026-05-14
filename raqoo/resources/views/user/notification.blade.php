@@ -5,38 +5,42 @@
     {{-- =========================================================
         基本設定・外部ファイル読み込み
         - 文字コード / レスポンシブ設定
+        - キャッシュ無効化
         - 共通CSS
+        - お知らせ画面専用CSS
         - Tailwind CSS
         - Ionicons
-        - お知らせ画面専用CSS
     ========================================================= --}}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <title>お知らせ - Raqoo</title>
 
     {{-- 共通CSS --}}
-    <link rel="stylesheet" href="{{ asset('user/home.css') }}">
-    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}">
+    <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}?v={{ time() }}">
+
+    {{-- お知らせ画面専用CSS --}}
+    <link rel="stylesheet" href="{{ asset('user/notification.css') }}?v={{ time() }}">
 
     {{-- ユーティリティCSS --}}
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 
     {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
-    {{-- お知らせ画面専用CSS --}}
-    <link rel="stylesheet" href="{{ asset('user/notification.css') }}">
+    <script nomodule src="https://unpkg.com/ionicons/ionicons.js"></script>
 </head>
 
-<body class="with-sidebar notification-page">
+<body class="notification-page">
     {{-- =========================================================
         全体レイアウト
         - 左側にサイドバー
         - 右側にお知らせ一覧のメインコンテンツ
-        ※ body class は既存CSSとの衝突回避・画面判別用
     ========================================================= --}}
-    <div class="main-wrapper">
+    <div class="layout">
 
         {{-- 共通サイドバー --}}
         <x-user.sidebar />
@@ -44,11 +48,12 @@
         {{-- =====================================================
             メインコンテンツエリア
         ===================================================== --}}
-        <div class="main-content">
+        <div class="content-area notification-content-area">
             <div class="content-container">
 
                 {{-- -------------------------------------------------
                     ページタイトル
+                    - 予約一覧・利用履歴とタイトルデザインを統一
                 ------------------------------------------------- --}}
                 <div class="page-title-area">
                     <h2 class="page-title">お知らせ一覧</h2>
@@ -64,7 +69,7 @@
                     <div class="search-box-wrapper">
                         <label for="search" class="search-label">お知らせ検索</label>
 
-                        <form method="GET" action="{{ url()->current() }}" class="search-form">
+                        <form method="GET" action="{{ url()->current() }}" class="notification-search-form">
                             <div class="search-input-group">
                                 <input
                                     type="text"
@@ -75,7 +80,7 @@
                                     class="custom-input"
                                 >
 
-                                <button type="submit" class="search-btn">
+                                <button type="submit" class="notification-search-btn">
                                     検索
                                 </button>
                             </div>
@@ -89,12 +94,12 @@
                     - データがない場合は空状態メッセージを表示
                 ------------------------------------------------- --}}
                 <div class="notification-section">
-
                     @if (isset($notifications) && $notifications->count() > 0)
                         {{-- お知らせカード一覧 --}}
                         <div class="notification-list">
                             @foreach ($notifications as $notification)
                                 <div class="notification-card">
+
                                     {{-- 左側：作成時刻・日付 --}}
                                     <div class="card-left">
                                         <div class="time-badge">
@@ -141,7 +146,7 @@
     </div>
 
     {{-- お知らせ画面専用JavaScript --}}
-    <script src="{{ asset('user/notification.js') }}"></script>
+    <script src="{{ asset('user/notification.js') }}?v={{ time() }}"></script>
 </body>
 
 </html>

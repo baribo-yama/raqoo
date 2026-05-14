@@ -17,10 +17,18 @@
     --sidebar-width: 260px;
 }
 
+/*
+   お知らせ画面専用body
+
+   ※ここで font-family は指定しない
+   理由：
+   <x-user.sidebar /> も body.notification-page の中にあるため、
+   body側に font-family を指定するとサイドバーのロゴや文字まで巻き込んで
+   見た目がズレる可能性があるため
+*/
 body.notification-page {
     margin: 0;
     background: var(--bg-gray);
-    font-family: "Segoe UI", "Meiryo", sans-serif;
     color: var(--text-dark);
 }
 
@@ -28,17 +36,41 @@ body.notification-page {
 /* =========================================
    02. メインレイアウト
 ========================================= */
-.main-content {
+/*
+   お知らせ一覧ページの本文エリア
+
+   develop側の .notification-content-area を採用。
+   理由：
+   汎用的な .main-content ではなく、お知らせページ専用のクラス名にすることで
+   他ページの .main-content とスタイルが衝突するのを防ぐため。
+*/
+.notification-content-area {
     position: relative;
     width: 100%;
     min-height: 100vh;
     background: var(--bg-gray);
     transition: 0.3s;
     padding-top: 40px;
+
+    /*
+       サイドバーによるズレを防止するため0に設定
+       サイドバー分の余白は home.css 側の共通レイアウトで管理する
+    */
     padding-left: 0;
+
     box-sizing: border-box;
+
+    /*
+       お知らせ画面の本文エリアだけフォント指定
+       サイドバーには影響させない
+    */
+    font-family: "Segoe UI", "Meiryo", sans-serif;
 }
 
+
+/* =========================================
+   03. コンテンツ幅
+========================================= */
 .content-container {
     max-width: 900px;
     margin: 0 auto;
@@ -49,23 +81,17 @@ body.notification-page {
 
 
 /* =========================================
-   03. ページタイトル
+   04. ページタイトル
+   ※ .page-title の文字サイズ・太さ・余白は home.css の共通スタイルで管理
 ========================================= */
 .page-title-area {
     text-align: center;
     margin-bottom: 30px;
 }
 
-.page-title {
-    font-size: 28px;
-    font-weight: bold;
-    color: #333;
-    margin: 0;
-}
-
 
 /* =========================================
-   04. 検索エリア
+   05. 検索エリア
 ========================================= */
 .filter-card {
     background: #fff;
@@ -114,7 +140,14 @@ body.notification-page {
     box-shadow: 0 0 0 2px rgba(26, 43, 75, 0.1);
 }
 
-.search-btn {
+/*
+   お知らせ一覧専用の検索ボタン
+
+   develop側の .notification-search-btn を採用。
+   理由：
+   home.css などにある共通の .search-btn と衝突しないようにするため。
+*/
+.notification-search-btn {
     background: #2d3748;
     color: #fff;
     border: none;
@@ -125,13 +158,13 @@ body.notification-page {
     transition: 0.3s;
 }
 
-.search-btn:hover {
+.notification-search-btn:hover {
     background: #1a202c;
 }
 
 
 /* =========================================
-   05. お知らせ一覧
+   06. お知らせ一覧
 ========================================= */
 .notification-list {
     display: flex;
@@ -155,7 +188,7 @@ body.notification-page {
 
 
 /* =========================================
-   06. お知らせカード左側：日付・時刻
+   07. お知らせカード左側：日付・時刻
 ========================================= */
 .card-left {
     background: #edf2f7;
@@ -184,7 +217,7 @@ body.notification-page {
 
 
 /* =========================================
-   07. お知らせカード右側：本文・バッジ
+   08. お知らせカード右側：本文・バッジ
 ========================================= */
 .card-right {
     flex: 1;
@@ -217,7 +250,7 @@ body.notification-page {
 
 
 /* =========================================
-   08. 空状態・ページネーション
+   09. 空状態・ページネーション
 ========================================= */
 .empty-state {
     text-align: center;
@@ -233,10 +266,10 @@ body.notification-page {
 
 
 /* =========================================
-   09. レスポンシブ：1024px以下
+   10. レスポンシブ：1024px以下
 ========================================= */
 @media (max-width: 1024px) {
-    .main-content {
+    .notification-content-area {
         padding-left: 0;
         padding-top: 20px;
     }
@@ -248,7 +281,7 @@ body.notification-page {
 
 
 /* =========================================
-   10. レスポンシブ：720px以下
+   11. レスポンシブ：720px以下
 ========================================= */
 @media (max-width: 720px) {
     .filter-card {
@@ -260,7 +293,7 @@ body.notification-page {
         flex-direction: column;
     }
 
-    .search-btn {
+    .notification-search-btn {
         width: 100%;
         padding: 12px;
     }
@@ -268,13 +301,9 @@ body.notification-page {
 
 
 /* =========================================
-   11. レスポンシブ：560px以下
+   12. レスポンシブ：560px以下
 ========================================= */
 @media (max-width: 560px) {
-    .page-title {
-        font-size: 24px;
-    }
-
     .content-container {
         padding: 0 16px 30px;
     }

@@ -1,6 +1,7 @@
 @php
     /*
         注意事項ページの表示制御用変数
+
         - $showAgree : 同意フォームを表示するかどうか
         - $next      : 同意後に遷移するURL
         - $startStep : 初期表示するステップ番号
@@ -23,6 +24,7 @@
 <head>
     {{-- =========================================================
         基本設定・外部ファイル読み込み
+
         - 文字コード / レスポンシブ設定
         - 共通CSS
         - 注意事項ページ専用CSS
@@ -53,6 +55,7 @@
 <body data-start-step="{{ $startStep }}" data-mode="{{ $mode }}">
     {{-- =========================================================
         画面全体
+
         - data-start-step は JS 側で初期表示ステップを判定するために使用
         - data-mode は JS / CSS 側で通常表示か同意モードかを判定するために使用
     ========================================================= --}}
@@ -66,19 +69,29 @@
 
         {{-- =====================================================
             メインコンテンツエリア
+
+            - content-area は home.css 側の共通レイアウトで管理
+            - terms-viewport は precautions.js のスワイプ判定対象
         ===================================================== --}}
         <div class="content-area">
             <main class="terms-viewport">
 
                 {{-- -------------------------------------------------
                     注意事項カード全体
-                    - STEP1〜STEP3 のカードを横並び / 切り替え表示する想定
-                    - 左右の矢印ボタンで前後のステップへ移動
+
+                    - STEP1〜STEP3 のカードを切り替え表示する
+                    - スマホでは丸矢印ボタンで前後移動
+                    - PCではカード左右のクリックエリアで前後移動
                     - data-step / data-active は JS 側のステップ制御で使用
                 ------------------------------------------------- --}}
                 <div class="terms-card-wrap">
 
-                    {{-- 前のステップへ戻る矢印 --}}
+                    {{-- =================================================
+                        スマホ用：前のステップへ戻る丸矢印
+
+                        - PCでは CSS 側で非表示
+                        - id="arrowPrev" は precautions.js で使用
+                    ================================================= --}}
                     <button
                         type="button"
                         class="terms-arrow terms-arrow--prev"
@@ -89,9 +102,48 @@
                     </button>
 
                     {{-- =================================================
+                        PC用：カード左側クリックで前へ
+
+                        - スマホでは CSS 側で非表示
+                        - id="pcZonePrev" は precautions.js で使用
+                    ================================================= --}}
+                    <button
+                        type="button"
+                        class="terms-click-zone terms-click-zone--prev"
+                        id="pcZonePrev"
+                        aria-label="前のステップへ"
+                    >
+                        <span class="terms-click-zone__icon" aria-hidden="true">
+                            <ion-icon name="chevron-back-outline"></ion-icon>
+                        </span>
+                    </button>
+
+                    {{-- =================================================
+                        PC用：カード右側クリックで次へ
+
+                        - スマホでは CSS 側で非表示
+                        - id="pcZoneNext" は precautions.js で使用
+                    ================================================= --}}
+                    <button
+                        type="button"
+                        class="terms-click-zone terms-click-zone--next"
+                        id="pcZoneNext"
+                        aria-label="次のステップへ"
+                    >
+                        <span class="terms-click-zone__icon" aria-hidden="true">
+                            <ion-icon name="chevron-forward-outline"></ion-icon>
+                        </span>
+                    </button>
+
+                    {{-- =================================================
                         STEP 1：空き時間を確認・選択
                     ================================================= --}}
-                    <article class="terms-card" data-step="1" data-active="true">
+                    <article
+                        class="terms-card"
+                        data-step="1"
+                        data-active="true"
+                        aria-label="ステップ1: 空き時間を確認・選択する"
+                    >
                         <div class="terms-kicker">注意事項</div>
 
                         <h1 class="terms-title">3ステップで確認しよう！</h1>
@@ -137,7 +189,11 @@
                     {{-- =================================================
                         STEP 2：申請フォームを入力・送信
                     ================================================= --}}
-                    <article class="terms-card" data-step="2">
+                    <article
+                        class="terms-card"
+                        data-step="2"
+                        aria-label="ステップ2: 申請フォームを入力して送信する"
+                    >
                         <div class="terms-kicker">注意事項</div>
 
                         <h1 class="terms-title">3ステップで確認しよう！</h1>
@@ -182,7 +238,11 @@
                     {{-- =================================================
                         STEP 3：当日の受け取り・返却
                     ================================================= --}}
-                    <article class="terms-card" data-step="3">
+                    <article
+                        class="terms-card"
+                        data-step="3"
+                        aria-label="ステップ3: 当日・受け取りと返却"
+                    >
                         <div class="terms-kicker">注意事項</div>
 
                         <h1 class="terms-title">3ステップで確認しよう！</h1>
@@ -226,7 +286,12 @@
                         </div>
                     </article>
 
-                    {{-- 次のステップへ進む矢印 --}}
+                    {{-- =================================================
+                        スマホ用：次のステップへ進む丸矢印
+
+                        - PCでは CSS 側で非表示
+                        - id="arrowNext" は precautions.js で使用
+                    ================================================= --}}
                     <button
                         type="button"
                         class="terms-arrow terms-arrow--next"
@@ -239,6 +304,7 @@
 
                 {{-- -------------------------------------------------
                     同意フォーム
+
                     - $showAgree が true かつ $next が存在する場合のみ表示
                     - 注意事項確認後、同意して予約画面へ進む
                     - skip_next_time にチェックすると次回以降の注意事項表示を省略
