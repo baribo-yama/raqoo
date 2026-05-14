@@ -8,12 +8,15 @@ document.addEventListener("DOMContentLoaded", () => {
         - スマホ用「予約状況を見る」シートの表示
     */
 
+
     /* =========================================
        01. 共通関数
     ========================================= */
     const jaWeek = ["日", "月", "火", "水", "木", "金", "土"];
 
-    const pad2 = (n) => String(n).padStart(2, "0");
+    const pad2 = (number) => {
+        return String(number).padStart(2, "0");
+    };
 
     const toISO = (date) => {
         return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
@@ -109,18 +112,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        06. 自分の予約状況シートを描画
+       - 指定日の自分の予約情報を取得
+       - スマホ用シート内にカード形式で表示
     ========================================= */
     async function renderMyReservationsSheet(dateISO) {
-        if (!sheetBody) return;
+        if (!sheetBody) {
+            return;
+        }
 
         sheetBody.textContent = "読み込み中...";
 
         try {
-            const res = await fetch(`/user/my-reservations?date=${encodeURIComponent(dateISO)}`, {
+            const response = await fetch(`/user/my-reservations?date=${encodeURIComponent(dateISO)}`, {
                 cache: "no-store",
             });
 
-            const rows = await res.json();
+            const reservations = await response.json();
 
             const priority = (status) => {
                 if (status === "reserved" || status === "approved") return 0;
@@ -128,19 +135,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 return 9;
             };
 
-            rows.sort((a, b) => {
-                const pa = priority(a.status);
-                const pb = priority(b.status);
+            reservations.sort((a, b) => {
+                const priorityA = priority(a.status);
+                const priorityB = priority(b.status);
 
-                if (pa !== pb) return pa - pb;
-                if (a.date === b.date) return (a.period || 0) - (b.period || 0);
+                if (priorityA !== priorityB) {
+                    return priorityA - priorityB;
+                }
+
+                if (a.date === b.date) {
+                    return (a.period || 0) - (b.period || 0);
+                }
 
                 return String(a.date).localeCompare(String(b.date));
             });
 
             sheetBody.innerHTML = "";
 
-            if (!rows.length) {
+            if (!reservations.length) {
                 const emptyDiv = document.createElement("div");
                 emptyDiv.className = "my-empty";
                 emptyDiv.textContent = "この日の予約はありません";
@@ -148,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            rows.forEach((reservation) => {
+            reservations.forEach((reservation) => {
                 const meta = statusMeta(reservation.status);
                 const times = timeTable[reservation.period] || ["--:--", "--:--"];
                 const isApproved = reservation.status === "reserved" || reservation.status === "approved";
@@ -230,17 +242,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
             sheetBody.innerHTML = "";
 
-            const errDiv = document.createElement("div");
-            errDiv.className = "my-empty";
-            errDiv.textContent = "取得に失敗しました";
+            const errorDiv = document.createElement("div");
+            errorDiv.className = "my-empty";
+            errorDiv.textContent = "取得に失敗しました";
 
-            sheetBody.appendChild(errDiv);
+            sheetBody.appendChild(errorDiv);
         }
     }
 
 
     /* =========================================
        07. スマホ用予約状況シートのイベント設定
+       - 560px以下の画面だけで使用
     ========================================= */
     if (isMobile560()) {
         openSheetBtn?.addEventListener("click", () => {
@@ -265,6 +278,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        08. 初期表示する日付を決定
+       - date input に値があればそれを使用
+       - なければ今日の日付を使用
     ========================================= */
     let selectedDate;
 
@@ -280,11 +295,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        09. 中央の日付表示を更新
+       - 表示日付
+       - hiddenのdate input
+       - 教室カードの予約状況
+       - スマホ用予約状況シート
     ========================================= */
     function updateCenterDisplay(date) {
-        if (mainEl) mainEl.textContent = toMMDD(date);
-        if (wdayEl) wdayEl.textContent = `（${jaWeek[date.getDay()]}）`;
-        if (dateInput) dateInput.value = toISO(date);
+        if (mainEl) {
+            mainEl.textContent = toMMDD(date);
+        }
+
+        if (wdayEl) {
+            wdayEl.textContent = `（${jaWeek[date.getDay()]}）`;
+        }
+
+        if (dateInput) {
+            dateInput.value = toISO(date);
+        }
 
         updateRoomStatuses(toISO(date));
 
@@ -296,6 +323,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        10. 予約リンク内の日付を書き換える
+       - 注意事項ページ経由の next パラメータにも対応
+       - URLとして解析できない場合は正規表現で補正
     ========================================= */
     function rewriteReservationUrl(href, date) {
         let nextHref = href;
@@ -329,6 +358,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        11. 予約状況取得前に教室カードを初期化
+       - 前回のステータスclassを削除
+       - ラベルを「読み込み中...」に戻す
+       - 予約リンクの日付も更新する
     ========================================= */
     function resetRoomCards(date) {
         document.querySelectorAll(".room-group").forEach((roomGroup) => {
@@ -339,14 +371,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 const unavailableLabel = card.querySelector(".unavailable-label");
                 const reserveBtn = card.querySelector(".reserve-btn");
 
-                if (availableLabel) availableLabel.classList.add("hidden");
+                if (availableLabel) {
+                    availableLabel.classList.add("hidden");
+                }
 
                 if (unavailableLabel) {
                     unavailableLabel.classList.remove("hidden");
                     unavailableLabel.textContent = "読み込み中...";
                 }
 
-                if (reserveBtn) reserveBtn.classList.add("hidden");
+                if (reserveBtn) {
+                    reserveBtn.classList.add("hidden");
+                }
 
                 if (reserveBtn) {
                     let href = reserveBtn.getAttribute("href") ||
@@ -378,6 +414,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        12. 利用可能な教室カードの表示に切り替える
+       - 予約リンクを有効化
+       - 利用可能ラベルと予約ボタンを表示
     ========================================= */
     function applyAvailableStatus(card) {
         card.setAttribute("href", card.dataset.baseHref);
@@ -392,18 +430,37 @@ document.addEventListener("DOMContentLoaded", () => {
         const spUnavailableLabel = card.querySelector(".sp-layout .unavailable-label");
         const spReserveBtn = card.querySelector(".sp-reserve-btn");
 
-        if (availableLabel) availableLabel.classList.remove("hidden");
-        if (unavailableLabel) unavailableLabel.classList.add("hidden");
-        if (reserveBtn) reserveBtn.classList.remove("hidden");
+        if (availableLabel) {
+            availableLabel.classList.remove("hidden");
+        }
 
-        if (spAvailableLabel) spAvailableLabel.classList.remove("hidden");
-        if (spUnavailableLabel) spUnavailableLabel.classList.add("hidden");
-        if (spReserveBtn) spReserveBtn.classList.remove("hidden");
+        if (unavailableLabel) {
+            unavailableLabel.classList.add("hidden");
+        }
+
+        if (reserveBtn) {
+            reserveBtn.classList.remove("hidden");
+        }
+
+        if (spAvailableLabel) {
+            spAvailableLabel.classList.remove("hidden");
+        }
+
+        if (spUnavailableLabel) {
+            spUnavailableLabel.classList.add("hidden");
+        }
+
+        if (spReserveBtn) {
+            spReserveBtn.classList.remove("hidden");
+        }
     }
 
 
     /* =========================================
        13. 利用不可な教室カードの表示に切り替える
+       - 予約リンクを無効化
+       - 利用不可ラベルを表示
+       - 予約ボタンを非表示
     ========================================= */
     function applyUnavailableStatus(card, status, statusData) {
         card.removeAttribute("href");
@@ -427,28 +484,38 @@ document.addEventListener("DOMContentLoaded", () => {
         const spUnavailableLabel = card.querySelector(".sp-layout .unavailable-label");
         const spReserveBtn = card.querySelector(".sp-reserve-btn");
 
-        if (availableLabel) availableLabel.classList.add("hidden");
+        if (availableLabel) {
+            availableLabel.classList.add("hidden");
+        }
 
         if (unavailableLabel) {
             unavailableLabel.classList.remove("hidden");
             unavailableLabel.textContent = label;
         }
 
-        if (reserveBtn) reserveBtn.classList.add("hidden");
+        if (reserveBtn) {
+            reserveBtn.classList.add("hidden");
+        }
 
-        if (spAvailableLabel) spAvailableLabel.classList.add("hidden");
+        if (spAvailableLabel) {
+            spAvailableLabel.classList.add("hidden");
+        }
 
         if (spUnavailableLabel) {
             spUnavailableLabel.classList.remove("hidden");
             spUnavailableLabel.textContent = label;
         }
 
-        if (spReserveBtn) spReserveBtn.classList.add("hidden");
+        if (spReserveBtn) {
+            spReserveBtn.classList.add("hidden");
+        }
     }
 
 
     /* =========================================
        14. 選択日の教室予約状況を取得して反映
+       - /user/room-status から予約状況を取得
+       - 教室IDと時限を照合してカードへ反映
     ========================================= */
     function updateRoomStatuses(date) {
         resetRoomCards(date);
@@ -478,26 +545,39 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                 });
             })
-            .catch((error) => console.error("ステータス取得エラー:", error));
+            .catch((error) => {
+                console.error("ステータス取得エラー:", error);
+            });
     }
 
 
     /* =========================================
        15. 日付タブを描画
+       - 開始日から7日分を表示
+       - 選択中の日付には active を付ける
     ========================================= */
     function renderStrip() {
-        tabs.forEach((tab, i) => {
-            const date = new Date(startDate.getTime() + i * 86400000);
+        tabs.forEach((tab, index) => {
+            const date = new Date(startDate.getTime() + index * 86400000);
 
-            tab.querySelector(".day-label").textContent = jaWeek[date.getDay()];
-            tab.querySelector(".date-label").textContent = toMMDD(date);
+            const dayLabel = tab.querySelector(".day-label");
+            const dateLabel = tab.querySelector(".date-label");
+
+            if (dayLabel) {
+                dayLabel.textContent = jaWeek[date.getDay()];
+            }
+
+            if (dateLabel) {
+                dateLabel.textContent = toMMDD(date);
+            }
+
             tab.dataset.date = toISO(date);
 
-            const active = date.getFullYear() === selectedDate.getFullYear() &&
+            const isActive = date.getFullYear() === selectedDate.getFullYear() &&
                 date.getMonth() === selectedDate.getMonth() &&
                 date.getDate() === selectedDate.getDate();
 
-            tab.classList.toggle("active", active);
+            tab.classList.toggle("active", isActive);
         });
     }
 
@@ -515,7 +595,10 @@ document.addEventListener("DOMContentLoaded", () => {
     tabs.forEach((tab) => {
         tab.addEventListener("click", () => {
             const iso = tab.dataset.date;
-            if (!iso) return;
+
+            if (!iso) {
+                return;
+            }
 
             const [year, month, day] = iso.split("-").map(Number);
 
@@ -555,12 +638,131 @@ document.addEventListener("DOMContentLoaded", () => {
         const [year, month, day] = dateInput.value.split("-").map(Number);
         const date = new Date(year, month - 1, day);
 
-        if (isNaN(date)) return;
+        if (isNaN(date)) {
+            return;
+        }
 
         selectedDate = date;
         startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
 
         updateCenterDisplay(selectedDate);
         renderStrip();
+    });
+});
+document.addEventListener('DOMContentLoaded', () => {
+    /*
+        サイドバー開閉処理
+        - 1024px以下でハンバーガーメニューを有効化
+        - サイドバー外クリックで閉じる
+        - オーバーレイクリックで閉じる
+        - ESCキーで閉じる
+        - PC幅に戻ったら開閉状態をリセットする
+    */
+    const toggleButton = document.querySelector('.nav-toggle');
+    const navigation = document.querySelector('.navigation');
+
+    /*
+        画面によって overlay の id が違う可能性があるため両対応する
+        - mobileOverlay: 既存ページで使用
+        - navBackdrop: 追加されている場合のみ使用
+    */
+    const overlay =
+        document.querySelector('#mobileOverlay') ||
+        document.querySelector('#navBackdrop');
+
+    if (!toggleButton || !navigation) {
+        return;
+    }
+
+    const isTabletOrMobile = () => {
+        return window.matchMedia('(max-width: 1024px)').matches;
+    };
+
+    const openMenu = () => {
+        if (!isTabletOrMobile()) {
+            return;
+        }
+
+        document.body.classList.add('nav-open');
+        navigation.dataset.open = 'true';
+        toggleButton.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeMenu = () => {
+        document.body.classList.remove('nav-open');
+        navigation.dataset.open = 'false';
+        toggleButton.setAttribute('aria-expanded', 'false');
+    };
+
+    const toggleMenu = (event) => {
+        if (!isTabletOrMobile()) {
+            return;
+        }
+
+        event.stopPropagation();
+
+        if (document.body.classList.contains('nav-open')) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    };
+
+    /*
+        ハンバーガーボタンで開閉
+    */
+    toggleButton.addEventListener('click', toggleMenu);
+
+    /*
+        サイドバー内クリックでは閉じない
+        例: メニュー内のフォームやリンクを押したときに外側クリック扱いさせない
+    */
+    navigation.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
+
+    /*
+        サイドバー外をクリックしたら閉じる
+    */
+    document.addEventListener('click', (event) => {
+        if (!isTabletOrMobile()) {
+            return;
+        }
+
+        if (!document.body.classList.contains('nav-open')) {
+            return;
+        }
+
+        if (
+            !navigation.contains(event.target) &&
+            !toggleButton.contains(event.target)
+        ) {
+            closeMenu();
+        }
+    });
+
+    /*
+        オーバーレイが存在するページでは、オーバーレイクリックでも閉じる
+    */
+    if (overlay) {
+        overlay.addEventListener('click', closeMenu);
+    }
+
+    /*
+        ESCキーで閉じる
+    */
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeMenu();
+        }
+    });
+
+    /*
+        PC幅に戻ったら閉じる
+    */
+    window.addEventListener('resize', () => {
+        if (!isTabletOrMobile()) {
+            closeMenu();
+        }
     });
 });

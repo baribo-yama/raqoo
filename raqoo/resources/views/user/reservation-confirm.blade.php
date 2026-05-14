@@ -53,7 +53,7 @@
 
                 {{-- -------------------------------------------------
                     確認カード
-                    - 予約する教室情報
+                    - 予約情報
                     - 利用目的
                     - 代表者
                     - 利用メンバー
@@ -69,9 +69,10 @@
 
                         {{-- =================================================
                             予約情報
-                            - 選択された教室
+                            - 教室名
+                            - 階層
                             - 日付
-                            - 複数時限
+                            - 時限
                             - 収容人数
                             - 設備
                         ================================================= --}}
@@ -81,7 +82,6 @@
                             </h4>
 
                             <div class="grid grid-cols-2 gap-4">
-                                {{-- 教室名 --}}
                                 <div>
                                     <span class="text-gray-600">教室:</span>
                                     <span class="font-bold text-gray-800 ml-2">
@@ -89,7 +89,6 @@
                                     </span>
                                 </div>
 
-                                {{-- 階層 --}}
                                 <div>
                                     <span class="text-gray-600">階層:</span>
                                     <span class="font-bold text-gray-800 ml-2">
@@ -97,7 +96,6 @@
                                     </span>
                                 </div>
 
-                                {{-- 利用日 --}}
                                 <div>
                                     <span class="text-gray-600">日付:</span>
                                     <span class="font-bold text-gray-800 ml-2">
@@ -105,7 +103,6 @@
                                     </span>
                                 </div>
 
-                                {{-- 選択した時限。複数選択に対応 --}}
                                 <div>
                                     <span class="text-gray-600">時限:</span>
                                     <span class="font-bold text-blue-600 ml-2">
@@ -115,7 +112,6 @@
                                     </span>
                                 </div>
 
-                                {{-- 教室の収容人数 --}}
                                 <div>
                                     <span class="text-gray-600">収容人数:</span>
                                     <span class="font-bold text-gray-800 ml-2">
@@ -123,7 +119,6 @@
                                     </span>
                                 </div>
 
-                                {{-- 教室設備 --}}
                                 <div>
                                     <span class="text-gray-600">設備:</span>
                                     <span class="font-bold text-gray-800 ml-2">
@@ -186,7 +181,7 @@
                     <div class="flex justify-between items-center pt-4 border-t">
 
                         {{-- =================================================
-                            修正ボタン
+                            修正フォーム
                             - GETで予約入力画面へ戻る
                             - 入力済みの room_id / date / periods をhiddenで保持
                         ================================================= --}}

@@ -76,7 +76,7 @@
                                 <div class="flex justify-between items-start mb-3">
                                     <div class="flex items-center gap-3 flex-wrap">
                                         <h3 class="text-lg font-bold text-gray-800">
-                                            {{ $reservation->room->name }}
+                                            {{ optional($reservation->room)->name ?? '教室情報なし' }}
                                         </h3>
 
                                         <span
@@ -84,6 +84,7 @@
                                                 @if ($reservation->status === 'completed' || $reservation->status === 'finished') status-completed
                                                 @elseif ($reservation->status === 'cancelled') status-cancelled
                                                 @elseif ($reservation->status === 'rejected') status-rejected
+                                                @else status-cancelled
                                                 @endif"
                                         >
                                             @if ($reservation->status === 'completed' || $reservation->status === 'finished')
@@ -136,7 +137,11 @@
                                         <span class="w-16 inline-block font-medium">人数:</span>
 
                                         <span>
-                                            {{ $reservation->member_count ?? '-' }}名
+                                            @if (!is_null($reservation->member_count))
+                                                {{ $reservation->member_count }}名
+                                            @else
+                                                -
+                                            @endif
                                         </span>
                                     </div>
                                 </div>

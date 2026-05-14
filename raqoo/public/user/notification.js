@@ -7,7 +7,7 @@
     - 一致するメニュー項目に active クラスを付ける
 
     注意：
-    - サイドバーの開閉状態 nav-open には一切触らない
+    - サイドバーの開閉状態 nav-open には触らない
     - 見た目の切り替えは active クラスだけで行う
 */
 
@@ -15,9 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
     /* =========================================
        01. サイドバー項目を取得
     ========================================= */
-    const items = document.querySelectorAll(".navigation .list");
+    const sidebarItems = document.querySelectorAll(".navigation .list");
 
-    if (!items.length) {
+    if (!sidebarItems.length) {
         return;
     }
 
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /* =========================================
        03. 既存の active クラスを一度すべて外す
     ========================================= */
-    items.forEach((item) => {
+    sidebarItems.forEach((item) => {
         item.classList.remove("active");
     });
 
@@ -41,36 +41,36 @@ document.addEventListener("DOMContentLoaded", () => {
     /* =========================================
        04. 現在のURLに一致するメニュー項目を探す
        - 完全一致を優先
-       - 完全一致がなければ前方一致を使う
-       - 詳細ページなども親メニューを active にできる
+       - 完全一致がなければ前方一致で判定
+       - 詳細ページでも親メニューを active にできる
     ========================================= */
     let matchedItem = null;
 
-    items.forEach((item) => {
+    sidebarItems.forEach((item) => {
         const link = item.querySelector("a[href]");
 
         if (!link) {
             return;
         }
 
-        let hrefPath = "";
+        let linkPath = "";
 
         try {
-            hrefPath = new URL(link.getAttribute("href"), location.origin)
+            linkPath = new URL(link.getAttribute("href"), location.origin)
                 .pathname
                 .replace(/\/+$/, "");
         } catch {
             return;
         }
 
-        // 完全一致を最優先する
-        if (currentPath === hrefPath) {
+        // 完全一致を最優先
+        if (currentPath === linkPath) {
             matchedItem = item;
             return;
         }
 
         // 詳細ページなどは前方一致で親メニューを選択状態にする
-        if (!matchedItem && hrefPath !== "" && currentPath.startsWith(hrefPath)) {
+        if (!matchedItem && linkPath !== "" && currentPath.startsWith(linkPath)) {
             matchedItem = item;
         }
     });

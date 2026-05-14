@@ -82,7 +82,7 @@
                     {{-- =================================================
                         予約申請フォーム
                         - 入力後、確認画面へ送信
-                        - room_id / date はhiddenで保持
+                        - room_id / date は hidden で保持
                     ================================================= --}}
                     <form action="{{ route('user.reservations.check') }}" method="POST" id="reservationForm">
                         @csrf
@@ -92,8 +92,8 @@
 
                         {{-- -------------------------------------------------
                             JS連携用メタ情報
-                            - 連続予約の選択状態管理で使用
-                            - reservation-form.js から data-* を参照する想定
+                            - 連続予約の仮ロック / 解除APIで使用
+                            - reservation-form.js が data-* を参照する
                         ------------------------------------------------- --}}
                         <div
                             id="selectingMeta"
@@ -280,7 +280,7 @@
 
                         {{-- =================================================
                             利用メンバー送信用 hidden
-                            - 画面上の30行入力欄を JS 側でまとめて membersHidden に入れる想定
+                            - 画面上の30行入力欄を JS 側でまとめて membersHidden に入れる
                         ================================================= --}}
                         <input type="hidden" id="members" value="">
                         <input type="hidden" name="members" id="membersHidden">

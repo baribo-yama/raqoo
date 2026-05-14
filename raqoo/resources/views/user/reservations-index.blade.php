@@ -76,7 +76,7 @@
                                     ========================================= --}}
                                     <div class="flex items-center space-x-4 mb-2">
                                         <h3 class="text-lg font-semibold text-gray-800">
-                                            {{ $reservation->room->name }}
+                                            {{ optional($reservation->room)->name ?? '教室情報なし' }}
                                         </h3>
 
                                         <span
@@ -85,6 +85,7 @@
                                                 @elseif ($reservation->status === 'reserved') bg-green-100 text-green-800
                                                 @elseif ($reservation->status === 'rejected') bg-red-100 text-red-800
                                                 @elseif ($reservation->status === 'cancelled') bg-gray-100 text-gray-800
+                                                @else bg-gray-100 text-gray-800
                                                 @endif"
                                         >
                                             @if ($reservation->status === 'pending')
@@ -95,6 +96,8 @@
                                                 却下
                                             @elseif ($reservation->status === 'cancelled')
                                                 キャンセル
+                                            @else
+                                                {{ $reservation->status }}
                                             @endif
                                         </span>
                                     </div>
@@ -175,6 +178,9 @@
             @endif
         </div>
     </div>
+
+    {{-- 共通JS：サイドバー・スマホメニュー操作用 --}}
+    <script src="{{ asset('user/home.js') }}?v={{ time() }}"></script>
 </body>
 
 </html>

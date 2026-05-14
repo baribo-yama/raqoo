@@ -41,17 +41,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       02. PC判定
+       02. 画面幅判定
        - 769px以上をPC扱い
        - CSS側の media query と合わせる
     ========================================= */
-    const isPC = () => window.matchMedia("(min-width: 769px)").matches;
+    const isPC = () => {
+        return window.matchMedia("(min-width: 769px)").matches;
+    };
 
 
     /* =========================================
-       03. 訪問済みステップの読み込み・保存
+       03. 訪問済みステップの読み込み
        - confirm モード時のみ使用
-       - sessionStorage に確認済みステップを保存する
+       - sessionStorage に保存した確認済みステップを復元する
     ========================================= */
     const loadVisited = () => {
         try {
@@ -61,25 +63,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 return new Set();
             }
 
-            const arr = JSON.parse(raw);
+            const parsedSteps = JSON.parse(raw);
 
-            if (!Array.isArray(arr)) {
+            if (!Array.isArray(parsedSteps)) {
                 return new Set();
             }
 
             return new Set(
-                arr
-                    .map((number) => Number(number))
-                    .filter((number) => Number.isFinite(number))
+                parsedSteps
+                    .map((step) => Number(step))
+                    .filter((step) => Number.isFinite(step))
             );
         } catch {
             return new Set();
         }
     };
 
-    const saveVisited = (set) => {
+
+    /* =========================================
+       04. 訪問済みステップの保存
+       - sessionStorage が使えない環境では何もしない
+    ========================================= */
+    const saveVisited = (visitedSteps) => {
         try {
-            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(set)));
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(visitedSteps)));
         } catch {
             // sessionStorage が使えない環境では保存せずに続行する
         }
@@ -89,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       04. 同意ボタンの有効 / 無効を更新
+       05. 同意ボタンの有効 / 無効を更新
        - 全ステップを確認したら押せるようにする
     ========================================= */
     const updateAgree = () => {
@@ -105,8 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       05. 移動要素の表示 / 非表示を更新
-       - data-hidden だけでなく hidden / aria-hidden / tabindex も更新する
+       06. 移動ボタン・クリックエリアの表示状態を更新
+       - data-hidden / hidden / aria-hidden / tabindex をまとめて制御
        - 非表示要素にTabフォーカスが当たらないようにする
     ========================================= */
     const setMoveElementVisibility = (element, isHidden, useDisabled = false) => {
@@ -131,27 +138,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       06. 左右移動UIの表示 / 非表示を更新
+       07. 左右移動UIの表示 / 非表示を更新
        - STEP1では左移動を隠す
        - 最終STEPでは右移動を隠す
        - スマホ用矢印とPC用クリックエリアの両方を制御する
     ========================================= */
     const updateMoveZones = () => {
-        const isFirst = currentStep === 1;
-        const isLast = currentStep === TOTAL;
+        const isFirstStep = currentStep === 1;
+        const isLastStep = currentStep === TOTAL;
 
         // スマホ用：丸矢印ボタン
-        setMoveElementVisibility(arrowPrev, isFirst, true);
-        setMoveElementVisibility(arrowNext, isLast, true);
+        setMoveElementVisibility(arrowPrev, isFirstStep, true);
+        setMoveElementVisibility(arrowNext, isLastStep, true);
 
         // PC用：カード左右クリックエリア
-        setMoveElementVisibility(pcZonePrev, isFirst, false);
-        setMoveElementVisibility(pcZoneNext, isLast, false);
+        setMoveElementVisibility(pcZonePrev, isFirstStep, false);
+        setMoveElementVisibility(pcZoneNext, isLastStep, false);
     };
 
 
     /* =========================================
-       07. 表示中カード内の操作要素へフォーカスを移す
+       08. 表示中カード内の操作要素へフォーカスを移す
        - キーボード操作時の見失い防止
     ========================================= */
     const focusActiveStep = (activeCard) => {
@@ -168,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       08. 指定ステップを表示
+       09. 指定ステップを表示
        - カード
        - ドット
        - スマホ用矢印
@@ -218,7 +225,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       09. 初期表示
+       10. 初期表示
+       - confirm モードでは最初の表示ステップも確認済みにする
     ========================================= */
     if (mode === "confirm") {
         visited.add(currentStep);
@@ -230,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       10. 前へ / 次へ移動
+       11. 前へ / 次へ移動
        - 端では循環せずに止める
        - STEP1で前へ、最終STEPで次へは何もしない
     ========================================= */
@@ -252,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       11. スワイプ操作
+       12. スワイプ操作
        - 左スワイプ：次のステップ
        - 右スワイプ：前のステップ
        - 縦方向の動きが大きい場合は通常スクロール扱い
@@ -264,8 +272,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (viewport) {
         viewport.addEventListener("touchstart", (event) => {
             /*
-               ドット・スマホ用矢印・PC用クリックエリア上の操作は
-               スワイプ判定から除外する
+                ドット・スマホ用矢印・PC用クリックエリア上の操作は
+                スワイプ判定から除外する
             */
             if (
                 event.target.closest(".terms-dot") ||
@@ -287,15 +295,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const dx = Math.abs(event.touches[0].clientX - touchStartX);
-            const dy = Math.abs(event.touches[0].clientY - touchStartY);
+            const diffX = Math.abs(event.touches[0].clientX - touchStartX);
+            const diffY = Math.abs(event.touches[0].clientY - touchStartY);
 
-            if (dy > dx) {
+            if (diffY > diffX) {
                 isSwiping = false;
                 return;
             }
 
-            if (dx > 10) {
+            if (diffX > 10) {
                 event.preventDefault();
             }
         }, { passive: false });
@@ -325,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       12. キーボード操作
+       13. キーボード操作
        - PCのみ有効
        - terms-viewport 内にフォーカスがある時だけ動作
        - フォーム要素やボタン操作中は邪魔しない
@@ -362,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       13. ドットクリック
+       14. ドットクリック
        - 指定したステップへ直接移動
     ========================================= */
     dots.forEach((dot) => {
@@ -380,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       14. スマホ用：丸矢印ボタンクリック
+       15. スマホ用：丸矢印ボタンクリック
        - 左矢印：前へ
        - 右矢印：次へ
     ========================================= */
@@ -404,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       15. PC用：カード左右クリックエリア
+       16. PC用：カード左右クリックエリア
        - 左半分クリック：前へ
        - 右半分クリック：次へ
        - PC表示時だけ動作
@@ -437,7 +445,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       16. 同意フォーム送信時の後処理
+       17. 同意フォーム送信時の後処理
        - 確認済みステップ情報を sessionStorage から削除
     ========================================= */
     if (mode === "confirm" && agreeBtn) {

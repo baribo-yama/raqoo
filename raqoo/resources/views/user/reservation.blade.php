@@ -49,18 +49,18 @@
             ================================================= -->
             <div class="row">
                 <div class="form-group">
-                    <label>代表者氏名</label>
-                    <input type="text">
+                    <label for="representative-name">代表者氏名</label>
+                    <input type="text" id="representative-name" name="representative_name">
                 </div>
 
                 <div class="form-group">
-                    <label>学年</label>
-                    <input type="text">
+                    <label for="grade">学年</label>
+                    <input type="text" id="grade" name="grade">
                 </div>
 
                 <div class="form-group">
-                    <label>コース名</label>
-                    <input type="text">
+                    <label for="course-name">コース名</label>
+                    <input type="text" id="course-name" name="course_name">
                 </div>
             </div>
 
@@ -69,8 +69,8 @@
                 - 教室を何のために使用するか入力
             ================================================= -->
             <div class="form-group">
-                <label>使用目的</label>
-                <textarea placeholder="詳しく入力してください"></textarea>
+                <label for="purpose">使用目的</label>
+                <textarea id="purpose" name="purpose" placeholder="詳しく入力してください"></textarea>
             </div>
 
             <!-- =================================================
@@ -80,8 +80,8 @@
             ================================================= -->
             <div class="row">
                 <div class="form-group">
-                    <label>日付</label>
-                    <input type="date">
+                    <label for="use-date">日付</label>
+                    <input type="date" id="use-date" name="use_date">
                 </div>
 
                 <div class="form-group period-group">
@@ -89,9 +89,25 @@
 
                     <div class="period-inputs">
                         <span>限 ( </span>
-                        <input type="text" class="period-input" maxlength="2">
+
+                        <input
+                            type="text"
+                            name="start_period"
+                            class="period-input"
+                            maxlength="2"
+                            aria-label="開始時限"
+                        >
+
                         <span> ～ </span>
-                        <input type="text" class="period-input" maxlength="2">
+
+                        <input
+                            type="text"
+                            name="end_period"
+                            class="period-input"
+                            maxlength="2"
+                            aria-label="終了時限"
+                        >
+
                         <span> )</span>
                     </div>
                 </div>
@@ -107,12 +123,12 @@
 
                 <div id="member-container" class="member-grid">
                     <!-- 初期6人分の入力欄 -->
-                    <input type="text" name="member[]" class="member-input">
-                    <input type="text" name="member[]" class="member-input">
-                    <input type="text" name="member[]" class="member-input">
-                    <input type="text" name="member[]" class="member-input">
-                    <input type="text" name="member[]" class="member-input">
-                    <input type="text" name="member[]" class="member-input">
+                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー1人目">
+                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー2人目">
+                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー3人目">
+                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー4人目">
+                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー5人目">
+                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー6人目">
                 </div>
 
                 <button type="button" class="add-member-btn" id="addMemberButton">

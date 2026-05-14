@@ -4,16 +4,17 @@
 <head>
     {{-- =========================================================
         基本設定・外部読み込み
-        - 画面の文字コード / レスポンシブ設定
-        - この画面専用のCSS
-        - Tailwind CSS / Ionicons の読み込み
+        - 文字コード / レスポンシブ設定
+        - 共通CSS
+        - Tailwind CSS
+        - Ionicons
     ========================================================= --}}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Raqoo</title>
 
-    {{-- 画面固有CSS --}}
+    {{-- 共通CSS --}}
     <link rel="stylesheet" href="{{ asset('user/home.css') }}" />
     <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}">
 
@@ -213,7 +214,7 @@
                         $today = now();
                     @endphp
 
-                    <span class="date-year" style="display:none;"></span>
+                    <span class="date-year hidden"></span>
                     <span class="date-main">{{ $today->format('m/d') }}</span>
                     <span class="date-weekday">（{{ $week[$today->dayOfWeek] }}）</span>
                 </div>
@@ -303,7 +304,7 @@
                     {{-- 教室名・定員 --}}
                     <div class="room-title">
                         {{ $room->name }}
-                        <span style="font-size:0.8em; font-weight:normal; margin-left:10px;">
+                        <span class="room-capacity">
                             (定員:{{ $room->capacity }}人)
                         </span>
                     </div>

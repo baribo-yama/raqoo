@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     /*
         reservation-form.js
+
         役割：
         - 利用目的の文字数カウント
         - 利用メンバー入力の管理
@@ -8,11 +9,16 @@ document.addEventListener("DOMContentLoaded", function () {
         - 連続予約の選択可否制御
         - 選択中時限の仮ロック / 解除API通信
         - サイドバーの簡易操作
+
+        注意：
+        - このJSは予約申請フォーム画面専用
+        - #selectingMeta が存在する前提の処理がある
     */
 
 
     /* =========================================
        01. 利用目的の文字数カウント
+       - textarea 入力時に現在の文字数を表示
     ========================================= */
     const purposeTextarea = document.getElementById("purpose");
     const purposeCount = document.getElementById("purposeCount");
@@ -38,8 +44,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* =========================================
        03. バリデーションエラー後の再表示対応
-       - old() で復元されたメンバーがある場合、membersProxy に値を入れて
-         「メンバーあり」として扱う
+       - old() で復元されたメンバーがある場合、membersProxy に値を入れる
+       - 連続予約制御では「メンバー入力あり」として扱う
     ========================================= */
     const hasOldMembers = Array.from(memberInputs).some((input) => {
         return input.value.trim() !== "";
@@ -71,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =========================================
-       05. フォーム送信時にメンバー一覧をhiddenへ集約
+       05. フォーム送信時にメンバー一覧を hidden へ集約
        - 空欄は除外
        - 改行区切りで membersHidden に入れる
     ========================================= */
@@ -91,13 +97,17 @@ document.addEventListener("DOMContentLoaded", function () {
     /* =========================================
        06. 仮ロックAPI用メタ情報の取得
        - Blade側の #selectingMeta の data-* 属性から取得
+       - 必要な要素が無い場合はAPI通信を行わない
     ========================================= */
     const selectingMeta = document.getElementById("selectingMeta");
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
 
-    const roomId = selectingMeta.dataset.roomId;
-    const date = selectingMeta.dataset.date;
-    const toggleUrl = selectingMeta.dataset.toggleUrl;
-    const csrf = document.querySelector('meta[name="csrf-token"]').content;
+    const roomId = selectingMeta?.dataset.roomId || "";
+    const date = selectingMeta?.dataset.date || "";
+    const toggleUrl = selectingMeta?.dataset.toggleUrl || "";
+    const csrf = csrfMeta?.content || "";
+
+    const canUseSelectingApi = Boolean(roomId && date && toggleUrl && csrf);
 
 
     /* =========================================
@@ -106,8 +116,13 @@ document.addEventListener("DOMContentLoaded", function () {
        - 他ユーザーとの同時選択衝突を防ぐために使用
     ========================================= */
     async function toggleSelectingApi(period, action) {
+        if (!canUseSelectingApi) {
+            console.warn("selecting API に必要な情報が不足しています。");
+            return false;
+        }
+
         try {
-            const res = await fetch(toggleUrl, {
+            const response = await fetch(toggleUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -121,9 +136,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 }),
             });
 
-            const data = await res.json();
+            const data = await response.json();
 
-            if (!res.ok || !data.success) {
+            if (!response.ok || !data.success) {
                 return false;
             }
 
@@ -137,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* =========================================
        08. 時限チェックボックスの取得
+       - data-original="1" の時限を基準時限として扱う
     ========================================= */
     const checkboxes = document.querySelectorAll(".period-checkbox");
     const instructionText = document.getElementById("instructionText");
@@ -296,6 +312,7 @@ document.addEventListener("DOMContentLoaded", function () {
     /* =========================================
        13. サイドバーの選択状態切り替え
        - クリックした項目に active を付与
+       - URL連動のactive制御JSがある場合は重複注意
     ========================================= */
     const listItems = document.querySelectorAll(".list");
 
@@ -312,14 +329,15 @@ document.addEventListener("DOMContentLoaded", function () {
     /* =========================================
        14. スマホ用ナビゲーション開閉
        - .nav-toggle がある場合のみ実行
+       - 共通JSに寄せる候補
     ========================================= */
     const toggle = document.querySelector(".nav-toggle");
     const navigation = document.querySelector(".navigation");
 
     if (toggle && navigation) {
-        toggle.onclick = function () {
+        toggle.addEventListener("click", function () {
             navigation.classList.toggle("active");
-        };
+        });
     }
 
 

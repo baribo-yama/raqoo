@@ -147,14 +147,12 @@ body[data-mode] .content-area .terms-viewport {
     visibility: hidden;
 }
 
-
 /* PCではスマホ用の丸矢印を非表示 */
 @media (min-width: 769px) {
     .terms-arrow {
         display: none;
     }
 }
-
 
 /* スマホでは丸矢印を表示 */
 @media (max-width: 768px) {
@@ -265,7 +263,6 @@ body[data-mode] .content-area .terms-viewport {
         pointer-events: none;
     }
 }
-
 
 /* スマホではPC用クリックエリアを使わない */
 @media (max-width: 768px) {
