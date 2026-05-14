@@ -115,9 +115,9 @@ Route::middleware('auth', 'verified')->group(function () {
     })->name('user.night.precautions');
 
     // ユーザー予約関連
-    Route::get('/reservations/create', [UserReservationController::class, 'create'])->name('user.reservations.create');
-    Route::post('/reservations/check', [UserReservationController::class, 'check'])->name('user.reservations.check'); // 確認画面
-    Route::post('/reservations', [UserReservationController::class, 'store'])->name('user.reservations.store');       // 保存処理
+    Route::get('/reservations/create', [UserReservationController::class, 'create'])->middleware('time.guard')->name('user.reservations.create');
+    Route::post('/reservations/check', [UserReservationController::class, 'check'])->middleware('time.guard')->name('user.reservations.check'); // 確認画面
+    Route::post('/reservations', [UserReservationController::class, 'store'])->middleware('time.guard')->name('user.reservations.store');       // 保存処理
     Route::get('/reservations', [UserReservationController::class, 'index'])->name('user.reservations.index');
     Route::get('/reservations/{reservation}', [UserReservationController::class, 'show'])->name('user.reservations.show');
     // 予約キャンセル
