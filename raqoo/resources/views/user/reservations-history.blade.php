@@ -38,7 +38,7 @@
     ========================================================= --}}
 
     {{-- スマホメニュー表示時の背景オーバーレイ --}}
-    <div id="mobileOverlay" class="mobile-overlay"></div>
+    <div id="mobileOverlay" class="m-backdrop"></div>
 
     <div class="layout">
         {{-- 共通サイドバー --}}
@@ -81,18 +81,15 @@
 
                                         <span
                                             class="status-badge
-                                                @if ($reservation->status === 'completed' || $reservation->status === 'finished') status-completed
+                                                @if ($reservation->status === 'finished') status-completed
                                                 @elseif ($reservation->status === 'cancelled') status-cancelled
-                                                @elseif ($reservation->status === 'rejected') status-rejected
                                                 @else status-cancelled
                                                 @endif"
                                         >
-                                            @if ($reservation->status === 'completed' || $reservation->status === 'finished')
+                                            @if ($reservation->status === 'finished')
                                                 利用完了
                                             @elseif ($reservation->status === 'cancelled')
                                                 キャンセル
-                                            @elseif ($reservation->status === 'rejected')
-                                                却下
                                             @else
                                                 {{ $reservation->status }}
                                             @endif
@@ -182,22 +179,6 @@
                                                 @endforeach
                                             @endif
                                         </div>
-                                    </div>
-                                @endif
-
-                                {{-- =================================================
-                                    却下理由
-                                    - ステータスが rejected かつ却下理由がある場合のみ表示
-                                ================================================= --}}
-                                @if ($reservation->status === 'rejected' && $reservation->rejection_reason)
-                                    <div class="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg">
-                                        <p class="text-xs font-bold text-red-800 mb-1">
-                                            却下理由
-                                        </p>
-
-                                        <p class="text-sm text-red-700">
-                                            {{ $reservation->rejection_reason }}
-                                        </p>
                                     </div>
                                 @endif
                             </div>

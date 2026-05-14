@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
         - 選択日の予約状況取得
         - 予約カードのリンク / ステータス更新
         - スマホ用「予約状況を見る」シートの表示
+        - スマホ / タブレット用サイドバー開閉
     */
-
 
     /* =========================================
        01. 共通関数
@@ -30,9 +30,100 @@ document.addEventListener("DOMContentLoaded", () => {
         return window.matchMedia("(max-width: 560px)").matches;
     };
 
+    const isTabletOrMobile = () => {
+        return window.matchMedia("(max-width: 1024px)").matches;
+    };
 
     /* =========================================
-       02. DOM要素取得
+       02. サイドバー開閉処理
+       - 1024px以下でハンバーガーメニューを有効化
+       - サイドバー外クリックで閉じる
+       - オーバーレイクリックで閉じる
+       - ESCキーで閉じる
+       - PC幅に戻ったら開閉状態をリセットする
+    ========================================= */
+    const toggleButton = document.querySelector(".nav-toggle");
+    const navigation = document.querySelector(".navigation");
+
+    const overlay =
+        document.querySelector("#mobileOverlay") ||
+        document.querySelector("#navBackdrop");
+
+    const closeMenu = () => {
+        if (!toggleButton || !navigation) {
+            return;
+        }
+
+        document.body.classList.remove("nav-open");
+        navigation.dataset.open = "false";
+        toggleButton.setAttribute("aria-expanded", "false");
+    };
+
+    const openMenu = () => {
+        if (!toggleButton || !navigation || !isTabletOrMobile()) {
+            return;
+        }
+
+        document.body.classList.add("nav-open");
+        navigation.dataset.open = "true";
+        toggleButton.setAttribute("aria-expanded", "true");
+    };
+
+    if (toggleButton && navigation) {
+        toggleButton.addEventListener("click", (event) => {
+            if (!isTabletOrMobile()) {
+                return;
+            }
+
+            event.stopPropagation();
+
+            if (document.body.classList.contains("nav-open")) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        navigation.addEventListener("click", (event) => {
+            event.stopPropagation();
+        });
+
+        document.addEventListener("click", (event) => {
+            if (!isTabletOrMobile()) {
+                return;
+            }
+
+            if (!document.body.classList.contains("nav-open")) {
+                return;
+            }
+
+            if (
+                !navigation.contains(event.target) &&
+                !toggleButton.contains(event.target)
+            ) {
+                closeMenu();
+            }
+        });
+
+        if (overlay) {
+            overlay.addEventListener("click", closeMenu);
+        }
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                closeMenu();
+            }
+        });
+
+        window.addEventListener("resize", () => {
+            if (!isTabletOrMobile()) {
+                closeMenu();
+            }
+        });
+    }
+
+    /* =========================================
+       03. DOM要素取得
     ========================================= */
     const mainEl = document.querySelector(".date-main");
     const wdayEl = document.querySelector(".date-weekday");
@@ -47,9 +138,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const sheet = document.querySelector("#statusSheet");
     const sheetBody = document.querySelector("#statusSheetBody");
 
-
     /* =========================================
-       03. スマホ用予約状況シート
+       04. スマホ用予約状況シート
     ========================================= */
     const openSheet = () => {
         document.body.classList.add("sheet-open");
@@ -61,9 +151,10 @@ document.addEventListener("DOMContentLoaded", () => {
         sheet?.setAttribute("aria-hidden", "true");
     };
 
-
     /* =========================================
-       04. ステータス表示用データ
+       05. ステータス表示用データ
+       - DB enum に合わせて判定する
+       - pending / reserved / in_use / cancelled / finished
     ========================================= */
     function statusMeta(status) {
         switch (status) {
@@ -76,29 +167,19 @@ document.addEventListener("DOMContentLoaded", () => {
             case "in_use":
                 return { text: "利用中", cls: "my-badge in_use" };
 
-            case "finished":
-                return { text: "利用完了", cls: "my-badge completed" };
-
             case "cancelled":
                 return { text: "キャンセル", cls: "my-badge cancelled" };
 
-            case "rejected":
-                return { text: "却下", cls: "my-badge rejected" };
-
-            case "approved":
-                return { text: "予約済み", cls: "my-badge reserved" };
-
-            case "completed":
-                return { text: "完了", cls: "my-badge completed" };
+            case "finished":
+                return { text: "利用完了", cls: "my-badge completed" };
 
             default:
                 return { text: status || "不明", cls: "my-badge other" };
         }
     }
 
-
     /* =========================================
-       05. 時限ごとの時間表
+       06. 時限ごとの時間表
     ========================================= */
     const timeTable = {
         1: ["09:10", "10:40"],
@@ -109,11 +190,8 @@ document.addEventListener("DOMContentLoaded", () => {
         6: ["18:00", "19:30"],
     };
 
-
     /* =========================================
-       06. 自分の予約状況シートを描画
-       - 指定日の自分の予約情報を取得
-       - スマホ用シート内にカード形式で表示
+       07. 自分の予約状況シートを描画
     ========================================= */
     async function renderMyReservationsSheet(dateISO) {
         if (!sheetBody) {
@@ -127,11 +205,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 cache: "no-store",
             });
 
+            if (!response.ok) {
+                throw new Error("予約情報の取得に失敗しました。");
+            }
+
             const reservations = await response.json();
 
             const priority = (status) => {
-                if (status === "reserved" || status === "approved") return 0;
-                if (status === "pending") return 1;
+                if (status === "reserved") {
+                    return 0;
+                }
+
+                if (status === "pending") {
+                    return 1;
+                }
+
                 return 9;
             };
 
@@ -163,10 +251,10 @@ document.addEventListener("DOMContentLoaded", () => {
             reservations.forEach((reservation) => {
                 const meta = statusMeta(reservation.status);
                 const times = timeTable[reservation.period] || ["--:--", "--:--"];
-                const isApproved = reservation.status === "reserved" || reservation.status === "approved";
+                const isReserved = reservation.status === "reserved";
 
                 const card = document.createElement("div");
-                card.className = `my-card ${isApproved ? "is-approved" : ""}`;
+                card.className = `my-card ${isReserved ? "is-approved" : ""}`;
 
                 const top = document.createElement("div");
                 top.className = "my-top";
@@ -224,12 +312,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 const actions = document.createElement("div");
                 actions.className = "my-actions";
 
-                const detailLink = document.createElement("a");
-                detailLink.className = "my-detail";
-                detailLink.textContent = "詳細を見る";
-                detailLink.href = reservation.detail_url;
+                if (reservation.detail_url) {
+                    const detailLink = document.createElement("a");
+                    detailLink.className = "my-detail";
+                    detailLink.textContent = "詳細を見る";
+                    detailLink.href = reservation.detail_url;
 
-                actions.appendChild(detailLink);
+                    actions.appendChild(detailLink);
+                }
 
                 card.appendChild(top);
                 card.appendChild(mid);
@@ -250,36 +340,33 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
     /* =========================================
-       07. スマホ用予約状況シートのイベント設定
-       - 560px以下の画面だけで使用
+       08. スマホ用予約状況シートのイベント設定
     ========================================= */
-    if (isMobile560()) {
-        openSheetBtn?.addEventListener("click", () => {
+    openSheetBtn?.addEventListener("click", () => {
+        if (!isMobile560()) {
+            return;
+        }
+
+        const iso = dateInput?.value ? dateInput.value : toISO(new Date());
+
+        renderMyReservationsSheet(iso);
+        openSheet();
+    });
+
+    closeSheetBtn?.addEventListener("click", closeSheet);
+
+    if (isMobile560() && location.search.includes("date=")) {
+        setTimeout(() => {
             const iso = dateInput?.value ? dateInput.value : toISO(new Date());
 
             renderMyReservationsSheet(iso);
             openSheet();
-        });
-
-        closeSheetBtn?.addEventListener("click", closeSheet);
-
-        if (location.search.includes("date=")) {
-            setTimeout(() => {
-                const iso = dateInput?.value ? dateInput.value : toISO(new Date());
-
-                renderMyReservationsSheet(iso);
-                openSheet();
-            }, 250);
-        }
+        }, 250);
     }
 
-
     /* =========================================
-       08. 初期表示する日付を決定
-       - date input に値があればそれを使用
-       - なければ今日の日付を使用
+       09. 初期表示する日付を決定
     ========================================= */
     let selectedDate;
 
@@ -292,13 +379,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
 
-
     /* =========================================
-       09. 中央の日付表示を更新
-       - 表示日付
-       - hiddenのdate input
-       - 教室カードの予約状況
-       - スマホ用予約状況シート
+       10. 中央の日付表示を更新
     ========================================= */
     function updateCenterDisplay(date) {
         if (mainEl) {
@@ -320,11 +402,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
     /* =========================================
-       10. 予約リンク内の日付を書き換える
-       - 注意事項ページ経由の next パラメータにも対応
-       - URLとして解析できない場合は正規表現で補正
+       11. 予約リンク内の日付を書き換える
     ========================================= */
     function rewriteReservationUrl(href, date) {
         let nextHref = href;
@@ -355,112 +434,102 @@ document.addEventListener("DOMContentLoaded", () => {
         return nextHref;
     }
 
-
     /* =========================================
-       11. 予約状況取得前に教室カードを初期化
-       - 前回のステータスclassを削除
-       - ラベルを「読み込み中...」に戻す
-       - 予約リンクの日付も更新する
+       12. 予約状況取得前に教室カードを初期化
     ========================================= */
     function resetRoomCards(date) {
         document.querySelectorAll(".room-group").forEach((roomGroup) => {
             roomGroup.querySelectorAll(".time-card").forEach((card) => {
-                card.classList.remove("available", "pending", "reserved", "in_use", "unavailable", "locked");
+                card.classList.remove(
+                    "available",
+                    "pending",
+                    "reserved",
+                    "in_use",
+                    "unavailable",
+                    "locked"
+                );
 
-                const availableLabel = card.querySelector(".available-label");
-                const unavailableLabel = card.querySelector(".unavailable-label");
-                const reserveBtn = card.querySelector(".reserve-btn");
+                const availableLabels = card.querySelectorAll(".available-label");
+                const unavailableLabels = card.querySelectorAll(".unavailable-label");
+                const reserveButtons = card.querySelectorAll(".reserve-btn, .sp-reserve-btn");
 
-                if (availableLabel) {
-                    availableLabel.classList.add("hidden");
+                availableLabels.forEach((label) => {
+                    label.classList.add("hidden");
+                });
+
+                unavailableLabels.forEach((label) => {
+                    label.classList.remove("hidden");
+                    label.textContent = "読み込み中...";
+                });
+
+                reserveButtons.forEach((button) => {
+                    button.classList.add("hidden");
+                });
+
+                const reserveBtn = card.querySelector(".reserve-btn") || card.querySelector(".sp-reserve-btn");
+
+                if (!reserveBtn) {
+                    return;
                 }
 
-                if (unavailableLabel) {
-                    unavailableLabel.classList.remove("hidden");
-                    unavailableLabel.textContent = "読み込み中...";
+                let href =
+                    reserveBtn.getAttribute("href") ||
+                    reserveBtn.getAttribute("data-href") ||
+                    card.dataset.baseHref;
+
+                if (!href || typeof href !== "string") {
+                    return;
                 }
 
-                if (reserveBtn) {
-                    reserveBtn.classList.add("hidden");
+                href = rewriteReservationUrl(href, date);
+
+                if (reserveBtn.hasAttribute("href")) {
+                    reserveBtn.setAttribute("href", href);
                 }
 
-                if (reserveBtn) {
-                    let href = reserveBtn.getAttribute("href") ||
-                        reserveBtn.getAttribute("data-href") ||
-                        card.dataset.baseHref;
+                if (reserveBtn.hasAttribute("data-href")) {
+                    reserveBtn.setAttribute("data-href", href);
+                }
 
-                    if (href && typeof href === "string") {
-                        href = rewriteReservationUrl(href, date);
+                card.dataset.baseHref = href;
 
-                        if (reserveBtn.hasAttribute("href")) {
-                            reserveBtn.setAttribute("href", href);
-                        }
-
-                        if (reserveBtn.hasAttribute("data-href")) {
-                            reserveBtn.setAttribute("data-href", href);
-                        }
-
-                        card.dataset.baseHref = href;
-
-                        if (card.hasAttribute("href")) {
-                            card.setAttribute("href", href);
-                        }
-                    }
+                if (card.hasAttribute("href")) {
+                    card.setAttribute("href", href);
                 }
             });
         });
     }
 
-
     /* =========================================
-       12. 利用可能な教室カードの表示に切り替える
-       - 予約リンクを有効化
-       - 利用可能ラベルと予約ボタンを表示
+       13. 利用可能な教室カードの表示に切り替える
     ========================================= */
     function applyAvailableStatus(card) {
-        card.setAttribute("href", card.dataset.baseHref);
+        if (card.dataset.baseHref) {
+            card.setAttribute("href", card.dataset.baseHref);
+        }
+
         card.classList.remove("locked");
         card.removeAttribute("aria-disabled");
 
-        const availableLabel = card.querySelector(".pc-layout .available-label");
-        const unavailableLabel = card.querySelector(".pc-layout .unavailable-label");
-        const reserveBtn = card.querySelector(".reserve-btn.pc-only");
+        const availableLabels = card.querySelectorAll(".available-label");
+        const unavailableLabels = card.querySelectorAll(".unavailable-label");
+        const reserveButtons = card.querySelectorAll(".reserve-btn, .sp-reserve-btn");
 
-        const spAvailableLabel = card.querySelector(".sp-layout .available-label");
-        const spUnavailableLabel = card.querySelector(".sp-layout .unavailable-label");
-        const spReserveBtn = card.querySelector(".sp-reserve-btn");
+        availableLabels.forEach((label) => {
+            label.classList.remove("hidden");
+        });
 
-        if (availableLabel) {
-            availableLabel.classList.remove("hidden");
-        }
+        unavailableLabels.forEach((label) => {
+            label.classList.add("hidden");
+        });
 
-        if (unavailableLabel) {
-            unavailableLabel.classList.add("hidden");
-        }
-
-        if (reserveBtn) {
-            reserveBtn.classList.remove("hidden");
-        }
-
-        if (spAvailableLabel) {
-            spAvailableLabel.classList.remove("hidden");
-        }
-
-        if (spUnavailableLabel) {
-            spUnavailableLabel.classList.add("hidden");
-        }
-
-        if (spReserveBtn) {
-            spReserveBtn.classList.remove("hidden");
-        }
+        reserveButtons.forEach((button) => {
+            button.classList.remove("hidden");
+        });
     }
 
-
     /* =========================================
-       13. 利用不可な教室カードの表示に切り替える
-       - 予約リンクを無効化
-       - 利用不可ラベルを表示
-       - 予約ボタンを非表示
+       14. 利用不可な教室カードの表示に切り替える
     ========================================= */
     function applyUnavailableStatus(card, status, statusData) {
         card.removeAttribute("href");
@@ -476,65 +545,68 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const label = statusData?.lesson_title ?? statusLabels[status] ?? "利用不可";
 
-        const availableLabel = card.querySelector(".pc-layout .available-label");
-        const unavailableLabel = card.querySelector(".pc-layout .unavailable-label");
-        const reserveBtn = card.querySelector(".reserve-btn.pc-only");
+        const availableLabels = card.querySelectorAll(".available-label");
+        const unavailableLabels = card.querySelectorAll(".unavailable-label");
+        const reserveButtons = card.querySelectorAll(".reserve-btn, .sp-reserve-btn");
 
-        const spAvailableLabel = card.querySelector(".sp-layout .available-label");
-        const spUnavailableLabel = card.querySelector(".sp-layout .unavailable-label");
-        const spReserveBtn = card.querySelector(".sp-reserve-btn");
+        availableLabels.forEach((labelElement) => {
+            labelElement.classList.add("hidden");
+        });
 
-        if (availableLabel) {
-            availableLabel.classList.add("hidden");
-        }
+        unavailableLabels.forEach((labelElement) => {
+            labelElement.classList.remove("hidden");
+            labelElement.textContent = label;
+        });
 
-        if (unavailableLabel) {
-            unavailableLabel.classList.remove("hidden");
-            unavailableLabel.textContent = label;
-        }
-
-        if (reserveBtn) {
-            reserveBtn.classList.add("hidden");
-        }
-
-        if (spAvailableLabel) {
-            spAvailableLabel.classList.add("hidden");
-        }
-
-        if (spUnavailableLabel) {
-            spUnavailableLabel.classList.remove("hidden");
-            spUnavailableLabel.textContent = label;
-        }
-
-        if (spReserveBtn) {
-            spReserveBtn.classList.add("hidden");
-        }
+        reserveButtons.forEach((button) => {
+            button.classList.add("hidden");
+        });
     }
 
-
     /* =========================================
-       14. 選択日の教室予約状況を取得して反映
-       - /user/room-status から予約状況を取得
-       - 教室IDと時限を照合してカードへ反映
+       15. 選択日の教室予約状況を取得して反映
     ========================================= */
     function updateRoomStatuses(date) {
+        const roomGroups = document.querySelectorAll(".room-group");
+
+        if (!roomGroups.length) {
+            return;
+        }
+
         resetRoomCards(date);
 
-        fetch(`/user/room-status?date=${date}`, { cache: "no-store" })
-            .then((response) => response.json())
+        fetch(`/user/room-status?date=${encodeURIComponent(date)}`, {
+            cache: "no-store",
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("教室予約状況の取得に失敗しました。");
+                }
+
+                return response.json();
+            })
             .then((data) => {
-                document.querySelectorAll(".room-group").forEach((roomGroup) => {
+                roomGroups.forEach((roomGroup) => {
                     const roomId = roomGroup.dataset.roomId;
 
                     roomGroup.querySelectorAll(".time-card").forEach((card) => {
                         const period = Number(card.dataset.period);
+
                         const statusData = data.find((item) => {
                             return item.room_id == roomId && Number(item.period) === period;
                         });
 
                         const status = statusData ? statusData.status : "available";
 
-                        card.classList.remove("available", "pending", "reserved", "in_use", "unavailable", "locked");
+                        card.classList.remove(
+                            "available",
+                            "pending",
+                            "reserved",
+                            "in_use",
+                            "unavailable",
+                            "locked"
+                        );
+
                         card.classList.add(status);
 
                         if (status === "available") {
@@ -550,13 +622,14 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-
     /* =========================================
-       15. 日付タブを描画
-       - 開始日から7日分を表示
-       - 選択中の日付には active を付ける
+       16. 日付タブを描画
     ========================================= */
     function renderStrip() {
+        if (!tabs.length) {
+            return;
+        }
+
         tabs.forEach((tab, index) => {
             const date = new Date(startDate.getTime() + index * 86400000);
 
@@ -573,7 +646,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             tab.dataset.date = toISO(date);
 
-            const isActive = date.getFullYear() === selectedDate.getFullYear() &&
+            const isActive =
+                date.getFullYear() === selectedDate.getFullYear() &&
                 date.getMonth() === selectedDate.getMonth() &&
                 date.getDate() === selectedDate.getDate();
 
@@ -581,16 +655,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
     /* =========================================
-       16. 初期描画
+       17. 初期描画
     ========================================= */
     updateCenterDisplay(selectedDate);
     renderStrip();
 
-
     /* =========================================
-       17. 日付タブクリック時の処理
+       18. 日付タブクリック時の処理
     ========================================= */
     tabs.forEach((tab) => {
         tab.addEventListener("click", () => {
@@ -610,9 +682,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-
     /* =========================================
-       18. 前日・翌日ボタンの処理
+       19. 前日・翌日ボタンの処理
     ========================================= */
     prevBtn?.addEventListener("click", () => {
         selectedDate = new Date(selectedDate.getTime() - 86400000);
@@ -630,15 +701,14 @@ document.addEventListener("DOMContentLoaded", () => {
         renderStrip();
     });
 
-
     /* =========================================
-       19. 日付入力欄を変更した時の処理
+       20. 日付入力欄を変更した時の処理
     ========================================= */
     dateInput?.addEventListener("change", () => {
         const [year, month, day] = dateInput.value.split("-").map(Number);
         const date = new Date(year, month - 1, day);
 
-        if (isNaN(date)) {
+        if (Number.isNaN(date.getTime())) {
             return;
         }
 
@@ -647,122 +717,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
         updateCenterDisplay(selectedDate);
         renderStrip();
-    });
-});
-document.addEventListener('DOMContentLoaded', () => {
-    /*
-        サイドバー開閉処理
-        - 1024px以下でハンバーガーメニューを有効化
-        - サイドバー外クリックで閉じる
-        - オーバーレイクリックで閉じる
-        - ESCキーで閉じる
-        - PC幅に戻ったら開閉状態をリセットする
-    */
-    const toggleButton = document.querySelector('.nav-toggle');
-    const navigation = document.querySelector('.navigation');
-
-    /*
-        画面によって overlay の id が違う可能性があるため両対応する
-        - mobileOverlay: 既存ページで使用
-        - navBackdrop: 追加されている場合のみ使用
-    */
-    const overlay =
-        document.querySelector('#mobileOverlay') ||
-        document.querySelector('#navBackdrop');
-
-    if (!toggleButton || !navigation) {
-        return;
-    }
-
-    const isTabletOrMobile = () => {
-        return window.matchMedia('(max-width: 1024px)').matches;
-    };
-
-    const openMenu = () => {
-        if (!isTabletOrMobile()) {
-            return;
-        }
-
-        document.body.classList.add('nav-open');
-        navigation.dataset.open = 'true';
-        toggleButton.setAttribute('aria-expanded', 'true');
-    };
-
-    const closeMenu = () => {
-        document.body.classList.remove('nav-open');
-        navigation.dataset.open = 'false';
-        toggleButton.setAttribute('aria-expanded', 'false');
-    };
-
-    const toggleMenu = (event) => {
-        if (!isTabletOrMobile()) {
-            return;
-        }
-
-        event.stopPropagation();
-
-        if (document.body.classList.contains('nav-open')) {
-            closeMenu();
-        } else {
-            openMenu();
-        }
-    };
-
-    /*
-        ハンバーガーボタンで開閉
-    */
-    toggleButton.addEventListener('click', toggleMenu);
-
-    /*
-        サイドバー内クリックでは閉じない
-        例: メニュー内のフォームやリンクを押したときに外側クリック扱いさせない
-    */
-    navigation.addEventListener('click', (event) => {
-        event.stopPropagation();
-    });
-
-    /*
-        サイドバー外をクリックしたら閉じる
-    */
-    document.addEventListener('click', (event) => {
-        if (!isTabletOrMobile()) {
-            return;
-        }
-
-        if (!document.body.classList.contains('nav-open')) {
-            return;
-        }
-
-        if (
-            !navigation.contains(event.target) &&
-            !toggleButton.contains(event.target)
-        ) {
-            closeMenu();
-        }
-    });
-
-    /*
-        オーバーレイが存在するページでは、オーバーレイクリックでも閉じる
-    */
-    if (overlay) {
-        overlay.addEventListener('click', closeMenu);
-    }
-
-    /*
-        ESCキーで閉じる
-    */
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-            closeMenu();
-        }
-    });
-
-    /*
-        PC幅に戻ったら閉じる
-    */
-    window.addEventListener('resize', () => {
-        if (!isTabletOrMobile()) {
-            closeMenu();
-        }
     });
 });

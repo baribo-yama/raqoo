@@ -12,7 +12,7 @@
     <title>教室管理申請書</title>
 
     <!-- 予約申請書画面専用CSS -->
-    <link rel="stylesheet" href="reservation.css">
+    <link rel="stylesheet" href="{{ asset('user/reservation.css') }}?v={{ time() }}">
 </head>
 
 <body>
@@ -139,7 +139,7 @@
     </div>
 
     <!-- 予約申請書画面専用JavaScript -->
-    <script src="reservation.js"></script>
+    <script src="{{ asset('user/reservation.js') }}?v={{ time() }}"></script>
 </body>
 
 </html>

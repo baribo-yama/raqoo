@@ -6,6 +6,7 @@
         基本設定・外部ファイル読み込み
         - 文字コード / レスポンシブ設定
         - 共通CSS
+        - スマホ用共通CSS
         - Tailwind CSS
         - Ionicons
         - CSRFトークン
@@ -16,13 +17,14 @@
 
     {{-- 共通CSS --}}
     <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}?v={{ time() }}">
 
     {{-- ユーティリティCSS --}}
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 
     {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons/ionicons.js"></script>
 
     {{-- Ajax通信などでCSRFトークンを参照する場合に使用 --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -171,7 +173,7 @@
                                 </p>
 
                                 <div class="flex flex-wrap gap-4">
-                                    @for($i = 1; $i <= 6; $i++)
+                                    @for ($i = 1; $i <= 6; $i++)
                                         @php
                                             /*
                                                 時限チェックボックスの状態判定
@@ -209,15 +211,15 @@
                                                     {{ $i }}限
                                                 </span>
 
-                                                @if($isOriginal)
+                                                @if ($isOriginal)
                                                     <span class="text-xs ml-1 font-normal text-blue-600 inline-block">
                                                         (選択中)
                                                     </span>
-                                                @elseif($isLesson)
+                                                @elseif ($isLesson)
                                                     <span class="text-xs ml-1 text-red-500 font-bold inline-block">
                                                         (授業)
                                                     </span>
-                                                @elseif($isReservedOnly)
+                                                @elseif ($isReservedOnly)
                                                     <span class="text-xs ml-1 font-normal text-red-400 inline-block">
                                                         (予約済)
                                                     </span>
@@ -226,7 +228,7 @@
                                         </label>
 
                                         {{-- disabled の checkbox は送信されないため、元の選択時限を hidden で送信する --}}
-                                        @if($isOriginal)
+                                        @if ($isOriginal)
                                             <input type="hidden" name="periods[]" value="{{ $i }}">
                                         @endif
                                     @endfor
@@ -361,6 +363,9 @@
             </div>
         </div>
     </div>
+
+    {{-- 共通サイドバー開閉用JavaScript --}}
+    <script src="{{ asset('user/home.js') }}?v={{ time() }}"></script>
 
     {{-- 予約申請フォーム専用JavaScript --}}
     <script src="{{ asset('user/reservation-form.js') }}?v={{ time() }}"></script>

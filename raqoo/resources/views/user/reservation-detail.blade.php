@@ -22,6 +22,7 @@
 
     {{-- 共通CSS --}}
     <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}?v={{ time() }}">
 
     {{-- 予約詳細画面専用CSS --}}
     <link rel="stylesheet" href="{{ asset('user/reservation-detail.css') }}?v={{ time() }}">
@@ -31,7 +32,7 @@
 
     {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons/ionicons.js"></script>
 
     {{-- Ajax通信などでCSRFトークンを参照する場合に使用 --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -100,35 +101,38 @@
                         - 代表者
                         - 利用メンバー
                         - 申請日時
-                        - 却下理由
                         - キャンセルボタン
                     ------------------------------------------------- --}}
                     <div class="bg-white p-6 rounded-lg shadow-lg">
 
                         {{-- =================================================
                             予約ステータス表示
-                            - status の値に応じて色と表示文言を切り替える
+                            - DB enum に合わせて status を判定する
+                            - pending / reserved / in_use / cancelled / finished
                         ================================================= --}}
                         <div class="mb-6 text-center">
                             <span
                                 class="inline-block px-4 py-2 text-lg font-semibold rounded-lg
-                                    @if($reservation->status === 'pending') bg-yellow-100 text-yellow-800
-                                    @elseif($reservation->status === 'approved') bg-green-100 text-green-800
-                                    @elseif($reservation->status === 'rejected') bg-red-100 text-red-800
-                                    @elseif($reservation->status === 'cancelled') bg-gray-100 text-gray-800
-                                    @elseif($reservation->status === 'in_use') bg-blue-100 text-blue-800
+                                    @if ($reservation->status === 'pending') bg-yellow-100 text-yellow-800
+                                    @elseif ($reservation->status === 'reserved') bg-green-100 text-green-800
+                                    @elseif ($reservation->status === 'in_use') bg-blue-100 text-blue-800
+                                    @elseif ($reservation->status === 'cancelled') bg-gray-100 text-gray-800
+                                    @elseif ($reservation->status === 'finished') bg-indigo-100 text-indigo-800
+                                    @else bg-gray-100 text-gray-800
                                     @endif"
                             >
-                                @if($reservation->status === 'pending')
+                                @if ($reservation->status === 'pending')
                                     承認待ち
-                                @elseif($reservation->status === 'approved')
-                                    承認済み
-                                @elseif($reservation->status === 'rejected')
-                                    却下
-                                @elseif($reservation->status === 'cancelled')
-                                    キャンセル済み
-                                @elseif($reservation->status === 'in_use')
+                                @elseif ($reservation->status === 'reserved')
+                                    予約済み
+                                @elseif ($reservation->status === 'in_use')
                                     利用中
+                                @elseif ($reservation->status === 'cancelled')
+                                    キャンセル済み
+                                @elseif ($reservation->status === 'finished')
+                                    利用完了
+                                @else
+                                    {{ $reservation->status }}
                                 @endif
                             </span>
                         </div>
@@ -145,14 +149,14 @@
                                     <div>
                                         <span class="text-gray-600">教室:</span>
                                         <span class="font-semibold">
-                                            {{ $reservation->room->name }}
+                                            {{ optional($reservation->room)->name ?? '教室情報なし' }}
                                         </span>
                                     </div>
 
                                     <div>
                                         <span class="text-gray-600">階層:</span>
                                         <span class="font-semibold">
-                                            {{ $reservation->room->floor }}階
+                                            {{ optional($reservation->room)->floor ?? '-' }}階
                                         </span>
                                     </div>
 
@@ -173,14 +177,14 @@
                                     <div>
                                         <span class="text-gray-600">収容人数:</span>
                                         <span class="font-semibold">
-                                            {{ $reservation->room->capacity }}名
+                                            {{ optional($reservation->room)->capacity ?? '-' }}名
                                         </span>
                                     </div>
 
                                     <div>
                                         <span class="text-gray-600">設備:</span>
                                         <span class="font-semibold">
-                                            {{ $reservation->room->equipment }}
+                                            {{ optional($reservation->room)->equipment ?? '-' }}
                                         </span>
                                     </div>
                                 </div>
@@ -206,7 +210,8 @@
 
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <p>
-                                    {{ $reservation->user->name }} ({{ $reservation->user->student_id }})
+                                    {{ optional($reservation->user)->name ?? 'ユーザー情報なし' }}
+                                    ({{ optional($reservation->user)->student_id ?? '-' }})
                                 </p>
                             </div>
                         </div>
@@ -216,7 +221,7 @@
                             - 入力がある場合のみ表示
                             - 改行を保持するため pre を使用
                         ================================================= --}}
-                        @if($reservation->members)
+                        @if ($reservation->members)
                             <div class="mb-6">
                                 <h3 class="text-xl font-semibold mb-2">利用メンバー</h3>
 
@@ -238,26 +243,12 @@
                         </div>
 
                         {{-- =================================================
-                            却下理由
-                            - 却下済み かつ 却下理由が登録されている場合のみ表示
-                        ================================================= --}}
-                        @if($reservation->status === 'rejected' && $reservation->rejection_reason)
-                            <div class="mb-6">
-                                <h3 class="text-xl font-semibold mb-2 text-red-700">却下理由</h3>
-
-                                <div class="p-4 bg-red-50 rounded-lg border border-red-200">
-                                    <p class="text-red-800">{{ $reservation->rejection_reason }}</p>
-                                </div>
-                            </div>
-                        @endif
-
-                        {{-- =================================================
                             予約キャンセルボタン
                             - pending / reserved の予約のみキャンセル可能
                             - 押下時は確認モーダルを表示
                         ================================================= --}}
                         <div class="flex justify-center space-x-4">
-                            @if(in_array($reservation->status, ['pending', 'reserved']))
+                            @if (in_array($reservation->status, ['pending', 'reserved'], true))
                                 <button
                                     type="button"
                                     id="openCancelModal"
@@ -311,6 +302,9 @@
             </div>
         </div>
     </div>
+
+    {{-- 共通サイドバー開閉用JavaScript --}}
+    <script src="{{ asset('user/home.js') }}?v={{ time() }}"></script>
 
     {{-- 予約詳細画面専用JavaScript --}}
     <script src="{{ asset('user/reservation-detail.js') }}?v={{ time() }}"></script>

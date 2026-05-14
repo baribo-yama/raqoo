@@ -31,7 +31,7 @@
 
     {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons/ionicons.js"></script>
 </head>
 
 <body class="notification-page">
@@ -144,6 +144,9 @@
             </div>
         </div>
     </div>
+
+    {{-- 共通サイドバー開閉用JavaScript --}}
+    <script src="{{ asset('user/home.js') }}?v={{ time() }}"></script>
 
     {{-- お知らせ画面専用JavaScript --}}
     <script src="{{ asset('user/notification.js') }}?v={{ time() }}"></script>

@@ -8,13 +8,12 @@ document.addEventListener("DOMContentLoaded", function () {
         - メンバー入力内容を hidden にまとめて送信
         - 連続予約の選択可否制御
         - 選択中時限の仮ロック / 解除API通信
-        - サイドバーの簡易操作
 
         注意：
         - このJSは予約申請フォーム画面専用
         - #selectingMeta が存在する前提の処理がある
+        - サイドバー開閉処理は共通JSの home.js に統一する
     */
-
 
     /* =========================================
        01. 利用目的の文字数カウント
@@ -31,7 +30,6 @@ document.addEventListener("DOMContentLoaded", function () {
         purposeCount.textContent = purposeTextarea.value.length;
     }
 
-
     /* =========================================
        02. 利用メンバー入力欄の取得
        - membersProxy は「メンバー入力があるかどうか」を判定するための代理hidden
@@ -40,7 +38,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const membersHidden = document.getElementById("membersHidden");
     const membersProxy = document.getElementById("members");
     const memberInputs = document.querySelectorAll(".member-name-input");
-
 
     /* =========================================
        03. バリデーションエラー後の再表示対応
@@ -54,7 +51,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (hasOldMembers && membersProxy) {
         membersProxy.value = "dummy";
     }
-
 
     /* =========================================
        04. メンバー入力状態の監視
@@ -75,7 +71,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-
     /* =========================================
        05. フォーム送信時にメンバー一覧を hidden へ集約
        - 空欄は除外
@@ -93,7 +88,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-
     /* =========================================
        06. 仮ロックAPI用メタ情報の取得
        - Blade側の #selectingMeta の data-* 属性から取得
@@ -108,7 +102,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const csrf = csrfMeta?.content || "";
 
     const canUseSelectingApi = Boolean(roomId && date && toggleUrl && csrf);
-
 
     /* =========================================
        07. 時限の仮ロック / 解除API
@@ -149,7 +142,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
     /* =========================================
        08. 時限チェックボックスの取得
        - data-original="1" の時限を基準時限として扱う
@@ -164,7 +156,6 @@ document.addEventListener("DOMContentLoaded", function () {
             mainPeriod = parseInt(checkbox.value, 10);
         }
     });
-
 
     /* =========================================
        09. チェック解除 + 仮ロック解除
@@ -183,7 +174,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         await toggleSelectingApi(period, "unlock");
     }
-
 
     /* =========================================
        10. フォーム状態の更新
@@ -257,14 +247,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
     /* =========================================
        11. メンバー入力状態が変わったらフォーム状態を更新
     ========================================= */
     if (membersProxy) {
         membersProxy.addEventListener("input", updateFormState);
     }
-
 
     /* =========================================
        12. 時限チェックボックス変更時の処理
@@ -308,41 +296,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-
     /* =========================================
-       13. サイドバーの選択状態切り替え
-       - クリックした項目に active を付与
-       - URL連動のactive制御JSがある場合は重複注意
-    ========================================= */
-    const listItems = document.querySelectorAll(".list");
-
-    function activeLink() {
-        listItems.forEach((item) => item.classList.remove("active"));
-        this.classList.add("active");
-    }
-
-    listItems.forEach((item) => {
-        item.addEventListener("click", activeLink);
-    });
-
-
-    /* =========================================
-       14. スマホ用ナビゲーション開閉
-       - .nav-toggle がある場合のみ実行
-       - 共通JSに寄せる候補
-    ========================================= */
-    const toggle = document.querySelector(".nav-toggle");
-    const navigation = document.querySelector(".navigation");
-
-    if (toggle && navigation) {
-        toggle.addEventListener("click", function () {
-            navigation.classList.toggle("active");
-        });
-    }
-
-
-    /* =========================================
-       15. 初期状態の反映
+       13. 初期状態の反映
     ========================================= */
     updateFormState();
 });

@@ -6,6 +6,7 @@
         基本設定・外部ファイル読み込み
         - 文字コード / レスポンシブ設定
         - 共通CSS
+        - スマホ用共通CSS
         - Tailwind CSS
         - Ionicons
         - CSRFトークン
@@ -16,13 +17,14 @@
 
     {{-- 共通CSS --}}
     <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}?v={{ time() }}">
 
     {{-- ユーティリティCSS --}}
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 
     {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons/ionicons.js"></script>
 
     {{-- Ajax通信などでCSRFトークンを参照する場合に使用 --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -106,7 +108,7 @@
                                 <div>
                                     <span class="text-gray-600">時限:</span>
                                     <span class="font-bold text-blue-600 ml-2">
-                                        @foreach($reservationData['periods'] as $period)
+                                        @foreach ($reservationData['periods'] as $period)
                                             {{ $period }}限{{ !$loop->last ? ', ' : '' }}
                                         @endforeach
                                     </span>
@@ -160,7 +162,7 @@
                             - 入力がある場合のみ表示
                             - 改行を保持するため pre を使用
                         ================================================= --}}
-                        @if(!empty($reservationData['members']))
+                        @if (!empty($reservationData['members']))
                             <div class="mb-6">
                                 <h4 class="font-semibold text-lg mb-2 text-gray-700">
                                     利用メンバー
@@ -190,7 +192,7 @@
                             <input type="hidden" name="date" value="{{ $reservationData['date'] }}">
 
                             {{-- 選択済み時限を配列として保持して戻す --}}
-                            @foreach($reservationData['periods'] as $period)
+                            @foreach ($reservationData['periods'] as $period)
                                 <input type="hidden" name="periods[]" value="{{ $period }}">
                             @endforeach
 
@@ -216,7 +218,7 @@
                             <input type="hidden" name="members" value="{{ $reservationData['members'] }}">
 
                             {{-- 選択済み時限を配列として送信 --}}
-                            @foreach($reservationData['periods'] as $period)
+                            @foreach ($reservationData['periods'] as $period)
                                 <input type="hidden" name="periods[]" value="{{ $period }}">
                             @endforeach
 
@@ -233,6 +235,9 @@
             </div>
         </div>
     </div>
+
+    {{-- 共通サイドバー開閉用JavaScript --}}
+    <script src="{{ asset('user/home.js') }}?v={{ time() }}"></script>
 </body>
 
 </html>
