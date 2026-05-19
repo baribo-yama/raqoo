@@ -15,9 +15,6 @@
 @media (max-width: 1024px) {
     /* =========================================
        01. 注意事項ページ全体の表示エリア
-       - 上部に余白を確保
-       - カードを中央寄せ
-       - 縦方向に並べる
     ========================================= */
     body[data-mode] .content-area .terms-viewport {
         padding: 80px 16px 40px !important;
@@ -31,69 +28,144 @@
 
 
     /* =========================================
-       02. 注意事項カード
-       - 横幅いっぱいで表示
-       - 文字が詰まらないよう余白を調整
-       - 下部のドットと被らないよう下paddingを確保
+       02. カード外枠
+       - STEPごとの幅ブレを防ぐ
+    ========================================= */
+    .terms-card-wrap {
+        width: 100% !important;
+        max-width: 520px !important;
+        min-width: 0 !important;
+        position: relative !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+    }
+
+
+    /* =========================================
+       03. 注意事項カード
+       - 全STEPで同じカードサイズに固定
+       - gridで中身の位置を安定させる
     ========================================= */
     .terms-card {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: 520px !important;
         min-width: 0 !important;
-        padding: 28px 24px 70px !important;
-        box-sizing: border-box;
-        margin-bottom: 20px;
+
+        height: 460px !important;
+        min-height: 460px !important;
+        max-height: 460px !important;
+
+        padding: 28px 24px 24px !important;
+        box-sizing: border-box !important;
+        margin: 0 auto 20px !important;
+
+        display: grid !important;
+        grid-template-rows: auto 58px 1fr auto !important;
+        row-gap: 0 !important;
+    }
+
+    .terms-card:not([data-active="true"]) {
+        display: none !important;
     }
 
 
     /* =========================================
-       03. カード内テキスト
-       - タイトル
-       - 見出し
-       - 説明文
+       04. カード上部テキスト
     ========================================= */
-    .terms-title {
-        font-size: 22px !important;
-        margin-bottom: 14px !important;
-    }
-
-    .terms-lead {
-        font-size: 19px !important;
-        margin: 10px 0 !important;
-    }
-
-    .terms-desc {
-        font-size: 14px !important;
-        line-height: 1.8 !important;
+    .terms-kicker {
+        margin-bottom: 6px !important;
         text-align: center !important;
-        width: 100% !important;
-        white-space: normal !important;
+    }
+
+    .terms-title {
+        min-height: 58px !important;
+        margin: 0 0 14px !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        font-size: 22px !important;
+        line-height: 1.35 !important;
+        text-align: center !important;
     }
 
 
     /* =========================================
-       04. 説明パネル・ステップ番号
+       05. 説明パネル
+       - パネルサイズを固定してカードの見た目を揃える
+       - 文章が長い場合だけ内部でスクロール可能にする
     ========================================= */
     .terms-panel {
-        padding: 20px 16px !important;
+        width: 100% !important;
+        height: 255px !important;
+        min-height: 255px !important;
+        max-height: 255px !important;
+
+        padding: 18px 16px !important;
         margin: 0 !important;
+        box-sizing: border-box !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+
+        overflow: hidden !important;
     }
 
     .terms-badge {
+        flex: 0 0 auto !important;
         width: 48px !important;
         height: 48px !important;
         font-size: 20px !important;
-        margin-bottom: 10px !important;
+        margin: 0 auto 10px !important;
+    }
+
+    .terms-lead {
+        flex: 0 0 auto !important;
+        font-size: 19px !important;
+        line-height: 1.4 !important;
+        margin: 8px 0 !important;
+        text-align: center !important;
+    }
+
+    .terms-desc {
+        flex: 0 1 auto !important;
+        width: 100% !important;
+
+        font-size: 13px !important;
+        line-height: 1.7 !important;
+        text-align: center !important;
+        white-space: normal !important;
+        overflow-wrap: break-word !important;
+        word-break: normal !important;
+
+        max-height: 120px !important;
+        overflow-y: auto !important;
+        padding-right: 2px !important;
     }
 
 
     /* =========================================
-       05. ステップドット
-       - タップしやすいように少し大きくする
+       06. ステップドット
+       - カード下部に位置を固定
     ========================================= */
     .terms-dots {
-        bottom: 24px !important;
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
         gap: 16px !important;
+
+        margin-top: 22px !important;
+        padding-top: 0 !important;
     }
 
     .terms-dot {
@@ -107,12 +179,23 @@
 
 
     /* =========================================
-       06. 同意フォーム
-       - 横幅いっぱいに表示
-       - ボタンを押しやすいサイズにする
+       07. 左右矢印
+    ========================================= */
+    .terms-arrow--prev {
+        left: -18px !important;
+    }
+
+    .terms-arrow--next {
+        right: -18px !important;
+    }
+
+
+    /* =========================================
+       08. 同意フォーム
     ========================================= */
     .agree-wrap {
         width: 100%;
+        max-width: 520px;
         padding: 0 16px;
         box-sizing: border-box;
     }
@@ -131,5 +214,126 @@
         width: 100% !important;
         padding: 16px !important;
         font-size: 16px !important;
+    }
+}
+
+
+/* =========================================
+   09. スマホ幅の微調整
+========================================= */
+@media (max-width: 560px) {
+    .terms-card-wrap {
+        max-width: 340px !important;
+    }
+
+    .terms-card {
+        max-width: 340px !important;
+
+        height: 435px !important;
+        min-height: 435px !important;
+        max-height: 435px !important;
+
+        padding: 26px 22px 22px !important;
+        grid-template-rows: auto 58px 1fr auto !important;
+    }
+
+    .terms-title {
+        min-height: 58px !important;
+        font-size: 21px !important;
+        line-height: 1.35 !important;
+    }
+
+    .terms-panel {
+        height: 240px !important;
+        min-height: 240px !important;
+        max-height: 240px !important;
+        padding: 16px 14px !important;
+    }
+
+    .terms-badge {
+        width: 46px !important;
+        height: 46px !important;
+        font-size: 19px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .terms-lead {
+        font-size: 18px !important;
+        line-height: 1.35 !important;
+        margin: 7px 0 !important;
+    }
+
+    .terms-desc {
+        font-size: 12.5px !important;
+        line-height: 1.65 !important;
+        max-height: 112px !important;
+    }
+
+    .terms-dots {
+        margin-top: 20px !important;
+    }
+
+    .terms-arrow--prev {
+        left: -14px !important;
+    }
+
+    .terms-arrow--next {
+        right: -14px !important;
+    }
+
+    .agree-wrap {
+        max-width: 340px;
+    }
+}
+
+
+/* =========================================
+   10. かなり狭いスマホ幅の微調整
+========================================= */
+@media (max-width: 390px) {
+    .terms-card-wrap {
+        max-width: 320px !important;
+    }
+
+    .terms-card {
+        max-width: 320px !important;
+
+        height: 430px !important;
+        min-height: 430px !important;
+        max-height: 430px !important;
+
+        padding: 24px 18px 22px !important;
+    }
+
+    .terms-title {
+        font-size: 20px !important;
+    }
+
+    .terms-panel {
+        height: 238px !important;
+        min-height: 238px !important;
+        max-height: 238px !important;
+        padding: 16px 12px !important;
+    }
+
+    .terms-badge {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 18px !important;
+        margin-bottom: 7px !important;
+    }
+
+    .terms-lead {
+        font-size: 17px !important;
+    }
+
+    .terms-desc {
+        font-size: 12px !important;
+        line-height: 1.6 !important;
+        max-height: 110px !important;
+    }
+
+    .terms-dots {
+        margin-top: 18px !important;
     }
 }
