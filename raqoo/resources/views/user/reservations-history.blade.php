@@ -66,6 +66,34 @@
                 <div class="history-list">
                     @if ($historyReservations->count() > 0)
                         @foreach ($historyReservations as $reservation)
+                            @php
+                                /*
+                                    ステータス表示用の設定
+                                    - DB上の英語ステータスを画面表示用の日本語に変換
+                                    - class名もステータスごとに分けておく
+                                */
+                                $statusLabels = [
+                                    'selecting' => '選択中',
+                                    'pending'   => '申請中',
+                                    'reserved'  => '予約済み',
+                                    'in_use'    => '利用中',
+                                    'finished'  => '利用完了',
+                                    'cancelled' => 'キャンセル',
+                                ];
+
+                                $statusClasses = [
+                                    'selecting' => 'status-selecting',
+                                    'pending'   => 'status-pending',
+                                    'reserved'  => 'status-reserved',
+                                    'in_use'    => 'status-in-use',
+                                    'finished'  => 'status-completed',
+                                    'cancelled' => 'status-cancelled',
+                                ];
+
+                                $statusLabel = $statusLabels[$reservation->status] ?? '不明';
+                                $statusClass = $statusClasses[$reservation->status] ?? 'status-unknown';
+                            @endphp
+
                             <div class="history-card">
 
                                 {{-- =================================================
@@ -79,20 +107,8 @@
                                             {{ optional($reservation->room)->name ?? '教室情報なし' }}
                                         </h3>
 
-                                        <span
-                                            class="status-badge
-                                                @if ($reservation->status === 'finished') status-completed
-                                                @elseif ($reservation->status === 'cancelled') status-cancelled
-                                                @else status-cancelled
-                                                @endif"
-                                        >
-                                            @if ($reservation->status === 'finished')
-                                                利用完了
-                                            @elseif ($reservation->status === 'cancelled')
-                                                キャンセル
-                                            @else
-                                                {{ $reservation->status }}
-                                            @endif
+                                        <span class="status-badge {{ $statusClass }}">
+                                            {{ $statusLabel }}
                                         </span>
                                     </div>
                                 </div>
