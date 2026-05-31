@@ -15,6 +15,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\SignupController;
+use App\Http\Controllers\User\UnavailableController;
 use Illuminate\Auth\Events\Verified;
 
 require __DIR__.'/auth.php';
@@ -103,8 +104,10 @@ Route::get('/admin/notifications', function() {
 
 /*======= ユーザー画面 ========*/
 Route::middleware('auth', 'verified')->group(function () {
-    // ユーザーホーム表示
-    Route::get('/home', [UserRoomController::class, 'index'])->name('user.home.index');
+    // ユーザーホーム
+    Route::get('/home', [UserRoomController::class, 'index'])
+    ->middleware('time.guard')
+    ->name('user.home.index');
 
     // 夜間注意事項ページ
     Route::get('/night-precautions', function () {
@@ -112,15 +115,17 @@ Route::middleware('auth', 'verified')->group(function () {
     })->name('user.night.precautions');
 
     // ユーザー予約関連
-    Route::get('/reservations/create', [UserReservationController::class, 'create'])->name('user.reservations.create');
-    Route::post('/reservations/check', [UserReservationController::class, 'check'])->name('user.reservations.check'); // 確認画面
-    Route::post('/reservations', [UserReservationController::class, 'store'])->name('user.reservations.store');       // 保存処理
+    Route::get('/reservations/create', [UserReservationController::class, 'create'])->middleware('time.guard')->name('user.reservations.create');
+    Route::post('/reservations/check', [UserReservationController::class, 'check'])->middleware('time.guard')->name('user.reservations.check'); // 確認画面
+    Route::post('/reservations', [UserReservationController::class, 'store'])->middleware('time.guard')->name('user.reservations.store');       // 保存処理
     Route::get('/reservations', [UserReservationController::class, 'index'])->name('user.reservations.index');
     Route::get('/reservations/{reservation}', [UserReservationController::class, 'show'])->name('user.reservations.show');
     // 予約キャンセル
     Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
     Route::get('/reservations-history', [UserReservationController::class, 'history'])->name('user.reservations.history');
 
+    // ★ チェックボックスON/OFF時のselecting作成・削除API
+    Route::post('/reservations/selecting/toggle', [UserReservationController::class, 'toggleSelecting'])->name('user.reservations.selecting.toggle');
 
     // ユーザー通知
     Route::get('/notifications', [UserNotificationController::class, 'index'])->name('user.notifications.index');
@@ -142,4 +147,7 @@ Route::middleware('auth', 'verified')->group(function () {
     // 自分の予約一覧取得 (JSON)
     Route::get('/user/my-reservations', [UserReservationController::class, 'myReservations'])
         ->name('user.reservations.my');
+
+    // 予約申請できない時間帯に出す画面
+    Route::get('/unavailable', [UnavailableController::class, 'showUnavailable'])->name('unavailable');
 });
