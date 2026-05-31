@@ -6,8 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Room;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Models\Reservation;
-use Illuminate\Support\Facades\Auth;
+
 
 class RoomController extends Controller
 {
@@ -27,7 +26,7 @@ class RoomController extends Controller
         // 2週間を超えていたらエラー表示
         if ($request->date > $maxDate) {
             return redirect()->route('user.home.index')
-                -> with('error', '予約できるのは2週間先までです。');
+                ->with('error', '予約できるのは2週間先までです。');
         }
 
         // ★追加: 階数フィルタの入力を取得
@@ -70,8 +69,8 @@ class RoomController extends Controller
             // つまり、「期間中すべて available な部屋」だけが残る
             $query->whereDoesntHave('roomStatuses', function ($q) use ($date, $startPeriod, $endPeriod) {
                 $q->where('date', $date)
-                  ->whereBetween('period', [$startPeriod, $endPeriod]) // 開始〜終了の範囲
-                  ->where('status', '!=', 'available'); // 利用可能じゃないデータを探す
+                    ->whereBetween('period', [$startPeriod, $endPeriod]) // 開始〜終了の範囲
+                    ->where('status', '!=', 'available'); // 利用可能じゃないデータを探す
             });
         }
 

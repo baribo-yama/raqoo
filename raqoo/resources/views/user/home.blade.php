@@ -199,14 +199,6 @@
                         @for ($period = $loopStart; $period <= $loopEnd; $period++)
                             @php
                                 $status = $room->getStatusForPeriod($displayDate, $period, auth()->id());
-                                $times = [
-                                    1 => ['09:10', '10:40'],
-                                    2 => ['10:50', '12:20'],
-                                    3 => ['13:00', '14:30'],
-                                    4 => ['14:40', '16:10'],
-                                    5 => ['16:20', '17:50'],
-                                    6 => ['18:00', '19:30'],
-                                ];
                                 $isTarget = isset($startPeriod) || isset($endPeriod);
                                 $isAvailable = $status === 'available';
 
@@ -218,13 +210,17 @@
                                 $linkUrl = route('user.precautions', ['next' => $nextPath]);
                             @endphp
 
+                            @php
+                                $periods = config('period'); // config/period.phpを読み込む
+                            @endphp
+
                             {{-- 修正箇所3: aria-disabled 属性の追加 --}}
                             <a class="time-card {{ $status }} {{ $isTarget ? 'target-period' : '' }} {{ !$isAvailable ? 'locked' : '' }}"
                                 data-period="{{ $period }}" data-base-href="{{ $linkUrl }}"
                                 @if ($isAvailable) href="{{ $linkUrl }}" @else aria-disabled="true" @endif>
                                 <div class="pc-layout">
-                                    <div class="time-main">{{ $times[$period][0] }}</div>
-                                    <div class="time-sub">~{{ $times[$period][1] }}</div>
+                                    <div class="time-main">{{ $periods[$period]['start_time'] }}</div>
+                                    <div class="time-sub">~{{ $periods[$period]['end_time'] }}</div>
                                     <div class="floor pc-only">{{ $room->floor }}階</div>
 
                                     <div class="status-area">
@@ -252,9 +248,9 @@
                                     </div>
                                     <div class="sp-info-box">
                                         <div class="sp-time-row">
-                                            <span class="time-main">{{ $times[$period][0] }}</span>
+                                            <span class="time-main">{{ $periods[$period]['start_time'] }}</span>
                                             <span class="tilde">~</span>
-                                            <span class="time-sub">{{ $times[$period][1] }}</span>
+                                            <span class="time-sub">{{ $periods[$period]['end_time'] }}</span>
                                         </div>
                                         <div class="sp-status-area">
                                             {{-- スマホ版も同様に hidden クラスに変更 --}}

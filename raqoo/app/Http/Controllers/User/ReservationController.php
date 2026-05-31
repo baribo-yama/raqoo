@@ -18,16 +18,41 @@ class ReservationController extends Controller
         $this->middleware('auth');
     }
 
-
     /**
-     * 期限切れ selecting を削除
-     * selecting は10分以内だけ有効な一時ロックとして扱う
-     */
-    private function cleanupExpiredSelecting(): void
+     * 選択された時限の中に、既に終了時刻を過ぎているものがあるか判定する
+     * @param string $date 予約対象日 (Y-m-d)
+     * @param array $periods 判定対象の時限IDの配列
+     * @return bool ひとつでも終了済みの時限があればtrue
+     **/
+    // 終了時刻を過ぎていたらアウト（true）を返す
+    private function hasEndedPeriod(string $date, array $periods): bool  // arrayなのは予約が連続2コマの場合もあるため
     {
-        Reservation::where('status', 'selecting')
-            ->where('created_at', '<', now()->subMinutes(10))
-            ->delete();
+        // 予約対象日が「今日」でない場合は、時間の判定自体が不要のためfalse
+        // today()は日付を軸に取得 (ex)2026-05-31 00:00:00
+        if (!Carbon::parse($date)->isSameDay(Carbon::today())) {
+            return false;
+        }
+
+        // 各時限ごとに限時刻が終了時間を過ぎていないか確認
+        foreach ($periods as $period) {
+            $endTimeConfig = config("period.{$period}.end_time");
+
+            // 終了時刻が設定されていなかったらスキップして次のperiodを見に行く
+            if (!$endTimeConfig) {
+                continue;
+            }
+
+            $periodEndAt = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$endTimeConfig}");
+
+            // 「現在時刻 >= 終了時刻」であれば、その時限は終了済みとみなす
+            // now()は今個の週間、日付＋秒単位で取得 (ex)2026-05-31 22:25:03
+            if (now()->greaterThanOrEqualTo($periodEndAt)) {
+                return true;  // 終了済みがあればtrueを返す
+            }
+        }
+
+        // 全ての時限が終了前であればセーフ（false）を返す
+        return false;
     }
 
     /**
@@ -40,7 +65,6 @@ class ReservationController extends Controller
         /**
          * 今日の予約がすでにある場合、その終了時刻に達するまでその日の新たな予約はできないようにする
          */
-        //TODO: URL直接叩かれる可能性あるので、check()とstore()にも同様の処理をつける
         //TODO: この「終了時刻まで予約ブロック処理」と、「二週間先のブロック処理」を関数にまとめる
         //TODO: 2限連続で予約された場合の対処p_minとp_max ← これ優先的にテストしたほうがいい
 
@@ -61,14 +85,20 @@ class ReservationController extends Controller
             // 日付（HH:MM）に変換
             $endTime = Carbon::parse($endTimeConfig);
 
-            // 現在の時刻と比べて、もし「現在時刻 < 終了時刻」なら予約できないようにする
-            if (Carbon::parse($request->date)->isSameDay(Carbon::today())) {
-                if (now()->lessThan($endTime)) {
-                    return redirect()
-                        ->route('user.home.index')
-                        ->with('error', '今日の予約の利用が終了してから新たに予約してください');
-                }
+            // すでに今日の予約がある場合：現在の時刻が終了時刻より前（現在時刻 < 終了時刻）なら新規予約ブロックする
+            if (Carbon::parse($request->date)->isSameDay(Carbon::today()) && now()->lessThan($endTime)) {
+                return redirect()
+                    ->route('user.home.index')
+                    ->with('error', '今日の予約の利用が終了してから新たに予約してください');
             }
+        }
+
+        // URL直叩きブロック処理
+        $period = (int) $request->period;
+        if ($period && $this->hasEndedPeriod($request->date, [$period])) {
+            return redirect()
+                ->route('user.home.index')
+                ->with('error', '選択された時限はすでに終了しています。別の日時を選んでください。');
         }
 
         // 明日以降の各日は2件以上の予約不可 1件までしか予約できません！
@@ -112,7 +142,7 @@ class ReservationController extends Controller
         // 2週間を超えていたらエラー表示
         if ($request->date > $maxDate) {
             return redirect()->route('user.home.index')
-                -> with('error', '予約できるのは2週間先までです。');
+                ->with('error', '予約できるのは2週間先までです。');
         }
 
 
@@ -157,7 +187,12 @@ class ReservationController extends Controller
             'members'    => 'nullable|string',
         ]);
 
-        $this->cleanupExpiredSelecting();
+        // URL直叩きブロック処理
+        if ($this->hasEndedPeriod($validated['date'], $validated['periods'])) {
+            return back()
+                ->withErrors(['periods' => '選択された時限は既に終了しています。別の時間を選択してください。'])
+                ->withInput();
+        }
 
         $selectedRoom = Room::find($validated['room_id']);
 
@@ -210,7 +245,7 @@ class ReservationController extends Controller
                 ->whereIn('period', $periods)
                 ->where('created_at', '>=', now()->subMinutes(10))
                 ->pluck('period')
-                ->map(fn ($period) => (int) $period)
+                ->map(fn($period) => (int) $period)
                 ->toArray();
 
             $missingPeriods = array_values(array_diff($periods, $existingSelectingPeriods));
@@ -285,9 +320,16 @@ class ReservationController extends Controller
             // ▼ Copilot指摘対応: こちらにも max:2 を追加
             'periods'    => 'required|array|min:1|max:2',  // 最低1コマ、最大2コマ
             'periods.*'  => 'integer|min:1|max:6',
-            'purpose'    => 'required|string|max:500',
+            'purpose'    => 'required|string|max:100',
             'members'    => 'nullable|string', // 利用人数は空でもOK（nullable
         ]);
+
+        // URL直叩きブロック処理
+        if ($this->hasEndedPeriod($validated['date'], $validated['periods'])) {
+            return back()
+                ->withErrors(['periods' => '選択された時限は既に終了しています。別の時間を選択してください。'])
+                ->withInput();
+        }
 
         $periods = $validated['periods'];  // バリデーション（型）が正しいことが証明されたやつだけを使う
         sort($periods);  // 下の$periods[$i] - $periods[$i - 1] !== 1が正しく動作するために昇順に並べ替え

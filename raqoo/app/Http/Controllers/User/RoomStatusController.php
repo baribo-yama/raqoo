@@ -26,6 +26,9 @@ class RoomStatusController extends Controller
         $validated = $request->validate([
             'date' => 'required|date',
         ]);
+
+        clock($validated);
+
         $date = $validated['date'];
 
         $userId = Auth::id();
@@ -73,8 +76,8 @@ class RoomStatusController extends Controller
 
                 // 今の時刻が、各roomの終了時刻より後なら、その部屋を利用不可にする
                 // 今日に対してのみ行う
-                if (Carbon::parse($request->date)->isSameDay(Carbon::today())) {
-                    $startTime = Carbon::parse(config("period.{$period}.start_time"));
+                if (Carbon::parse($date)->isSameDay(Carbon::today())) {
+                    $startTime = Carbon::parse(config("period.{$period}.start_time"));  // startTime使われてないよ
                     $endTime = Carbon::parse(config("period.{$period}.end_time"));
                     if (now()->greaterThan($endTime)) {
                         $status = 'unavailable';
