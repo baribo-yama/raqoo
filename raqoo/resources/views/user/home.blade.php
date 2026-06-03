@@ -81,7 +81,7 @@
             <div class="max-w-4xl mx-auto mb-8">
                 <form action="{{ route('user.home.index') }}" method="GET" class="search-card">
                     {{-- 階数絞り込み中に検索しても、選択中の階数を維持する --}}
-                    @if(request('floor'))
+                    @if (request('floor'))
                         <input type="hidden" name="floor" value="{{ request('floor') }}">
                     @endif
 
@@ -103,10 +103,11 @@
                             <label class="block text-sm font-bold text-gray-700 mb-2">利用時限 (開始〜終了)</label>
 
                             <div class="flex items-center space-x-2">
-                                <select name="start_period" class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                                <select name="start_period"
+                                    class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
                                     <option value="">指定なし</option>
 
-                                    @for($i = 1; $i <= 6; $i++)
+                                    @for ($i = 1; $i <= 6; $i++)
                                         <option value="{{ $i }}" {{ ($startPeriod ?? '') == $i ? 'selected' : '' }}>
                                             {{ $i }}限
                                         </option>
@@ -118,7 +119,7 @@
                                 <select name="end_period" class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
                                     <option value="">指定なし</option>
 
-                                    @for($i = 1; $i <= 6; $i++)
+                                    @for ($i = 1; $i <= 6; $i++)
                                         <option value="{{ $i }}" {{ ($endPeriod ?? '') == $i ? 'selected' : '' }}>
                                             {{ $i }}限
                                         </option>
@@ -245,7 +246,8 @@
                 - バリデーション / 処理失敗などのエラーメッセージ
             ------------------------------------------------- --}}
             @if (session('success'))
-                <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <div
+                    class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                     {{ session('success') }}
                 </div>
             @endif
@@ -272,10 +274,10 @@
                         すべて
                     </a>
 
-                    @for($f = 1; $f <= 5; $f++)
+                    @for ($f = 1; $f <= 5; $f++)
                         <a
                             href="{{ request()->fullUrlWithQuery(['floor' => $f]) }}"
-                            class="floor-chip {{ request()->query('floor') === (string)$f ? 'active' : '' }}"
+                            class="floor-chip {{ request()->query('floor') === (string) $f ? 'active' : '' }}"
                         >
                             {{ $f }}F
                         </a>
@@ -287,11 +289,13 @@
                 教室カード表示用の初期値
                 - 表示日
                 - 表示する開始時限 / 終了時限
+                - 時限設定
             ------------------------------------------------- --}}
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
                 $loopStart = $startPeriod ?? 1;
                 $loopEnd = $endPeriod ?? 6;
+                $periods = config('period');
             @endphp
 
             {{-- -------------------------------------------------
@@ -320,16 +324,6 @@
                                     - pending / reserved / in_use などは押せない状態にする
                                 */
                                 $status = $room->getStatusForPeriod($displayDate, $period, auth()->id());
-
-                                $times = [
-                                    1 => ['09:10', '10:40'],
-                                    2 => ['10:50', '12:20'],
-                                    3 => ['13:00', '14:30'],
-                                    4 => ['14:40', '16:10'],
-                                    5 => ['16:20', '17:50'],
-                                    6 => ['18:00', '19:30'],
-                                ];
-
                                 $isTarget = isset($startPeriod) || isset($endPeriod);
                                 $isAvailable = ($status === 'available');
 
@@ -341,18 +335,21 @@
                                 ], false);
 
                                 $linkUrl = route('user.precautions', ['next' => $nextPath]);
+
+                                $periodStartTime = $periods[$period]['start_time'] ?? '--:--';
+                                $periodEndTime = $periods[$period]['end_time'] ?? '--:--';
                             @endphp
 
                             <a
                                 class="time-card {{ $status }} {{ $isTarget ? 'target-period' : '' }} {{ !$isAvailable ? 'locked' : '' }}"
                                 data-period="{{ $period }}"
                                 data-base-href="{{ $linkUrl }}"
-                                @if($isAvailable) href="{{ $linkUrl }}" @else aria-disabled="true" @endif
+                                @if ($isAvailable) href="{{ $linkUrl }}" @else aria-disabled="true" @endif
                             >
                                 {{-- PC表示用レイアウト --}}
                                 <div class="pc-layout">
-                                    <div class="time-main">{{ $times[$period][0] }}</div>
-                                    <div class="time-sub">~{{ $times[$period][1] }}</div>
+                                    <div class="time-main">{{ $periodStartTime }}</div>
+                                    <div class="time-sub">~{{ $periodEndTime }}</div>
                                     <div class="floor pc-only">{{ $room->floor }}階</div>
 
                                     {{-- 利用状態ラベル --}}
@@ -360,11 +357,11 @@
                                         <div class="available-label {{ !$isAvailable ? 'hidden' : '' }}">利用可能</div>
 
                                         <div class="unavailable-label {{ $isAvailable ? 'hidden' : '' }}">
-                                            @if($status === 'pending')
+                                            @if ($status === 'pending')
                                                 申請中
-                                            @elseif($status === 'reserved')
+                                            @elseif ($status === 'reserved')
                                                 予約済み
-                                            @elseif($status === 'in_use')
+                                            @elseif ($status === 'in_use')
                                                 利用中
                                             @else
                                                 利用不可
@@ -387,20 +384,20 @@
                                     {{-- 時間・利用状態 --}}
                                     <div class="sp-info-box">
                                         <div class="sp-time-row">
-                                            <span class="time-main">{{ $times[$period][0] }}</span>
+                                            <span class="time-main">{{ $periodStartTime }}</span>
                                             <span class="tilde">~</span>
-                                            <span class="time-sub">{{ $times[$period][1] }}</span>
+                                            <span class="time-sub">{{ $periodEndTime }}</span>
                                         </div>
 
                                         <div class="sp-status-area">
                                             <span class="available-label {{ !$isAvailable ? 'hidden' : '' }}">利用可能</span>
 
                                             <span class="unavailable-label {{ $isAvailable ? 'hidden' : '' }}">
-                                                @if($status === 'pending')
+                                                @if ($status === 'pending')
                                                     申請中
-                                                @elseif($status === 'reserved')
+                                                @elseif ($status === 'reserved')
                                                     予約済み
-                                                @elseif($status === 'in_use')
+                                                @elseif ($status === 'in_use')
                                                     利用中
                                                 @else
                                                     利用不可

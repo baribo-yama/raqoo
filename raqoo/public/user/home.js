@@ -155,6 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
        05. ステータス表示用データ
        - DB enum に合わせて判定する
        - pending / reserved / in_use / cancelled / finished
+       - develop 側の互換ステータスも表示崩れ防止として吸収する
     ========================================= */
     function statusMeta(status) {
         switch (status) {
@@ -162,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return { text: "申請中", cls: "my-badge pending" };
 
             case "reserved":
+            case "approved":
                 return { text: "予約済み", cls: "my-badge reserved" };
 
             case "in_use":
@@ -172,6 +174,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             case "finished":
                 return { text: "利用完了", cls: "my-badge completed" };
+
+            case "completed":
+                return { text: "完了", cls: "my-badge completed" };
+
+            case "rejected":
+                return { text: "却下", cls: "my-badge rejected" };
 
             default:
                 return { text: status || "不明", cls: "my-badge other" };
@@ -212,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const reservations = await response.json();
 
             const priority = (status) => {
-                if (status === "reserved") {
+                if (status === "reserved" || status === "approved") {
                     return 0;
                 }
 
@@ -251,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
             reservations.forEach((reservation) => {
                 const meta = statusMeta(reservation.status);
                 const times = timeTable[reservation.period] || ["--:--", "--:--"];
-                const isReserved = reservation.status === "reserved";
+                const isReserved = reservation.status === "reserved" || reservation.status === "approved";
 
                 const card = document.createElement("div");
                 card.className = `my-card ${isReserved ? "is-approved" : ""}`;
@@ -404,6 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        11. 予約リンク内の日付を書き換える
+       - next パラメータ内の date も URLSearchParams で安全に更新する
     ========================================= */
     function rewriteReservationUrl(href, date) {
         let nextHref = href;
@@ -446,6 +455,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     "reserved",
                     "in_use",
                     "unavailable",
+                    "conflict",
                     "locked"
                 );
 
@@ -541,6 +551,9 @@ document.addEventListener("DOMContentLoaded", () => {
             reserved: "予約済み",
             in_use: "利用中",
             unavailable: "利用不可",
+            conflict: "同時刻に予約あり",
+            cancelled: "キャンセル",
+            finished: "利用完了",
         };
 
         const label = statusData?.lesson_title ?? statusLabels[status] ?? "利用不可";
@@ -604,6 +617,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             "reserved",
                             "in_use",
                             "unavailable",
+                            "conflict",
                             "locked"
                         );
 
