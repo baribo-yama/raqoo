@@ -28,6 +28,8 @@
             予約申請可能時間帯<br>
             月～金曜日：9:10～19:30<br>
             土・日・長期休暇期間：10:50～17:50<br>
+            <script src="{{ asset('user/home.js') }}"></script>
+</body>
             </div>
         </div>
     </div>
