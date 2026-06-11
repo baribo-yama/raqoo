@@ -21,7 +21,7 @@
     {{-- ユーティリティCSS / アイコン --}}
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons/ionicons.js"></script>
 </head>
 
 <body>
@@ -53,9 +53,6 @@
 
             {{-- -------------------------------------------------
                 ログインユーザー情報
-                - 学籍番号
-                - ユーザー名
-                ※ 未ログイン / 未設定時は代替テキストを表示
             ------------------------------------------------- --}}
             <div class="profile-box">
                 <div class="profile-icon">
@@ -73,14 +70,9 @@
 
             {{-- -------------------------------------------------
                 検索フォーム
-                - 日付
-                - 利用時限
-                - 利用人数
-                - floor パラメータがある場合は保持
             ------------------------------------------------- --}}
             <div class="max-w-4xl mx-auto mb-8">
                 <form action="{{ route('user.home.index') }}" method="GET" class="search-card">
-                    {{-- 階数絞り込み中に検索しても、選択中の階数を維持する --}}
                     @if (request('floor'))
                         <input type="hidden" name="floor" value="{{ request('floor') }}">
                     @endif
@@ -103,8 +95,7 @@
                             <label class="block text-sm font-bold text-gray-700 mb-2">利用時限 (開始〜終了)</label>
 
                             <div class="flex items-center space-x-2">
-                                <select name="start_period"
-                                    class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                                <select name="start_period" class="w-full rounded-md border-gray-300 shadow-sm p-2 border">
                                     <option value="">指定なし</option>
 
                                     @for ($i = 1; $i <= 6; $i++)
@@ -155,10 +146,6 @@
 
             {{-- -------------------------------------------------
                 日付表示・予約状況エリア
-                - 7日分の日付タブ
-                - 現在日付表示
-                - 予約ステータス凡例
-                - スマホ用予約状況シート
             ------------------------------------------------- --}}
             <div class="center-wrap">
                 {{-- 日付タブ --}}
@@ -177,7 +164,6 @@
                     </button>
 
                     @php
-                        // 今日から7日分の日付タブを生成するための曜日ラベル
                         $weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
                         $baseDate = now();
                     @endphp
@@ -210,7 +196,6 @@
                 {{-- 現在表示中の日付 --}}
                 <div class="date-display">
                     @php
-                        // 初期表示用の日付。JS側で日付切り替え時に表示更新する想定
                         $week = ['日', '月', '火', '水', '木', '金', '土'];
                         $today = now();
                     @endphp
@@ -242,12 +227,9 @@
 
             {{-- -------------------------------------------------
                 フラッシュメッセージ
-                - 予約作成成功などの成功メッセージ
-                - バリデーション / 処理失敗などのエラーメッセージ
             ------------------------------------------------- --}}
             @if (session('success'))
-                <div
-                    class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <div class="alert alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                     {{ session('success') }}
                 </div>
             @endif
@@ -260,8 +242,6 @@
 
             {{-- -------------------------------------------------
                 階数フィルター
-                - 「すべて」または 1F〜5F で教室を絞り込む
-                - 現在選択中の階数には active クラスを付与
             ------------------------------------------------- --}}
             <div class="floor-filter-container">
                 <div class="floor-filter-label">階数で絞り込み</div>
@@ -287,21 +267,36 @@
 
             {{-- -------------------------------------------------
                 教室カード表示用の初期値
-                - 表示日
-                - 表示する開始時限 / 終了時限
-                - 時限設定
             ------------------------------------------------- --}}
             @php
                 $displayDate = $date ?? request()->query('date', date('Y-m-d'));
                 $loopStart = $startPeriod ?? 1;
                 $loopEnd = $endPeriod ?? 6;
                 $periods = config('period');
+
+                /*
+                    教室カード用ステータス表記
+                    - Blade初期表示とhome.js更新後の表示を合わせる
+                    - 未定義ステータスは安全側で「利用不可」
+                */
+                $roomStatusLabels = [
+                    'available' => '利用可能',
+                    'selecting' => '選択中',
+                    'pending' => '申請中',
+                    'reserved' => '予約済み',
+                    'approved' => '予約済み',
+                    'in_use' => '利用中',
+                    'cancelled' => 'キャンセル',
+                    'finished' => '利用完了',
+                    'completed' => '完了',
+                    'rejected' => '却下',
+                    'unavailable' => '利用不可',
+                    'conflict' => '同時刻に予約あり',
+                ];
             @endphp
 
             {{-- -------------------------------------------------
                 教室一覧
-                - 教室ごとに利用時限カードを表示
-                - 利用可能な時限のみ予約画面へ遷移可能
             ------------------------------------------------- --}}
             @foreach ($rooms as $room)
                 <div class="room-group" data-room-id="{{ $room->id }}">
@@ -319,15 +314,14 @@
                             @php
                                 /*
                                     時限カード表示用の状態管理
-                                    - getStatusForPeriod(): 指定日・指定時限の教室利用状態を取得
                                     - available の場合のみ予約リンクを有効化
-                                    - pending / reserved / in_use などは押せない状態にする
+                                    - それ以外は押せない状態にする
                                 */
                                 $status = $room->getStatusForPeriod($displayDate, $period, auth()->id());
                                 $isTarget = isset($startPeriod) || isset($endPeriod);
                                 $isAvailable = ($status === 'available');
+                                $statusLabel = $roomStatusLabels[$status] ?? '利用不可';
 
-                                // 注意事項画面を経由して予約作成画面へ進むためのURL
                                 $nextPath = route('user.reservations.create', [
                                     'room_id' => $room->id,
                                     'date' => $displayDate,
@@ -354,18 +348,12 @@
 
                                     {{-- 利用状態ラベル --}}
                                     <div class="status-area">
-                                        <div class="available-label {{ !$isAvailable ? 'hidden' : '' }}">利用可能</div>
+                                        <div class="available-label {{ !$isAvailable ? 'hidden' : '' }}">
+                                            利用可能
+                                        </div>
 
                                         <div class="unavailable-label {{ $isAvailable ? 'hidden' : '' }}">
-                                            @if ($status === 'pending')
-                                                申請中
-                                            @elseif ($status === 'reserved')
-                                                予約済み
-                                            @elseif ($status === 'in_use')
-                                                利用中
-                                            @else
-                                                利用不可
-                                            @endif
+                                            {{ $statusLabel }}
                                         </div>
                                     </div>
 
@@ -390,25 +378,21 @@
                                         </div>
 
                                         <div class="sp-status-area">
-                                            <span class="available-label {{ !$isAvailable ? 'hidden' : '' }}">利用可能</span>
+                                            <span class="available-label {{ !$isAvailable ? 'hidden' : '' }}">
+                                                利用可能
+                                            </span>
 
                                             <span class="unavailable-label {{ $isAvailable ? 'hidden' : '' }}">
-                                                @if ($status === 'pending')
-                                                    申請中
-                                                @elseif ($status === 'reserved')
-                                                    予約済み
-                                                @elseif ($status === 'in_use')
-                                                    利用中
-                                                @else
-                                                    利用不可
-                                                @endif
+                                                {{ $statusLabel }}
                                             </span>
                                         </div>
                                     </div>
 
                                     {{-- 予約可能時のみ表示するスマホ用アクション --}}
                                     <div class="sp-action-box">
-                                        <span class="sp-reserve-btn {{ !$isAvailable ? 'hidden' : '' }}">予約する</span>
+                                        <span class="sp-reserve-btn {{ !$isAvailable ? 'hidden' : '' }}">
+                                            予約する
+                                        </span>
                                     </div>
                                 </div>
                             </a>

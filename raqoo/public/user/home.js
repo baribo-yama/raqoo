@@ -36,11 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        02. サイドバー開閉処理
-       - 1024px以下でハンバーガーメニューを有効化
-       - サイドバー外クリックで閉じる
-       - オーバーレイクリックで閉じる
-       - ESCキーで閉じる
-       - PC幅に戻ったら開閉状態をリセットする
     ========================================= */
     const toggleButton = document.querySelector(".nav-toggle");
     const navigation = document.querySelector(".navigation");
@@ -153,36 +148,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        05. ステータス表示用データ
-       - DB enum に合わせて判定する
-       - pending / reserved / in_use / cancelled / finished
-       - develop 側の互換ステータスも表示崩れ防止として吸収する
     ========================================= */
+    const roomStatusClasses = [
+        "available",
+        "selecting",
+        "pending",
+        "reserved",
+        "approved",
+        "in_use",
+        "unavailable",
+        "conflict",
+        "cancelled",
+        "finished",
+        "completed",
+        "rejected",
+        "locked",
+    ];
+
+    const roomStatusLabels = {
+        available: "利用可能",
+        selecting: "選択中",
+        pending: "申請中",
+        reserved: "予約済み",
+        approved: "予約済み",
+        in_use: "利用中",
+        cancelled: "キャンセル",
+        finished: "利用完了",
+        completed: "完了",
+        rejected: "却下",
+        unavailable: "利用不可",
+        conflict: "同時刻に予約あり",
+    };
+
+    function getRoomStatusLabel(status, statusData = null) {
+        if (statusData?.lesson_title) {
+            return statusData.lesson_title;
+        }
+
+        return roomStatusLabels[status] ?? "利用不可";
+    }
+
     function statusMeta(status) {
+        const text = roomStatusLabels[status] ?? status ?? "不明";
+
         switch (status) {
             case "pending":
-                return { text: "申請中", cls: "my-badge pending" };
+                return { text, cls: "my-badge pending" };
 
             case "reserved":
             case "approved":
                 return { text: "予約済み", cls: "my-badge reserved" };
 
             case "in_use":
-                return { text: "利用中", cls: "my-badge in_use" };
+                return { text, cls: "my-badge in_use" };
 
             case "cancelled":
-                return { text: "キャンセル", cls: "my-badge cancelled" };
+                return { text, cls: "my-badge cancelled" };
 
             case "finished":
-                return { text: "利用完了", cls: "my-badge completed" };
-
             case "completed":
-                return { text: "完了", cls: "my-badge completed" };
+                return { text, cls: "my-badge completed" };
 
             case "rejected":
-                return { text: "却下", cls: "my-badge rejected" };
+                return { text, cls: "my-badge rejected" };
+
+            case "selecting":
+                return { text, cls: "my-badge selecting" };
 
             default:
-                return { text: status || "不明", cls: "my-badge other" };
+                return { text, cls: "my-badge other" };
         }
     }
 
@@ -412,7 +446,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        11. 予約リンク内の日付を書き換える
-       - next パラメータ内の date も URLSearchParams で安全に更新する
     ========================================= */
     function rewriteReservationUrl(href, date) {
         let nextHref = href;
@@ -444,69 +477,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* =========================================
-       12. 予約状況取得前に教室カードを初期化
+       12. 教室カードの予約リンク日付だけ更新する
+       - 表示ラベルはここでは触らない
+       - API失敗時に「読み込み中...」で止まる問題を防ぐ
     ========================================= */
-    function resetRoomCards(date) {
-        document.querySelectorAll(".room-group").forEach((roomGroup) => {
-            roomGroup.querySelectorAll(".time-card").forEach((card) => {
-                card.classList.remove(
-                    "available",
-                    "pending",
-                    "reserved",
-                    "in_use",
-                    "unavailable",
-                    "conflict",
-                    "locked"
-                );
+    function updateRoomCardLinks(date) {
+        document.querySelectorAll(".room-group .time-card").forEach((card) => {
+            const reserveBtn = card.querySelector(".reserve-btn") || card.querySelector(".sp-reserve-btn");
 
-                const availableLabels = card.querySelectorAll(".available-label");
-                const unavailableLabels = card.querySelectorAll(".unavailable-label");
-                const reserveButtons = card.querySelectorAll(".reserve-btn, .sp-reserve-btn");
+            let href =
+                reserveBtn?.getAttribute("href") ||
+                reserveBtn?.getAttribute("data-href") ||
+                card.dataset.baseHref;
 
-                availableLabels.forEach((label) => {
-                    label.classList.add("hidden");
-                });
+            if (!href || typeof href !== "string") {
+                return;
+            }
 
-                unavailableLabels.forEach((label) => {
-                    label.classList.remove("hidden");
-                    label.textContent = "読み込み中...";
-                });
+            href = rewriteReservationUrl(href, date);
 
-                reserveButtons.forEach((button) => {
-                    button.classList.add("hidden");
-                });
+            if (reserveBtn?.hasAttribute("href")) {
+                reserveBtn.setAttribute("href", href);
+            }
 
-                const reserveBtn = card.querySelector(".reserve-btn") || card.querySelector(".sp-reserve-btn");
+            if (reserveBtn?.hasAttribute("data-href")) {
+                reserveBtn.setAttribute("data-href", href);
+            }
 
-                if (!reserveBtn) {
-                    return;
-                }
+            card.dataset.baseHref = href;
 
-                let href =
-                    reserveBtn.getAttribute("href") ||
-                    reserveBtn.getAttribute("data-href") ||
-                    card.dataset.baseHref;
-
-                if (!href || typeof href !== "string") {
-                    return;
-                }
-
-                href = rewriteReservationUrl(href, date);
-
-                if (reserveBtn.hasAttribute("href")) {
-                    reserveBtn.setAttribute("href", href);
-                }
-
-                if (reserveBtn.hasAttribute("data-href")) {
-                    reserveBtn.setAttribute("data-href", href);
-                }
-
-                card.dataset.baseHref = href;
-
-                if (card.hasAttribute("href")) {
-                    card.setAttribute("href", href);
-                }
-            });
+            if (card.hasAttribute("href")) {
+                card.setAttribute("href", href);
+            }
         });
     }
 
@@ -527,6 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         availableLabels.forEach((label) => {
             label.classList.remove("hidden");
+            label.textContent = "利用可能";
         });
 
         unavailableLabels.forEach((label) => {
@@ -546,17 +549,7 @@ document.addEventListener("DOMContentLoaded", () => {
         card.classList.add("locked");
         card.setAttribute("aria-disabled", "true");
 
-        const statusLabels = {
-            pending: "申請中",
-            reserved: "予約済み",
-            in_use: "利用中",
-            unavailable: "利用不可",
-            conflict: "同時刻に予約あり",
-            cancelled: "キャンセル",
-            finished: "利用完了",
-        };
-
-        const label = statusData?.lesson_title ?? statusLabels[status] ?? "利用不可";
+        const label = getRoomStatusLabel(status, statusData);
 
         const availableLabels = card.querySelectorAll(".available-label");
         const unavailableLabels = card.querySelectorAll(".unavailable-label");
@@ -586,41 +579,51 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        resetRoomCards(date);
+        updateRoomCardLinks(date);
 
         fetch(`/user/room-status?date=${encodeURIComponent(date)}`, {
             cache: "no-store",
         })
-            .then((response) => {
+            .then(async (response) => {
                 if (!response.ok) {
+                    const errorText = await response.text();
+
+                    console.error("教室予約状況APIエラー:", response.status);
+                    console.error("教室予約状況APIレスポンス:", errorText);
+
                     throw new Error("教室予約状況の取得に失敗しました。");
                 }
 
                 return response.json();
             })
             .then((data) => {
+                const statusList = Array.isArray(data)
+                    ? data
+                    : data.statuses ?? data.data ?? [];
+
+                if (!Array.isArray(statusList)) {
+                    console.error("教室予約状況APIの形式が不正です:", data);
+                    throw new Error("教室予約状況APIの形式が不正です。");
+                }
+
+                console.log("教室予約状況API:", statusList);
+
                 roomGroups.forEach((roomGroup) => {
                     const roomId = roomGroup.dataset.roomId;
 
                     roomGroup.querySelectorAll(".time-card").forEach((card) => {
                         const period = Number(card.dataset.period);
 
-                        const statusData = data.find((item) => {
-                            return item.room_id == roomId && Number(item.period) === period;
+                        const statusData = statusList.find((item) => {
+                            const itemRoomId = item.room_id ?? item.roomId;
+                            const itemPeriod = item.period ?? item.period_id;
+
+                            return itemRoomId == roomId && Number(itemPeriod) === period;
                         });
 
-                        const status = statusData ? statusData.status : "available";
+                        const status = statusData?.status ?? "available";
 
-                        card.classList.remove(
-                            "available",
-                            "pending",
-                            "reserved",
-                            "in_use",
-                            "unavailable",
-                            "conflict",
-                            "locked"
-                        );
-
+                        card.classList.remove(...roomStatusClasses);
                         card.classList.add(status);
 
                         if (status === "available") {
@@ -632,6 +635,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             })
             .catch((error) => {
+                /*
+                    API失敗時はBlade初期表示を残す。
+                    ここで「読み込み中...」などへ上書きしない。
+                */
                 console.error("ステータス取得エラー:", error);
             });
     }
