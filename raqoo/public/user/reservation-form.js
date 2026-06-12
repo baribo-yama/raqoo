@@ -32,41 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
         membersHidden.value = filled.join('\n');
     });
 
-    const selectingMeta = document.getElementById('selectingMeta');
-    const roomId = selectingMeta.dataset.roomId;
-    const date = selectingMeta.dataset.date;
-    const toggleUrl = selectingMeta.dataset.toggleUrl;
-    const csrf = document.querySelector('meta[name="csrf-token"]').content;
-
-    async function toggleSelectingApi(period, action) {
-        try {
-            const res = await fetch(toggleUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrf,
-                },
-                body: JSON.stringify({
-                    room_id: roomId,
-                    date: date,
-                    period: period,
-                    action: action,
-                }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok || !data.success) {
-                return false;
-            }
-
-            return true;
-        } catch (e) {
-            console.error('selecting toggle error:', e);
-            return false;
-        }
-    }
-
     const checkboxes = document.querySelectorAll('.period-checkbox');
     const instructionText = document.getElementById('instructionText');
 
@@ -77,17 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    async function uncheckWithUnlock(cb, label) {
-        if (cb.checked) {
-            const period = parseInt(cb.value, 10);
-            cb.checked = false;
-            label.classList.remove('bg-blue-50', 'border-blue-400');
-            label.classList.add('border-gray-200');
-            await toggleSelectingApi(period, 'unlock');
-        }
-    }
-
-    async function updateFormState() {
+    function updateFormState() {
         const hasMembers = membersProxy.value.trim().length > 0;
 
         if (hasMembers) {
@@ -122,8 +77,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (!hasMembers) {
+                if (cb.checked) {
+                    cb.checked = false;
+                    label.classList.remove('bg-blue-50', 'border-blue-400');
+                }
                 cb.disabled = true;
-                await uncheckWithUnlock(cb, label);
                 label.classList.add('border-gray-200');
                 continue;
             }
@@ -131,8 +89,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const isConsecutive = (currentPeriod === mainPeriod - 1) || (currentPeriod === mainPeriod + 1);
 
             if (!isConsecutive) {
+                if (cb.checked) {
+                    cb.checked = false;
+                    label.classList.remove('bg-blue-50', 'border-blue-400');
+                }
                 cb.disabled = true;
-                await uncheckWithUnlock(cb, label);
                 label.classList.add('opacity-50', 'cursor-not-allowed');
             } else if (extraCheckedCount >= 1 && !cb.checked) {
                 cb.disabled = true;
@@ -147,28 +108,16 @@ document.addEventListener('DOMContentLoaded', function() {
     membersProxy.addEventListener('input', updateFormState);
 
     checkboxes.forEach(cb => {
-        cb.addEventListener('change', async function() {
+        cb.addEventListener('change', function() {
             const label = document.getElementById('label-' + this.value);
-            const period = parseInt(this.value, 10);
             const isOriginal = this.dataset.original === "1";
 
             if (isOriginal) return;
 
             if (this.checked) {
-                const success = await toggleSelectingApi(period, 'lock');
-
-                if (!success) {
-                    this.checked = false;
-                    alert('その時間帯はすでに他の人が選択中です。');
-                    updateFormState();
-                    return;
-                }
-
                 label.classList.add('bg-blue-50', 'border-blue-400');
                 label.classList.remove('border-gray-200');
             } else {
-                await toggleSelectingApi(period, 'unlock');
-
                 label.classList.remove('bg-blue-50', 'border-blue-400');
                 label.classList.add('border-gray-200');
             }
