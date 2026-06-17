@@ -742,7 +742,7 @@ body.with-sidebar {
 
 
 /* =========================================
-   13. 教室カード内テキスト
+   13. 教室カード内テキスト（PCレイアウト）
 ========================================= */
 .pc-layout .time-main {
     font-size: 32px;
@@ -784,6 +784,7 @@ body.with-sidebar {
     font-size: 15px;
     font-weight: 900;
     padding-bottom: 5px;
+    min-height: 1.2em;
 }
 
 .pc-layout .available-label {
@@ -792,6 +793,24 @@ body.with-sidebar {
 
 .time-card:hover:not(.locked) .pc-layout .available-label {
     color: #fff;
+}
+
+
+/* =========================================
+   13-b. 教室カード内テキスト（スマホレイアウト）
+========================================= */
+.sp-layout .available-label {
+    color: #3b82f6;
+    font-weight: 900;
+}
+
+.sp-layout .unavailable-label {
+    color: #6b7280;
+    font-weight: 900;
+}
+
+.sp-layout .sp-status-area {
+    min-height: 1.2em;
 }
 
 
@@ -809,6 +828,11 @@ body.with-sidebar {
     color: #9ca3af;
 }
 
+.time-card.unavailable .sp-layout .unavailable-label,
+.time-card.conflict .sp-layout .unavailable-label {
+    color: #9ca3af;
+}
+
 .time-card.pending {
     background-color: #fffbeb;
     border: 2px solid #fcd34d;
@@ -818,7 +842,8 @@ body.with-sidebar {
     color: #b45309;
 }
 
-.time-card.pending .pc-layout .unavailable-label {
+.time-card.pending .pc-layout .unavailable-label,
+.time-card.pending .sp-layout .unavailable-label {
     color: #d97706;
 }
 
@@ -831,7 +856,8 @@ body.with-sidebar {
     color: #1e3a8a;
 }
 
-.time-card.reserved .pc-layout .unavailable-label {
+.time-card.reserved .pc-layout .unavailable-label,
+.time-card.reserved .sp-layout .unavailable-label {
     color: #2563eb;
 }
 
@@ -844,7 +870,8 @@ body.with-sidebar {
     color: #064e3b;
 }
 
-.time-card.in_use .pc-layout .unavailable-label {
+.time-card.in_use .pc-layout .unavailable-label,
+.time-card.in_use .sp-layout .unavailable-label {
     color: #059669;
 }
 
@@ -852,6 +879,13 @@ body.with-sidebar {
     background-color: #f0f9ff !important;
     border: 2px solid #3b82f6 !important;
     z-index: 10;
+}
+
+.time-card .available-label.hidden,
+.time-card .unavailable-label.hidden,
+.time-card .reserve-btn.hidden,
+.time-card .sp-reserve-btn.hidden {
+    display: none !important;
 }
 
 

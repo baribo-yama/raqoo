@@ -1,38 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
-    /*
-        home.js
-        役割：
-        - 日付タブの表示・切り替え
-        - 選択日の予約状況取得
-        - 予約カードのリンク / ステータス更新
-        - スマホ用「予約状況を見る」シートの表示
-        - スマホ / タブレット用サイドバー開閉
-    */
-
+    console.log("[raqoo] home.js loaded: v-complete-2026-06-17");
     /* =========================================
        01. 共通関数
     ========================================= */
     const jaWeek = ["日", "月", "火", "水", "木", "金", "土"];
 
-    const pad2 = (number) => {
-        return String(number).padStart(2, "0");
-    };
+    const pad2 = (number) => String(number).padStart(2, "0");
 
-    const toISO = (date) => {
-        return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
-    };
+    const toISO = (date) =>
+        `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 
-    const toMMDD = (date) => {
-        return `${pad2(date.getMonth() + 1)}/${pad2(date.getDate())}`;
-    };
+    const toMMDD = (date) => `${pad2(date.getMonth() + 1)}/${pad2(date.getDate())}`;
 
-    const isMobile560 = () => {
-        return window.matchMedia("(max-width: 560px)").matches;
-    };
+    const isMobile560 = () => window.matchMedia("(max-width: 560px)").matches;
 
-    const isTabletOrMobile = () => {
-        return window.matchMedia("(max-width: 1024px)").matches;
-    };
+    const isTabletOrMobile = () => window.matchMedia("(max-width: 1024px)").matches;
 
     /* =========================================
        02. サイドバー開閉処理
@@ -45,20 +27,14 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelector("#navBackdrop");
 
     const closeMenu = () => {
-        if (!toggleButton || !navigation) {
-            return;
-        }
-
+        if (!toggleButton || !navigation) return;
         document.body.classList.remove("nav-open");
         navigation.dataset.open = "false";
         toggleButton.setAttribute("aria-expanded", "false");
     };
 
     const openMenu = () => {
-        if (!toggleButton || !navigation || !isTabletOrMobile()) {
-            return;
-        }
-
+        if (!toggleButton || !navigation || !isTabletOrMobile()) return;
         document.body.classList.add("nav-open");
         navigation.dataset.open = "true";
         toggleButton.setAttribute("aria-expanded", "true");
@@ -66,10 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (toggleButton && navigation) {
         toggleButton.addEventListener("click", (event) => {
-            if (!isTabletOrMobile()) {
-                return;
-            }
-
+            if (!isTabletOrMobile()) return;
             event.stopPropagation();
 
             if (document.body.classList.contains("nav-open")) {
@@ -84,13 +57,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         document.addEventListener("click", (event) => {
-            if (!isTabletOrMobile()) {
-                return;
-            }
-
-            if (!document.body.classList.contains("nav-open")) {
-                return;
-            }
+            if (!isTabletOrMobile()) return;
+            if (!document.body.classList.contains("nav-open")) return;
 
             if (
                 !navigation.contains(event.target) &&
@@ -105,15 +73,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") {
-                closeMenu();
-            }
+            if (event.key === "Escape") closeMenu();
         });
 
         window.addEventListener("resize", () => {
-            if (!isTabletOrMobile()) {
-                closeMenu();
-            }
+            if (!isTabletOrMobile()) closeMenu();
         });
     }
 
@@ -180,11 +144,41 @@ document.addEventListener("DOMContentLoaded", () => {
         conflict: "同時刻に予約あり",
     };
 
-    function getRoomStatusLabel(status, statusData = null) {
-        if (statusData?.lesson_title) {
-            return statusData.lesson_title;
+    // ▼ status文字列を正規化する（大文字/前後空白/別名の揺れを吸収）
+    function normalizeStatus(rawStatus) {
+        if (rawStatus === null || rawStatus === undefined) return "available";
+
+        let status = String(rawStatus).trim().toLowerCase();
+
+        // よくある別名を正規化
+        const aliasMap = {
+            ok: "available",
+            free: "available",
+            open: "available",
+            empty: "available",
+            booked: "reserved",
+            reserve: "reserved",
+            using: "in_use",
+            inuse: "in_use",
+            "in-use": "in_use",
+            apply: "pending",
+            applying: "pending",
+            unavailable_room: "unavailable",
+        };
+
+        if (aliasMap[status]) status = aliasMap[status];
+
+        // 既知のステータスでなければ「利用不可」を表すクラスへ寄せる
+        if (!roomStatusClasses.includes(status)) {
+            console.warn("[raqoo] 未知のstatus値を検出。利用不可として扱います:", rawStatus);
+            return "unavailable";
         }
 
+        return status;
+    }
+
+    function getRoomStatusLabel(status, statusData = null) {
+        if (statusData?.lesson_title) return statusData.lesson_title;
         return roomStatusLabels[status] ?? "利用不可";
     }
 
@@ -194,27 +188,20 @@ document.addEventListener("DOMContentLoaded", () => {
         switch (status) {
             case "pending":
                 return { text, cls: "my-badge pending" };
-
             case "reserved":
             case "approved":
                 return { text: "予約済み", cls: "my-badge reserved" };
-
             case "in_use":
                 return { text, cls: "my-badge in_use" };
-
             case "cancelled":
                 return { text, cls: "my-badge cancelled" };
-
             case "finished":
             case "completed":
                 return { text, cls: "my-badge completed" };
-
             case "rejected":
                 return { text, cls: "my-badge rejected" };
-
             case "selecting":
                 return { text, cls: "my-badge selecting" };
-
             default:
                 return { text, cls: "my-badge other" };
         }
@@ -236,53 +223,42 @@ document.addEventListener("DOMContentLoaded", () => {
        07. 自分の予約状況シートを描画
     ========================================= */
     async function renderMyReservationsSheet(dateISO) {
-        if (!sheetBody) {
-            return;
-        }
+        if (!sheetBody) return;
 
         sheetBody.textContent = "読み込み中...";
 
         try {
-            const response = await fetch(`/user/my-reservations?date=${encodeURIComponent(dateISO)}`, {
-                cache: "no-store",
-            });
+            const response = await fetch(
+                `/user/my-reservations?date=${encodeURIComponent(dateISO)}`,
+                { cache: "no-store", headers: { Accept: "application/json" } }
+            );
 
             if (!response.ok) {
-                throw new Error("予約情報の取得に失敗しました。");
+                throw new Error(`予約情報の取得に失敗しました (HTTP ${response.status})`);
             }
 
             const reservations = await response.json();
+            const list = Array.isArray(reservations)
+                ? reservations
+                : reservations.reservations ?? reservations.data ?? [];
 
             const priority = (status) => {
-                if (status === "reserved" || status === "approved") {
-                    return 0;
-                }
-
-                if (status === "pending") {
-                    return 1;
-                }
-
+                if (status === "reserved" || status === "approved") return 0;
+                if (status === "pending") return 1;
                 return 9;
             };
 
-            reservations.sort((a, b) => {
+            list.sort((a, b) => {
                 const priorityA = priority(a.status);
                 const priorityB = priority(b.status);
-
-                if (priorityA !== priorityB) {
-                    return priorityA - priorityB;
-                }
-
-                if (a.date === b.date) {
-                    return (a.period || 0) - (b.period || 0);
-                }
-
+                if (priorityA !== priorityB) return priorityA - priorityB;
+                if (a.date === b.date) return (a.period || 0) - (b.period || 0);
                 return String(a.date).localeCompare(String(b.date));
             });
 
             sheetBody.innerHTML = "";
 
-            if (!reservations.length) {
+            if (!list.length) {
                 const emptyDiv = document.createElement("div");
                 emptyDiv.className = "my-empty";
                 emptyDiv.textContent = "この日の予約はありません";
@@ -290,10 +266,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            reservations.forEach((reservation) => {
-                const meta = statusMeta(reservation.status);
+            list.forEach((reservation) => {
+                const normalized = normalizeStatus(reservation.status);
+                const meta = statusMeta(normalized);
                 const times = timeTable[reservation.period] || ["--:--", "--:--"];
-                const isReserved = reservation.status === "reserved" || reservation.status === "approved";
+                const isReserved = normalized === "reserved" || normalized === "approved";
 
                 const card = document.createElement("div");
                 card.className = `my-card ${isReserved ? "is-approved" : ""}`;
@@ -317,33 +294,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const dateItem = document.createElement("div");
                 dateItem.className = "my-item";
-
                 const dateKey = document.createElement("div");
                 dateKey.className = "my-k";
                 dateKey.textContent = "日付";
-
                 const dateVal = document.createElement("div");
                 dateVal.className = "my-v";
                 dateVal.textContent = reservation.date;
-
                 dateItem.appendChild(dateKey);
                 dateItem.appendChild(dateVal);
 
                 const periodItem = document.createElement("div");
                 periodItem.className = "my-item";
-
                 const periodKey = document.createElement("div");
                 periodKey.className = "my-k";
                 periodKey.textContent = "時限";
-
                 const periodVal = document.createElement("div");
                 periodVal.className = "my-v";
                 periodVal.appendChild(document.createTextNode(`${reservation.period}限 `));
-
                 const timeSpan = document.createElement("span");
                 timeSpan.className = "my-time";
                 timeSpan.textContent = `${times[0]}-${times[1]}`;
-
                 periodVal.appendChild(timeSpan);
                 periodItem.appendChild(periodKey);
                 periodItem.appendChild(periodVal);
@@ -359,25 +329,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     detailLink.className = "my-detail";
                     detailLink.textContent = "詳細を見る";
                     detailLink.href = reservation.detail_url;
-
                     actions.appendChild(detailLink);
                 }
 
                 card.appendChild(top);
                 card.appendChild(mid);
                 card.appendChild(actions);
-
                 sheetBody.appendChild(card);
             });
         } catch (error) {
-            console.error(error);
-
+            console.error("[raqoo] my-reservations 取得失敗:", error);
             sheetBody.innerHTML = "";
-
             const errorDiv = document.createElement("div");
             errorDiv.className = "my-empty";
             errorDiv.textContent = "取得に失敗しました";
-
             sheetBody.appendChild(errorDiv);
         }
     }
@@ -386,12 +351,8 @@ document.addEventListener("DOMContentLoaded", () => {
        08. スマホ用予約状況シートのイベント設定
     ========================================= */
     openSheetBtn?.addEventListener("click", () => {
-        if (!isMobile560()) {
-            return;
-        }
-
+        if (!isMobile560()) return;
         const iso = dateInput?.value ? dateInput.value : toISO(new Date());
-
         renderMyReservationsSheet(iso);
         openSheet();
     });
@@ -401,7 +362,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isMobile560() && location.search.includes("date=")) {
         setTimeout(() => {
             const iso = dateInput?.value ? dateInput.value : toISO(new Date());
-
             renderMyReservationsSheet(iso);
             openSheet();
         }, 250);
@@ -425,17 +385,9 @@ document.addEventListener("DOMContentLoaded", () => {
        10. 中央の日付表示を更新
     ========================================= */
     function updateCenterDisplay(date) {
-        if (mainEl) {
-            mainEl.textContent = toMMDD(date);
-        }
-
-        if (wdayEl) {
-            wdayEl.textContent = `（${jaWeek[date.getDay()]}）`;
-        }
-
-        if (dateInput) {
-            dateInput.value = toISO(date);
-        }
+        if (mainEl) mainEl.textContent = toMMDD(date);
+        if (wdayEl) wdayEl.textContent = `（${jaWeek[date.getDay()]}）`;
+        if (dateInput) dateInput.value = toISO(date);
 
         updateRoomStatuses(toISO(date));
 
@@ -467,8 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             nextHref = nextHref.startsWith("http") ? url.href : url.pathname + url.search;
         } catch (error) {
-            console.warn("URLパースエラー。フォールバックとして正規表現を使用します", error);
-
+            console.warn("[raqoo] URLパースエラー。正規表現でフォールバックします", error);
             nextHref = nextHref.replace(/date%3D\d{4}-\d{2}-\d{2}/g, `date%3D${date}`);
             nextHref = nextHref.replace(/date=\d{4}-\d{2}-\d{2}/g, `date=${date}`);
         }
@@ -478,37 +429,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* =========================================
        12. 教室カードの予約リンク日付だけ更新する
-       - 表示ラベルはここでは触らない
-       - API失敗時に「読み込み中...」で止まる問題を防ぐ
     ========================================= */
     function updateRoomCardLinks(date) {
         document.querySelectorAll(".room-group .time-card").forEach((card) => {
-            const reserveBtn = card.querySelector(".reserve-btn") || card.querySelector(".sp-reserve-btn");
+            const reserveBtn =
+                card.querySelector(".reserve-btn") || card.querySelector(".sp-reserve-btn");
 
             let href =
                 reserveBtn?.getAttribute("href") ||
                 reserveBtn?.getAttribute("data-href") ||
                 card.dataset.baseHref;
 
-            if (!href || typeof href !== "string") {
-                return;
-            }
+            if (!href || typeof href !== "string") return;
 
             href = rewriteReservationUrl(href, date);
 
-            if (reserveBtn?.hasAttribute("href")) {
-                reserveBtn.setAttribute("href", href);
-            }
-
-            if (reserveBtn?.hasAttribute("data-href")) {
-                reserveBtn.setAttribute("data-href", href);
-            }
+            if (reserveBtn?.hasAttribute("href")) reserveBtn.setAttribute("href", href);
+            if (reserveBtn?.hasAttribute("data-href")) reserveBtn.setAttribute("data-href", href);
 
             card.dataset.baseHref = href;
-
-            if (card.hasAttribute("href")) {
-                card.setAttribute("href", href);
-            }
+            if (card.hasAttribute("href")) card.setAttribute("href", href);
         });
     }
 
@@ -516,9 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
        13. 利用可能な教室カードの表示に切り替える
     ========================================= */
     function applyAvailableStatus(card) {
-        if (card.dataset.baseHref) {
-            card.setAttribute("href", card.dataset.baseHref);
-        }
+        if (card.dataset.baseHref) card.setAttribute("href", card.dataset.baseHref);
 
         card.classList.remove("locked");
         card.removeAttribute("aria-disabled");
@@ -531,14 +469,8 @@ document.addEventListener("DOMContentLoaded", () => {
             label.classList.remove("hidden");
             label.textContent = "利用可能";
         });
-
-        unavailableLabels.forEach((label) => {
-            label.classList.add("hidden");
-        });
-
-        reserveButtons.forEach((button) => {
-            button.classList.remove("hidden");
-        });
+        unavailableLabels.forEach((label) => label.classList.add("hidden"));
+        reserveButtons.forEach((button) => button.classList.remove("hidden"));
     }
 
     /* =========================================
@@ -555,17 +487,28 @@ document.addEventListener("DOMContentLoaded", () => {
         const unavailableLabels = card.querySelectorAll(".unavailable-label");
         const reserveButtons = card.querySelectorAll(".reserve-btn, .sp-reserve-btn");
 
-        availableLabels.forEach((labelElement) => {
-            labelElement.classList.add("hidden");
-        });
-
+        availableLabels.forEach((labelElement) => labelElement.classList.add("hidden"));
         unavailableLabels.forEach((labelElement) => {
             labelElement.classList.remove("hidden");
             labelElement.textContent = label;
         });
+        reserveButtons.forEach((button) => button.classList.add("hidden"));
+    }
 
-        reserveButtons.forEach((button) => {
-            button.classList.add("hidden");
+    /* =========================================
+       14-b. Blade初期表示へ戻す（API失敗時のフォールバック）
+       - 「読み込み中...」で固まらないようにするための保険
+       - data-* 属性は触らず、ラベル文言は data-init-* があれば復帰
+    ========================================= */
+    function restoreInitialLabels() {
+        document.querySelectorAll(".room-group .time-card").forEach((card) => {
+            const unavailableLabels = card.querySelectorAll(".unavailable-label");
+            unavailableLabels.forEach((label) => {
+                // 「読み込み中...」が残っていたら、安全側の文言に戻す
+                if (label.textContent.includes("読み込み中")) {
+                    label.textContent = "利用不可";
+                }
+            });
         });
     }
 
@@ -574,39 +517,72 @@ document.addEventListener("DOMContentLoaded", () => {
     ========================================= */
     function updateRoomStatuses(date) {
         const roomGroups = document.querySelectorAll(".room-group");
-
-        if (!roomGroups.length) {
-            return;
-        }
+        if (!roomGroups.length) return;
 
         updateRoomCardLinks(date);
 
         fetch(`/user/room-status?date=${encodeURIComponent(date)}`, {
             cache: "no-store",
+            headers: { Accept: "application/json" },
         })
             .then(async (response) => {
                 if (!response.ok) {
-                    const errorText = await response.text();
+                    const errorText = await response.text().catch(() => "");
 
-                    console.error("教室予約状況APIエラー:", response.status);
-                    console.error("教室予約状況APIレスポンス:", errorText);
+                    // HTTPステータス別に原因が分かるようログ出力
+                    let hint = "";
+                    switch (response.status) {
+                        case 401:
+                        case 419:
+                            hint = "セッション切れ/未ログインの可能性。ログインし直してください。";
+                            break;
+                        case 403:
+                            hint = "権限エラー。ルートのミドルウェア設定を確認してください。";
+                            break;
+                        case 404:
+                            hint = "ルート未定義。/user/room-status のルート定義を確認してください。";
+                            break;
+                        case 500:
+                            hint = "サーバー側エラー。getStatusForPeriod 等の処理を確認してください。";
+                            break;
+                        default:
+                            hint = "想定外のHTTPステータスです。";
+                    }
 
-                    throw new Error("教室予約状況の取得に失敗しました。");
+                    console.error(
+                        `[raqoo] room-status APIエラー: HTTP ${response.status} - ${hint}`
+                    );
+                    console.error("[raqoo] レスポンス本文:", errorText.slice(0, 500));
+
+                    throw new Error(`room-status HTTP ${response.status}`);
+                }
+
+                // JSON以外（HTMLのエラーページ等）が返ってきた場合も検知
+                const contentType = response.headers.get("content-type") || "";
+                if (!contentType.includes("application/json")) {
+                    const text = await response.text().catch(() => "");
+                    console.error(
+                        "[raqoo] room-status がJSONを返していません。content-type:",
+                        contentType
+                    );
+                    console.error("[raqoo] レスポンス本文(先頭):", text.slice(0, 500));
+                    throw new Error("room-status response is not JSON");
                 }
 
                 return response.json();
             })
             .then((data) => {
+                // レスポンス形式の揺れを吸収（配列 / {statuses:[]} / {data:[]}）
                 const statusList = Array.isArray(data)
                     ? data
                     : data.statuses ?? data.data ?? [];
 
                 if (!Array.isArray(statusList)) {
-                    console.error("教室予約状況APIの形式が不正です:", data);
-                    throw new Error("教室予約状況APIの形式が不正です。");
+                    console.error("[raqoo] room-status の形式が不正です:", data);
+                    throw new Error("room-status format invalid");
                 }
 
-                console.log("教室予約状況API:", statusList);
+                console.log("[raqoo] room-status 取得成功:", statusList);
 
                 roomGroups.forEach((roomGroup) => {
                     const roomId = roomGroup.dataset.roomId;
@@ -614,14 +590,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     roomGroup.querySelectorAll(".time-card").forEach((card) => {
                         const period = Number(card.dataset.period);
 
+                        // キー名の揺れ（room_id / roomId / classroom_id, period / period_id）を吸収
                         const statusData = statusList.find((item) => {
-                            const itemRoomId = item.room_id ?? item.roomId;
-                            const itemPeriod = item.period ?? item.period_id;
-
-                            return itemRoomId == roomId && Number(itemPeriod) === period;
+                            const itemRoomId =
+                                item.room_id ?? item.roomId ?? item.classroom_id;
+                            const itemPeriod =
+                                item.period ?? item.period_id ?? item.periodId;
+                            return (
+                                String(itemRoomId) === String(roomId) &&
+                                Number(itemPeriod) === period
+                            );
                         });
 
-                        const status = statusData?.status ?? "available";
+                        // status文字列を正規化（大文字/別名/未知値を吸収）
+                        const status = normalizeStatus(statusData?.status);
 
                         card.classList.remove(...roomStatusClasses);
                         card.classList.add(status);
@@ -636,10 +618,12 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch((error) => {
                 /*
-                    API失敗時はBlade初期表示を残す。
-                    ここで「読み込み中...」などへ上書きしない。
+                    API失敗時の保険：
+                    - Blade初期表示を残しつつ、「読み込み中...」が残っていれば文言を戻す
+                    - これで「読み込み中...」のまま固まる問題を防ぐ
                 */
-                console.error("ステータス取得エラー:", error);
+                console.error("[raqoo] ステータス取得エラー:", error);
+                restoreInitialLabels();
             });
     }
 
@@ -647,9 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
        16. 日付タブを描画
     ========================================= */
     function renderStrip() {
-        if (!tabs.length) {
-            return;
-        }
+        if (!tabs.length) return;
 
         tabs.forEach((tab, index) => {
             const date = new Date(startDate.getTime() + index * 86400000);
@@ -657,13 +639,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const dayLabel = tab.querySelector(".day-label");
             const dateLabel = tab.querySelector(".date-label");
 
-            if (dayLabel) {
-                dayLabel.textContent = jaWeek[date.getDay()];
-            }
-
-            if (dateLabel) {
-                dateLabel.textContent = toMMDD(date);
-            }
+            if (dayLabel) dayLabel.textContent = jaWeek[date.getDay()];
+            if (dateLabel) dateLabel.textContent = toMMDD(date);
 
             tab.dataset.date = toISO(date);
 
@@ -688,13 +665,9 @@ document.addEventListener("DOMContentLoaded", () => {
     tabs.forEach((tab) => {
         tab.addEventListener("click", () => {
             const iso = tab.dataset.date;
-
-            if (!iso) {
-                return;
-            }
+            if (!iso) return;
 
             const [year, month, day] = iso.split("-").map(Number);
-
             selectedDate = new Date(year, month - 1, day);
             startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
 
@@ -709,7 +682,6 @@ document.addEventListener("DOMContentLoaded", () => {
     prevBtn?.addEventListener("click", () => {
         selectedDate = new Date(selectedDate.getTime() - 86400000);
         startDate = new Date(startDate.getTime() - 86400000);
-
         updateCenterDisplay(selectedDate);
         renderStrip();
     });
@@ -717,7 +689,6 @@ document.addEventListener("DOMContentLoaded", () => {
     nextBtn?.addEventListener("click", () => {
         selectedDate = new Date(selectedDate.getTime() + 86400000);
         startDate = new Date(startDate.getTime() + 86400000);
-
         updateCenterDisplay(selectedDate);
         renderStrip();
     });
@@ -728,14 +699,10 @@ document.addEventListener("DOMContentLoaded", () => {
     dateInput?.addEventListener("change", () => {
         const [year, month, day] = dateInput.value.split("-").map(Number);
         const date = new Date(year, month - 1, day);
-
-        if (Number.isNaN(date.getTime())) {
-            return;
-        }
+        if (Number.isNaN(date.getTime())) return;
 
         selectedDate = date;
         startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
-
         updateCenterDisplay(selectedDate);
         renderStrip();
     });
