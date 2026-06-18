@@ -4,13 +4,15 @@
 <head>
     {{-- =========================================================
         基本設定・外部ファイル読み込み
-        - 文字コード / レスポンシブ設定
-        - キャッシュ無効化
-        - 共通CSS
-        - 予約詳細画面専用CSS
-        - Tailwind CSS
-        - Ionicons
-        - CSRFトークン
+
+        読み込み順：
+        1. 共通CSS
+        2. Tailwind CSS
+        3. 予約詳細画面専用CSS
+
+        理由：
+        - ホーム画面とサイドバーの見た目を揃える
+        - reservation-detail.css を最後に読み込み、予約詳細画面だけの補正を効かせる
     ========================================================= --}}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,11 +26,11 @@
     <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}?v={{ time() }}">
 
-    {{-- 予約詳細画面専用CSS --}}
-    <link rel="stylesheet" href="{{ asset('user/reservation-detail.css') }}?v={{ time() }}">
-
     {{-- ユーティリティCSS --}}
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+    {{-- 予約詳細画面専用CSS --}}
+    <link rel="stylesheet" href="{{ asset('user/reservation-detail.css') }}?v={{ time() }}">
 
     {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -38,42 +40,23 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
-<body>
+<body class="reservation-detail-page">
     {{-- =========================================================
         全体レイアウト
-        - 左側にサイドバー
+        - 左側に共通サイドバー
         - 右側に予約詳細画面
     ========================================================= --}}
     <div class="layout">
         {{-- 共通サイドバー --}}
         <x-user.sidebar />
 
+        {{-- スマホ用バックドロップ --}}
+        <div class="m-backdrop" id="navBackdrop" aria-hidden="true"></div>
+
         {{-- =====================================================
             メインコンテンツエリア
         ===================================================== --}}
         <div class="content-area">
-
-            {{-- -------------------------------------------------
-                トップバー
-                ※ 現在はCSSで非表示
-                ※ スマホメニューや検索欄として使う想定の残りコード
-            ------------------------------------------------- --}}
-            <div class="topbar">
-                <div class="toggle">
-                    <ion-icon name="menu-outline"></ion-icon>
-                </div>
-
-                <div class="search">
-                    <label>
-                        <input type="text" placeholder="検索...">
-                        <ion-icon name="search-outline"></ion-icon>
-                    </label>
-                </div>
-
-                <div class="user">
-                    <img src="assets/customer01.jpg" alt="">
-                </div>
-            </div>
 
             {{-- -------------------------------------------------
                 予約詳細エリア
@@ -87,8 +70,7 @@
 
                         <a
                             href="{{ route('user.reservations.index') }}"
-                            class="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition duration-200"
-                        >
+                            class="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition duration-200">
                             一覧に戻る
                         </a>
                     </div>
@@ -119,20 +101,19 @@
                                     @elseif ($reservation->status === 'cancelled') bg-gray-100 text-gray-800
                                     @elseif ($reservation->status === 'finished') bg-indigo-100 text-indigo-800
                                     @else bg-gray-100 text-gray-800
-                                    @endif"
-                            >
+                                    @endif">
                                 @if ($reservation->status === 'pending')
-                                    承認待ち
+                                承認待ち
                                 @elseif ($reservation->status === 'reserved')
-                                    予約済み
+                                予約済み
                                 @elseif ($reservation->status === 'in_use')
-                                    利用中
+                                利用中
                                 @elseif ($reservation->status === 'cancelled')
-                                    キャンセル済み
+                                キャンセル済み
                                 @elseif ($reservation->status === 'finished')
-                                    利用完了
+                                利用完了
                                 @else
-                                    {{ $reservation->status }}
+                                {{ $reservation->status }}
                                 @endif
                             </span>
                         </div>
@@ -222,13 +203,13 @@
                             - 改行を保持するため pre を使用
                         ================================================= --}}
                         @if ($reservation->members)
-                            <div class="mb-6">
-                                <h3 class="text-xl font-semibold mb-2">利用メンバー</h3>
+                        <div class="mb-6">
+                            <h3 class="text-xl font-semibold mb-2">利用メンバー</h3>
 
-                                <div class="p-4 bg-gray-50 rounded-lg">
-                                    <pre class="whitespace-pre-wrap">{{ $reservation->members }}</pre>
-                                </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <pre class="whitespace-pre-wrap">{{ $reservation->members }}</pre>
                             </div>
+                        </div>
                         @endif
 
                         {{-- =================================================
@@ -249,14 +230,13 @@
                         ================================================= --}}
                         <div class="flex justify-center space-x-4">
                             @if (in_array($reservation->status, ['pending', 'reserved'], true))
-                                <button
-                                    type="button"
-                                    id="openCancelModal"
-                                    class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200"
-                                >
-                                    <ion-icon name="close-circle-outline" class="mr-2"></ion-icon>
-                                    予約をキャンセル
-                                </button>
+                            <button
+                                type="button"
+                                id="openCancelModal"
+                                class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
+                                <ion-icon name="close-circle-outline" class="mr-2"></ion-icon>
+                                予約をキャンセル
+                            </button>
                             @endif
                         </div>
                     </div>
@@ -270,9 +250,17 @@
         - キャンセルボタン押下時に表示
         - 確定すると PATCH でキャンセル処理を実行
     ========================================================= --}}
-    <div id="cancelModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div
+        id="cancelModal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+        role="dialog"
+        aria-modal="true"
+        aria-hidden="true"
+        aria-labelledby="cancelModalTitle">
         <div class="bg-white p-6 rounded-lg max-w-md mx-4">
-            <h3 class="text-lg font-semibold mb-4">予約キャンセルの確認</h3>
+            <h3 id="cancelModalTitle" class="text-lg font-semibold mb-4">
+                予約キャンセルの確認
+            </h3>
 
             <p class="text-gray-600 mb-6">
                 本当にこの予約をキャンセルしますか？<br>
@@ -283,9 +271,8 @@
                 <button
                     type="button"
                     id="closeCancelModal"
-                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition duration-200"
-                >
-                    キャンセル
+                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition duration-200">
+                    戻る
                 </button>
 
                 <form action="{{ route('user.reservations.cancel', $reservation->id) }}" method="POST" class="inline">
@@ -294,8 +281,7 @@
 
                     <button
                         type="submit"
-                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-200"
-                    >
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-200">
                         予約をキャンセル
                     </button>
                 </form>

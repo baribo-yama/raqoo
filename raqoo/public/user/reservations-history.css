@@ -1,68 +1,69 @@
 /* =========================================
-   Reservations History Page
+   reservations-history.css
    利用履歴ページ専用スタイル
 ========================================= */
 
-/* -----------------------------------------
-   Layout
-   利用履歴ページ全体の余白と中央寄せ
------------------------------------------ */
+/* =========================================
+   01. レイアウト
+   - 利用履歴ページ全体の余白を調整
+   - 内容を中央寄せにする
+========================================= */
 .reservations-history-page .content-area {
-    padding-top: 40px;
-    padding-left: 40px;
-    padding-right: 40px;
     box-sizing: border-box;
+    padding-top: 40px;
+    padding-right: 40px;
+    padding-left: 40px;
 }
 
-.history-container {
-    max-width: 1100px;
+.reservations-history-page .history-container {
     width: 100%;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
-/* -----------------------------------------
-   Page Title
-   お知らせ一覧・予約一覧と同じ見た目に統一
------------------------------------------ */
+/* =========================================
+   02. ページタイトル
+   - お知らせ一覧・予約一覧と見た目を統一する
+========================================= */
 .reservations-history-page .page-title-area {
-    text-align: center;
     margin-bottom: 40px;
+    text-align: center;
 }
 
 .reservations-history-page .page-title {
     margin: 0;
-    color: #333;
+    color: #333333;
     font-size: 28px;
     font-weight: bold;
     line-height: 1.4;
 }
 
-/* -----------------------------------------
-   History List
-   利用履歴一覧の基本レイアウト
------------------------------------------ */
-.history-list {
+/* =========================================
+   03. 利用履歴一覧
+   - 利用履歴カードを縦に並べる
+========================================= */
+.reservations-history-page .history-list {
     width: 100%;
 }
 
-/* -----------------------------------------
-   History Card
-   利用履歴カードの基本デザイン
------------------------------------------ */
-.history-card {
+/* =========================================
+   04. 利用履歴カード
+   - 1件分の利用履歴を白いカードとして表示する
+========================================= */
+.reservations-history-page .history-card {
     margin-bottom: 16px;
     padding: 20px;
-    background: #fff;
+    background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* -----------------------------------------
-   Status Badge
-   予約ステータスごとの表示ラベル
------------------------------------------ */
-.status-badge {
+/* =========================================
+   05. ステータスバッジ
+   - 利用履歴の状態をラベルで表示する
+========================================= */
+.reservations-history-page .status-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -74,51 +75,74 @@
     white-space: nowrap;
 }
 
-.status-completed {
+/* 利用完了 */
+.reservations-history-page .status-completed,
+.reservations-history-page .status-finished {
     background-color: #dbeafe;
     color: #1e40af;
 }
 
-.status-cancelled {
+/* キャンセル済み */
+.reservations-history-page .status-cancelled {
     background-color: #f3f4f6;
     color: #374151;
 }
 
-.status-rejected {
+/* 却下 */
+.reservations-history-page .status-rejected {
     background-color: #fee2e2;
     color: #991b1b;
 }
 
-/* -----------------------------------------
-   Empty State
-   利用履歴が存在しない場合の表示
------------------------------------------ */
-.history-empty-state {
+/* 承認待ち */
+.reservations-history-page .status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+/* 予約済み */
+.reservations-history-page .status-reserved {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+/* 利用中 */
+.reservations-history-page .status-in-use,
+.reservations-history-page .status-in_use {
+    background-color: #e0f2fe;
+    color: #075985;
+}
+
+/* =========================================
+   06. 空状態
+   - 利用履歴が1件もない場合の表示
+========================================= */
+.reservations-history-page .history-empty-state {
     padding: 48px 16px;
     text-align: center;
-    background: #fff;
+    background: #ffffff;
     border: 1px solid #f3f4f6;
     border-radius: 12px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-/* -----------------------------------------
-   Responsive
-   タブレット・スマホ表示時の余白調整
------------------------------------------ */
+/* =========================================
+   07. レスポンシブ対応
+   - タブレット・スマホ表示時の余白を調整する
+========================================= */
 @media (max-width: 1024px) {
     .reservations-history-page .content-area {
-        padding-top: 30px;
-        padding-left: 20px;
+        padding-top: 80px;
         padding-right: 20px;
+        padding-left: 20px;
     }
 }
 
 @media (max-width: 560px) {
     .reservations-history-page .content-area {
-        padding-top: 24px;
-        padding-left: 16px;
+        padding-top: 76px;
         padding-right: 16px;
+        padding-left: 16px;
     }
 
     .reservations-history-page .page-title-area {
@@ -129,7 +153,11 @@
         font-size: 24px;
     }
 
-    .history-card {
+    .reservations-history-page .history-card {
         padding: 16px;
+    }
+
+    .reservations-history-page .history-empty-state {
+        padding: 40px 14px;
     }
 }

@@ -30,15 +30,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
-<body>
+<body class="reservation-check-page">
     {{-- =========================================================
         全体レイアウト
-        - 左側にサイドバー
+        - 左側に共通サイドバー
         - 右側に予約申請確認画面
     ========================================================= --}}
     <div class="layout">
         {{-- 共通サイドバー --}}
         <x-user.sidebar />
+
+        {{-- スマホ用バックドロップ --}}
+        <div class="m-backdrop" id="navBackdrop" aria-hidden="true"></div>
 
         {{-- =====================================================
             メインコンテンツエリア
@@ -109,7 +112,7 @@
                                     <span class="text-gray-600">時限:</span>
                                     <span class="font-bold text-blue-600 ml-2">
                                         @foreach ($reservationData['periods'] as $period)
-                                            {{ $period }}限{{ !$loop->last ? ', ' : '' }}
+                                        {{ $period }}限{{ !$loop->last ? ', ' : '' }}
                                         @endforeach
                                     </span>
                                 </div>
@@ -163,15 +166,15 @@
                             - 改行を保持するため pre を使用
                         ================================================= --}}
                         @if (!empty($reservationData['members']))
-                            <div class="mb-6">
-                                <h4 class="font-semibold text-lg mb-2 text-gray-700">
-                                    利用メンバー
-                                </h4>
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-lg mb-2 text-gray-700">
+                                利用メンバー
+                            </h4>
 
-                                <div class="p-3 bg-gray-50 rounded border">
-                                    <pre class="whitespace-pre-wrap font-sans">{{ $reservationData['members'] }}</pre>
-                                </div>
+                            <div class="p-3 bg-gray-50 rounded border">
+                                <pre class="whitespace-pre-wrap font-sans">{{ $reservationData['members'] }}</pre>
                             </div>
+                        </div>
                         @endif
                     </div>
 
@@ -193,13 +196,12 @@
 
                             {{-- 選択済み時限を配列として保持して戻す --}}
                             @foreach ($reservationData['periods'] as $period)
-                                <input type="hidden" name="periods[]" value="{{ $period }}">
+                            <input type="hidden" name="periods[]" value="{{ $period }}">
                             @endforeach
 
                             <button
                                 type="submit"
-                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200"
-                            >
+                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200">
                                 修正する
                             </button>
                         </form>
@@ -219,13 +221,12 @@
 
                             {{-- 選択済み時限を配列として送信 --}}
                             @foreach ($reservationData['periods'] as $period)
-                                <input type="hidden" name="periods[]" value="{{ $period }}">
+                            <input type="hidden" name="periods[]" value="{{ $period }}">
                             @endforeach
 
                             <button
                                 type="submit"
-                                class="px-8 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-lg transition duration-200 font-bold flex items-center"
-                            >
+                                class="px-8 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-lg transition duration-200 font-bold flex items-center">
                                 <ion-icon name="paper-plane-outline" class="mr-2 text-xl"></ion-icon>
                                 申請を確定する
                             </button>

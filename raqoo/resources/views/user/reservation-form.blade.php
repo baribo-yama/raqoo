@@ -30,15 +30,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
-<body>
+<body class="reservation-form-page">
     {{-- =========================================================
         全体レイアウト
-        - 左側にサイドバー
+        - 左側に共通サイドバー
         - 右側に予約申請フォーム
     ========================================================= --}}
     <div class="layout">
         {{-- 共通サイドバー --}}
         <x-user.sidebar />
+
+        {{-- スマホ用バックドロップ --}}
+        <div class="m-backdrop" id="navBackdrop" aria-hidden="true"></div>
 
         {{-- =====================================================
             メインコンテンツエリア
@@ -63,22 +66,22 @@
 
                     {{-- バリデーションエラー表示 --}}
                     @if ($errors->any())
-                        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <div class="text-red-800 font-semibold mb-2">
-                                ⚠️ エラーが発生しました
-                            </div>
-
-                            @foreach ($errors->all() as $error)
-                                <p class="text-red-700">• {{ $error }}</p>
-                            @endforeach
+                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="text-red-800 font-semibold mb-2">
+                            ⚠️ エラーが発生しました
                         </div>
+
+                        @foreach ($errors->all() as $error)
+                        <p class="text-red-700">• {{ $error }}</p>
+                        @endforeach
+                    </div>
                     @endif
 
                     {{-- 成功メッセージ表示 --}}
                     @if (session('success'))
-                        <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                            <p class="text-green-800">✅ {{ session('success') }}</p>
-                        </div>
+                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <p class="text-green-800">✅ {{ session('success') }}</p>
+                    </div>
                     @endif
 
                     {{-- =================================================
@@ -101,8 +104,7 @@
                             id="selectingMeta"
                             data-room-id="{{ $room->id }}"
                             data-date="{{ $date }}"
-                            data-toggle-url="{{ route('user.reservations.selecting.toggle') }}"
-                        ></div>
+                            data-toggle-url="{{ route('user.reservations.selecting.toggle') }}"></div>
 
                         {{-- =================================================
                             基本情報
@@ -175,63 +177,61 @@
                                 <div class="flex flex-wrap gap-4">
                                     @for ($i = 1; $i <= 6; $i++)
                                         @php
-                                            /*
-                                                時限チェックボックスの状態判定
-                                                - $isOriginal     : 最初に選択していた時限
-                                                - $isReservedOnly : 予約済みで選択不可の時限
-                                                - $isLesson       : 授業中で選択不可の時限
-                                                - $isDisabledSlot : 予約済みまたは授業中で選択不可
-                                            */
-                                            $isOriginal = ($i == $period);
-                                            $isReservedOnly = in_array($i, $reservedPeriods) && !$isOriginal;
-                                            $isLesson = in_array($i, $lessonPeriods) && !$isOriginal;
-                                            $isDisabledSlot = ($isReservedOnly || $isLesson);
+                                        /*
+                                        時限チェックボックスの状態判定
+                                        - $isOriginal : 最初に選択していた時限
+                                        - $isReservedOnly : 予約済みで選択不可の時限
+                                        - $isLesson : 授業中で選択不可の時限
+                                        - $isDisabledSlot : 予約済みまたは授業中で選択不可
+                                        */
+                                        $isOriginal=($i==$period);
+                                        $isReservedOnly=in_array($i, $reservedPeriods) && !$isOriginal;
+                                        $isLesson=in_array($i, $lessonPeriods) && !$isOriginal;
+                                        $isDisabledSlot=($isReservedOnly || $isLesson);
                                         @endphp
 
                                         <label
-                                            class="period-label flex items-center space-x-2 p-3 rounded border transition-colors duration-200
+                                        class="period-label flex items-center space-x-2 p-3 rounded border transition-colors duration-200
                                                 {{ $isOriginal ? 'bg-blue-100 border-blue-500 cursor-not-allowed' : 'border-gray-200' }}
                                                 {{ $isDisabledSlot ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50' }}"
-                                            id="label-{{ $i }}"
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                name="periods[]"
-                                                value="{{ $i }}"
-                                                class="period-checkbox form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
-                                                data-period="{{ $i }}"
-                                                data-reserved="{{ $isDisabledSlot ? 1 : 0 }}"
-                                                data-original="{{ $isOriginal ? 1 : 0 }}"
-                                                {{ $isOriginal ? 'checked disabled' : '' }}
-                                                {{ $isDisabledSlot ? 'disabled' : '' }}
-                                            >
+                                        id="label-{{ $i }}">
+                                        <input
+                                            type="checkbox"
+                                            name="periods[]"
+                                            value="{{ $i }}"
+                                            class="period-checkbox form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
+                                            data-period="{{ $i }}"
+                                            data-reserved="{{ $isDisabledSlot ? 1 : 0 }}"
+                                            data-original="{{ $isOriginal ? 1 : 0 }}"
+                                            {{ $isOriginal ? 'checked disabled' : '' }}
+                                            {{ $isDisabledSlot ? 'disabled' : '' }}>
 
-                                            <span class="font-medium {{ $isDisabledSlot ? 'text-gray-400' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
-                                                <span class="{{ $isDisabledSlot ? 'line-through' : '' }}">
-                                                    {{ $i }}限
-                                                </span>
-
-                                                @if ($isOriginal)
-                                                    <span class="text-xs ml-1 font-normal text-blue-600 inline-block">
-                                                        (選択中)
-                                                    </span>
-                                                @elseif ($isLesson)
-                                                    <span class="text-xs ml-1 text-red-500 font-bold inline-block">
-                                                        (授業)
-                                                    </span>
-                                                @elseif ($isReservedOnly)
-                                                    <span class="text-xs ml-1 font-normal text-red-400 inline-block">
-                                                        (予約済)
-                                                    </span>
-                                                @endif
+                                        <span class="font-medium {{ $isDisabledSlot ? 'text-gray-400' : 'text-gray-900' }} {{ $isOriginal ? 'text-blue-800' : '' }}">
+                                            <span class="{{ $isDisabledSlot ? 'line-through' : '' }}">
+                                                {{ $i }}限
                                             </span>
+
+                                            @if ($isOriginal)
+                                            <span class="text-xs ml-1 font-normal text-blue-600 inline-block">
+                                                (選択中)
+                                            </span>
+                                            @elseif ($isLesson)
+                                            <span class="text-xs ml-1 text-red-500 font-bold inline-block">
+                                                (授業)
+                                            </span>
+                                            @elseif ($isReservedOnly)
+                                            <span class="text-xs ml-1 font-normal text-red-400 inline-block">
+                                                (予約済)
+                                            </span>
+                                            @endif
+                                        </span>
                                         </label>
 
                                         {{-- disabled の checkbox は送信されないため、元の選択時限を hidden で送信する --}}
                                         @if ($isOriginal)
-                                            <input type="hidden" name="periods[]" value="{{ $i }}">
+                                        <input type="hidden" name="periods[]" value="{{ $i }}">
                                         @endif
-                                    @endfor
+                                        @endfor
                                 </div>
                             </div>
                         </div>
@@ -254,8 +254,7 @@
                                 maxlength="100"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="利用目的を入力してください（例：ゼミ発表の練習）"
-                                required
-                            >{{ old('purpose') }}</textarea>
+                                required>{{ old('purpose') }}</textarea>
 
                             <div class="text-right text-sm text-gray-500 mt-1">
                                 <span id="purposeCount">0</span>/100文字
@@ -273,9 +272,9 @@
 
                             <div class="p-3 bg-gray-100 rounded-md text-gray-600">
                                 @auth
-                                    {{ Auth::user()->major }}　{{ Auth::user()->name }} ({{ Auth::user()->student_id }})
+                                {{ Auth::user()->major }}　{{ Auth::user()->name }} ({{ Auth::user()->student_id }})
                                 @else
-                                    <span class="text-red-500">ログインが必要です</span>
+                                <span class="text-red-500">ログインが必要です</span>
                                 @endauth
                             </div>
                         </div>
@@ -288,8 +287,8 @@
                         <input type="hidden" name="members" id="membersHidden">
 
                         @php
-                            // バリデーションエラーで戻った場合、前回入力したメンバーを各行に復元する
-                            $oldMembers = old('members') ? explode("\n", old('members')) : [];
+                        // バリデーションエラーで戻った場合、前回入力したメンバーを各行に復元する
+                        $oldMembers = old('members') ? explode("\n", old('members')) : [];
                         @endphp
 
                         {{-- =================================================
@@ -313,55 +312,52 @@
                                 <div class="divide-y divide-gray-200">
                                     @for ($i = 1; $i <= 30; $i++)
                                         <div class="grid grid-cols-12 items-center px-3 py-1">
-                                            <div class="col-span-1 text-center text-sm text-gray-400 font-mono">
-                                                {{ $i }}
-                                            </div>
-
-                                            <div class="col-span-11 pl-2">
-                                                <input
-                                                    type="text"
-                                                    class="member-name-input w-full px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
-                                                    placeholder="氏名を入力"
-                                                    maxlength="50"
-                                                    aria-label="利用メンバー {{ $i }}人目の氏名"
-                                                    value="{{ $oldMembers[$i - 1] ?? '' }}"
-                                                >
-                                            </div>
+                                        <div class="col-span-1 text-center text-sm text-gray-400 font-mono">
+                                            {{ $i }}
                                         </div>
-                                    @endfor
-                                </div>
-                            </div>
 
-                            <div class="text-sm text-gray-500 mt-1">
-                                入力した分だけ送信されます（空欄はスキップ）
+                                        <div class="col-span-11 pl-2">
+                                            <input
+                                                type="text"
+                                                class="member-name-input w-full px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
+                                                placeholder="氏名を入力"
+                                                maxlength="50"
+                                                aria-label="利用メンバー {{ $i }}人目の氏名"
+                                                value="{{ $oldMembers[$i - 1] ?? '' }}">
+                                        </div>
+                                </div>
+                                @endfor
                             </div>
                         </div>
 
-                        {{-- =================================================
+                        <div class="text-sm text-gray-500 mt-1">
+                            入力した分だけ送信されます（空欄はスキップ）
+                        </div>
+                </div>
+
+                {{-- =================================================
                             フォーム下部ボタン
                             - キャンセル：ホームへ戻る
                             - 確認画面へ：入力内容を確認画面へ送信
                         ================================================= --}}
-                        <div class="flex justify-between">
-                            <a
-                                href="{{ route('user.home.index') }}"
-                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200"
-                            >
-                                キャンセル
-                            </a>
+                <div class="flex justify-between">
+                    <a
+                        href="{{ route('user.home.index') }}"
+                        class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200">
+                        キャンセル
+                    </a>
 
-                            <button
-                                type="submit"
-                                class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 flex items-center shadow-lg"
-                            >
-                                確認画面へ
-                                <ion-icon name="arrow-forward-outline" class="ml-2"></ion-icon>
-                            </button>
-                        </div>
-                    </form>
+                    <button
+                        type="submit"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 flex items-center shadow-lg">
+                        確認画面へ
+                        <ion-icon name="arrow-forward-outline" class="ml-2"></ion-icon>
+                    </button>
                 </div>
+                </form>
             </div>
         </div>
+    </div>
     </div>
 
     {{-- 共通サイドバー開閉用JavaScript --}}

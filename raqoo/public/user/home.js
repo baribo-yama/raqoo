@@ -1,216 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("[raqoo] home.js loaded: v-complete-2026-06-17");
-    /* =========================================
-       01. 共通関数
-    ========================================= */
-    const jaWeek = ["日", "月", "火", "水", "木", "金", "土"];
+    // ==================================================
+    // 共通設定・定数
+    // ==================================================
 
-    const pad2 = (number) => String(number).padStart(2, "0");
+    // Date.getDay() の数字（0〜6）を、画面表示用の曜日に変換する表。
+    const WEEK_DAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 
-    const toISO = (date) =>
-        `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+    // 1日分のミリ秒。前日・翌日・週タブの日付計算で使う。
+    const ONE_DAY_MS = 86400000;
 
-    const toMMDD = (date) => `${pad2(date.getMonth() + 1)}/${pad2(date.getDate())}`;
+    // この幅以下のときだけ、スマホ用の予約状況シートを使う。
+    const MOBILE_SHEET_MEDIA = "(max-width: 560px)";
 
-    const isMobile560 = () => window.matchMedia("(max-width: 560px)").matches;
+    // サイドバーをスマホ表示として扱う画面幅。
+    const MOBILE_SIDEBAR_MEDIA = "(max-width: 1024px)";
 
-    const isTabletOrMobile = () => window.matchMedia("(max-width: 1024px)").matches;
-
-    /* =========================================
-       02. サイドバー開閉処理
-    ========================================= */
-    const toggleButton = document.querySelector(".nav-toggle");
-    const navigation = document.querySelector(".navigation");
-
-    const overlay =
-        document.querySelector("#mobileOverlay") ||
-        document.querySelector("#navBackdrop");
-
-    const closeMenu = () => {
-        if (!toggleButton || !navigation) return;
-        document.body.classList.remove("nav-open");
-        navigation.dataset.open = "false";
-        toggleButton.setAttribute("aria-expanded", "false");
-    };
-
-    const openMenu = () => {
-        if (!toggleButton || !navigation || !isTabletOrMobile()) return;
-        document.body.classList.add("nav-open");
-        navigation.dataset.open = "true";
-        toggleButton.setAttribute("aria-expanded", "true");
-    };
-
-    if (toggleButton && navigation) {
-        toggleButton.addEventListener("click", (event) => {
-            if (!isTabletOrMobile()) return;
-            event.stopPropagation();
-
-            if (document.body.classList.contains("nav-open")) {
-                closeMenu();
-            } else {
-                openMenu();
-            }
-        });
-
-        navigation.addEventListener("click", (event) => {
-            event.stopPropagation();
-        });
-
-        document.addEventListener("click", (event) => {
-            if (!isTabletOrMobile()) return;
-            if (!document.body.classList.contains("nav-open")) return;
-
-            if (
-                !navigation.contains(event.target) &&
-                !toggleButton.contains(event.target)
-            ) {
-                closeMenu();
-            }
-        });
-
-        if (overlay) {
-            overlay.addEventListener("click", closeMenu);
-        }
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") closeMenu();
-        });
-
-        window.addEventListener("resize", () => {
-            if (!isTabletOrMobile()) closeMenu();
-        });
-    }
-
-    /* =========================================
-       03. DOM要素取得
-    ========================================= */
-    const mainEl = document.querySelector(".date-main");
-    const wdayEl = document.querySelector(".date-weekday");
-    const dateInput = document.querySelector("#dateInput");
-
-    const tabs = document.querySelectorAll(".day-tabs .day-tab");
-    const prevBtn = document.querySelector(".strip-prev");
-    const nextBtn = document.querySelector(".strip-next");
-
-    const openSheetBtn = document.querySelector("#openStatusSheet");
-    const closeSheetBtn = document.querySelector("#closeStatusSheet");
-    const sheet = document.querySelector("#statusSheet");
-    const sheetBody = document.querySelector("#statusSheetBody");
-
-    /* =========================================
-       04. スマホ用予約状況シート
-    ========================================= */
-    const openSheet = () => {
-        document.body.classList.add("sheet-open");
-        sheet?.setAttribute("aria-hidden", "false");
-    };
-
-    const closeSheet = () => {
-        document.body.classList.remove("sheet-open");
-        sheet?.setAttribute("aria-hidden", "true");
-    };
-
-    /* =========================================
-       05. ステータス表示用データ
-    ========================================= */
-    const roomStatusClasses = [
-        "available",
-        "selecting",
-        "pending",
-        "reserved",
-        "approved",
-        "in_use",
-        "unavailable",
-        "conflict",
-        "cancelled",
-        "finished",
-        "completed",
-        "rejected",
-        "locked",
-    ];
-
-    const roomStatusLabels = {
-        available: "利用可能",
-        selecting: "選択中",
-        pending: "申請中",
-        reserved: "予約済み",
-        approved: "予約済み",
-        in_use: "利用中",
-        cancelled: "キャンセル",
-        finished: "利用完了",
-        completed: "完了",
-        rejected: "却下",
-        unavailable: "利用不可",
-        conflict: "同時刻に予約あり",
-    };
-
-    // ▼ status文字列を正規化する（大文字/前後空白/別名の揺れを吸収）
-    function normalizeStatus(rawStatus) {
-        if (rawStatus === null || rawStatus === undefined) return "available";
-
-        let status = String(rawStatus).trim().toLowerCase();
-
-        // よくある別名を正規化
-        const aliasMap = {
-            ok: "available",
-            free: "available",
-            open: "available",
-            empty: "available",
-            booked: "reserved",
-            reserve: "reserved",
-            using: "in_use",
-            inuse: "in_use",
-            "in-use": "in_use",
-            apply: "pending",
-            applying: "pending",
-            unavailable_room: "unavailable",
-        };
-
-        if (aliasMap[status]) status = aliasMap[status];
-
-        // 既知のステータスでなければ「利用不可」を表すクラスへ寄せる
-        if (!roomStatusClasses.includes(status)) {
-            console.warn("[raqoo] 未知のstatus値を検出。利用不可として扱います:", rawStatus);
-            return "unavailable";
-        }
-
-        return status;
-    }
-
-    function getRoomStatusLabel(status, statusData = null) {
-        if (statusData?.lesson_title) return statusData.lesson_title;
-        return roomStatusLabels[status] ?? "利用不可";
-    }
-
-    function statusMeta(status) {
-        const text = roomStatusLabels[status] ?? status ?? "不明";
-
-        switch (status) {
-            case "pending":
-                return { text, cls: "my-badge pending" };
-            case "reserved":
-            case "approved":
-                return { text: "予約済み", cls: "my-badge reserved" };
-            case "in_use":
-                return { text, cls: "my-badge in_use" };
-            case "cancelled":
-                return { text, cls: "my-badge cancelled" };
-            case "finished":
-            case "completed":
-                return { text, cls: "my-badge completed" };
-            case "rejected":
-                return { text, cls: "my-badge rejected" };
-            case "selecting":
-                return { text, cls: "my-badge selecting" };
-            default:
-                return { text, cls: "my-badge other" };
-        }
-    }
-
-    /* =========================================
-       06. 時限ごとの時間表
-    ========================================= */
-    const timeTable = {
+    // 時限ごとの開始時刻・終了時刻。
+    // スマホ用予約状況シートのカードで「1限 09:10-10:40」のように表示するために使う。
+    const PERIOD_TIME_TABLE = {
         1: ["09:10", "10:40"],
         2: ["10:50", "12:20"],
         3: ["13:00", "14:30"],
@@ -219,491 +26,1286 @@ document.addEventListener("DOMContentLoaded", () => {
         6: ["18:00", "19:30"],
     };
 
-    /* =========================================
-       07. 自分の予約状況シートを描画
-    ========================================= */
-    async function renderMyReservationsSheet(dateISO) {
-        if (!sheetBody) return;
+    // スマホ用予約状況シートで使う、予約ステータスごとの表示設定。
+    // status の英語名を、日本語文言とCSSクラスに変換するための表。
+    const RESERVATION_BADGE_META = {
+        pending: { text: "申請中", className: "my-badge pending" },
+        reserved: { text: "予約済み", className: "my-badge reserved" },
+        in_use: { text: "利用中", className: "my-badge in_use" },
+        finished: { text: "利用完了", className: "my-badge completed" },
+        cancelled: { text: "キャンセル", className: "my-badge cancelled" },
+        rejected: { text: "却下", className: "my-badge rejected" },
+        approved: { text: "予約済み", className: "my-badge reserved" },
+        completed: { text: "完了", className: "my-badge completed" },
+    };
 
-        sheetBody.textContent = "読み込み中...";
+    // 教室カードが予約不可のとき、statusから表示文言を決めるための表。
+    // 授業名 lesson_title を優先する処理は、この表ではなく getUnavailableText() で行う。
+    const UNAVAILABLE_STATUS_TEXT = {
+        pending: "申請中",
+        reserved: "予約済み",
+        in_use: "利用中",
+        unavailable: "利用不可",
+        conflict: "同時刻に予約あり",
+        selecting: "選択中",
+    };
 
-        try {
-            const response = await fetch(
-                `/user/my-reservations?date=${encodeURIComponent(dateISO)}`,
-                { cache: "no-store", headers: { Accept: "application/json" } }
-            );
+    // 教室カードから削除したいステータスclassの一覧。
+    // 実際の削除は removeRoomStatusClasses() で行う。
+    const ROOM_STATUS_CLASSES = [
+        "available",
+        "pending",
+        "reserved",
+        "in_use",
+        "unavailable",
+        "conflict",
+        "selecting",
+        "locked",
+    ];
 
-            if (!response.ok) {
-                throw new Error(`予約情報の取得に失敗しました (HTTP ${response.status})`);
-            }
+    // ==================================================
+    // 画面で使うHTML要素
+    // ==================================================
 
-            const reservations = await response.json();
-            const list = Array.isArray(reservations)
-                ? reservations
-                : reservations.reservations ?? reservations.data ?? [];
+    // この画面で使うHTML要素を取得して、後から使えるようにまとめておく。
+    // ここでは取得だけを行い、表示更新やAPI送信はしない。
+    const elements = {
+        // スマホ用サイドバーまわり
+        // 実際のホーム画面では .nav-toggle が存在していたため、既存HTMLに合わせて取得する。
+        // .m-hamburger も残しておくことで、他画面で同名classを使っていても対応できる。
+        hamburgerButtons: document.querySelectorAll(
+            ".nav-toggle, .m-hamburger",
+        ),
+        navBackdrop: document.querySelector(".m-backdrop"),
 
-            const priority = (status) => {
-                if (status === "reserved" || status === "approved") return 0;
-                if (status === "pending") return 1;
-                return 9;
-            };
+        // 日付表示まわり
+        mainDate: document.querySelector(".date-main"),
+        weekDay: document.querySelector(".date-weekday"),
+        dateInput: document.querySelector("#dateInput"),
 
-            list.sort((a, b) => {
-                const priorityA = priority(a.status);
-                const priorityB = priority(b.status);
-                if (priorityA !== priorityB) return priorityA - priorityB;
-                if (a.date === b.date) return (a.period || 0) - (b.period || 0);
-                return String(a.date).localeCompare(String(b.date));
+        // 週タブまわり
+        dayTabs: document.querySelectorAll(".day-tabs .day-tab"),
+        previousButton: document.querySelector(".strip-prev"),
+        nextButton: document.querySelector(".strip-next"),
+
+        // スマホ用予約状況シートまわり
+        openSheetButton: document.querySelector("#openStatusSheet"),
+        closeSheetButton: document.querySelector("#closeStatusSheet"),
+        statusSheet: document.querySelector("#statusSheet"),
+        statusSheetBody: document.querySelector("#statusSheetBody"),
+    };
+
+    // 現在選択されている日付。inputに値があればその日付を使い、なければ今日を使う。
+    let selectedDate = getInitialSelectedDate();
+
+    // 週タブの先頭日。週タブは日曜日から7日分を表示する。
+    let weekStartDate = getWeekStartDate(selectedDate);
+
+    initializePage();
+
+    // ==================================================
+    // 初期表示・イベント設定
+    // ==================================================
+
+    /**
+     * ページ初期表示とイベント設定をまとめて実行する。
+     */
+    function initializePage() {
+        setupMobileSidebar();
+
+        if (!isHomeReservationPage()) {
+            return;
+        }
+
+        setupMobileStatusSheetEvents();
+        setupDayTabEvents();
+        setupDateMoveEvents();
+        setupDateInputEvent();
+
+        updateSelectedDateView(selectedDate);
+        renderWeekTabs();
+    }
+
+    /**
+     * ホーム画面の予約表示処理を実行してよいページか判定する。
+     * home.js は共通で読み込まれることがあるため、必要な要素がないページでは予約APIを呼ばない。
+     */
+    function isHomeReservationPage() {
+        return Boolean(elements.dateInput && elements.mainDate);
+    }
+
+    // ==================================================
+    // 共通: スマホ用サイドバー
+    // ==================================================
+
+    /**
+     * 既存のハンバーガーボタンで、スマホ用サイドバーを開閉する。
+     * CSS側は body.nav-open を見てサイドバー表示を切り替える。
+     */
+    function setupMobileSidebar() {
+        if (elements.hamburgerButtons.length === 0) {
+            console.warn("サイドバー用のハンバーガーボタンが見つかりません。");
+        }
+
+        for (const hamburgerButton of elements.hamburgerButtons) {
+            hamburgerButton.setAttribute("aria-expanded", "false");
+
+            hamburgerButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                toggleMobileSidebar();
             });
+        }
 
-            sheetBody.innerHTML = "";
+        if (elements.navBackdrop) {
+            elements.navBackdrop.addEventListener("click", () => {
+                closeMobileSidebar();
+            });
+        }
 
-            if (!list.length) {
-                const emptyDiv = document.createElement("div");
-                emptyDiv.className = "my-empty";
-                emptyDiv.textContent = "この日の予約はありません";
-                sheetBody.appendChild(emptyDiv);
+        document.addEventListener("keydown", (event) => {
+            if (event.key !== "Escape") {
                 return;
             }
 
-            list.forEach((reservation) => {
-                const normalized = normalizeStatus(reservation.status);
-                const meta = statusMeta(normalized);
-                const times = timeTable[reservation.period] || ["--:--", "--:--"];
-                const isReserved = normalized === "reserved" || normalized === "approved";
+            closeMobileSidebar();
+        });
 
-                const card = document.createElement("div");
-                card.className = `my-card ${isReserved ? "is-approved" : ""}`;
+        window.addEventListener("resize", () => {
+            if (isMobileSidebarSize()) {
+                return;
+            }
 
-                const top = document.createElement("div");
-                top.className = "my-top";
+            closeMobileSidebar();
+        });
+    }
 
-                const roomName = document.createElement("div");
-                roomName.className = "my-room";
-                roomName.textContent = reservation.room_name || "教室";
+    /**
+     * スマホ用サイドバーを使う画面幅か判定する。
+     */
+    function isMobileSidebarSize() {
+        return window.matchMedia(MOBILE_SIDEBAR_MEDIA).matches;
+    }
 
-                const statusBadge = document.createElement("span");
-                statusBadge.className = meta.cls;
-                statusBadge.textContent = meta.text;
+    /**
+     * サイドバーを開いている場合は閉じ、閉じている場合は開く。
+     */
+    function toggleMobileSidebar() {
+        if (document.body.classList.contains("nav-open")) {
+            closeMobileSidebar();
+            return;
+        }
 
-                top.appendChild(roomName);
-                top.appendChild(statusBadge);
+        openMobileSidebar();
+    }
 
-                const mid = document.createElement("div");
-                mid.className = "my-mid";
+    /**
+     * スマホ用サイドバーを開く。
+     */
+    function openMobileSidebar() {
+        document.body.classList.add("nav-open");
+        updateHamburgerExpandedState(true);
+    }
 
-                const dateItem = document.createElement("div");
-                dateItem.className = "my-item";
-                const dateKey = document.createElement("div");
-                dateKey.className = "my-k";
-                dateKey.textContent = "日付";
-                const dateVal = document.createElement("div");
-                dateVal.className = "my-v";
-                dateVal.textContent = reservation.date;
-                dateItem.appendChild(dateKey);
-                dateItem.appendChild(dateVal);
+    /**
+     * スマホ用サイドバーを閉じる。
+     */
+    function closeMobileSidebar() {
+        document.body.classList.remove("nav-open");
+        updateHamburgerExpandedState(false);
+    }
 
-                const periodItem = document.createElement("div");
-                periodItem.className = "my-item";
-                const periodKey = document.createElement("div");
-                periodKey.className = "my-k";
-                periodKey.textContent = "時限";
-                const periodVal = document.createElement("div");
-                periodVal.className = "my-v";
-                periodVal.appendChild(document.createTextNode(`${reservation.period}限 `));
-                const timeSpan = document.createElement("span");
-                timeSpan.className = "my-time";
-                timeSpan.textContent = `${times[0]}-${times[1]}`;
-                periodVal.appendChild(timeSpan);
-                periodItem.appendChild(periodKey);
-                periodItem.appendChild(periodVal);
-
-                mid.appendChild(dateItem);
-                mid.appendChild(periodItem);
-
-                const actions = document.createElement("div");
-                actions.className = "my-actions";
-
-                if (reservation.detail_url) {
-                    const detailLink = document.createElement("a");
-                    detailLink.className = "my-detail";
-                    detailLink.textContent = "詳細を見る";
-                    detailLink.href = reservation.detail_url;
-                    actions.appendChild(detailLink);
-                }
-
-                card.appendChild(top);
-                card.appendChild(mid);
-                card.appendChild(actions);
-                sheetBody.appendChild(card);
-            });
-        } catch (error) {
-            console.error("[raqoo] my-reservations 取得失敗:", error);
-            sheetBody.innerHTML = "";
-            const errorDiv = document.createElement("div");
-            errorDiv.className = "my-empty";
-            errorDiv.textContent = "取得に失敗しました";
-            sheetBody.appendChild(errorDiv);
+    /**
+     * ハンバーガーボタンの開閉状態を支援技術にも伝える。
+     */
+    function updateHamburgerExpandedState(isExpanded) {
+        for (const hamburgerButton of elements.hamburgerButtons) {
+            hamburgerButton.setAttribute(
+                "aria-expanded",
+                isExpanded ? "true" : "false",
+            );
         }
     }
 
-    /* =========================================
-       08. スマホ用予約状況シートのイベント設定
-    ========================================= */
-    openSheetBtn?.addEventListener("click", () => {
-        if (!isMobile560()) return;
-        const iso = dateInput?.value ? dateInput.value : toISO(new Date());
-        renderMyReservationsSheet(iso);
-        openSheet();
-    });
+    // ==================================================
+    // 共通: 日付の変換・計算
+    // ==================================================
 
-    closeSheetBtn?.addEventListener("click", closeSheet);
+    /**
+     * 月や日などの日付用の数字を2桁の文字列に変換する。
+     * YYYY-MM-DD や MM/DD の形に整えるために使う。
+     */
+    function formatDateNumberToTwoDigits(number) {
+        return String(number).padStart(2, "0");
+    }
 
-    if (isMobile560() && location.search.includes("date=")) {
+    /**
+     * DateをAPI送信用の YYYY-MM-DD 形式に変換する。
+     */
+    function formatDateForApi(date) {
+        const yearText = date.getFullYear();
+        const monthText = formatDateNumberToTwoDigits(date.getMonth() + 1);
+        const dayText = formatDateNumberToTwoDigits(date.getDate());
+
+        return `${yearText}-${monthText}-${dayText}`;
+    }
+
+    /**
+     * Dateを画面表示用の MM/DD 形式に変換する。
+     */
+    function formatDateForView(date) {
+        const monthText = formatDateNumberToTwoDigits(date.getMonth() + 1);
+        const dayText = formatDateNumberToTwoDigits(date.getDate());
+
+        return `${monthText}/${dayText}`;
+    }
+
+    /**
+     * YYYY-MM-DD 形式の文字列を Date に変換する。
+     * 変換できない場合は null を返す。
+     */
+    function parseDateText(dateText) {
+        const dateParts = dateText.split("-");
+
+        if (dateParts.length !== 3) {
+            return null;
+        }
+
+        const year = Number(dateParts[0]);
+        const month = Number(dateParts[1]);
+        const day = Number(dateParts[2]);
+
+        if (!year || !month || !day) {
+            return null;
+        }
+
+        // JavaScriptのDateは月が0始まりなので、month - 1 にする。
+        const parsedDate = new Date(year, month - 1, day);
+
+        if (Number.isNaN(parsedDate.getTime())) {
+            return null;
+        }
+
+        return parsedDate;
+    }
+
+    /**
+     * 初期表示で選択する日付を取得する。
+     */
+    function getInitialSelectedDate() {
+        if (!elements.dateInput || !elements.dateInput.value) {
+            return new Date();
+        }
+
+        const inputDate = parseDateText(elements.dateInput.value);
+
+        if (!inputDate) {
+            return new Date();
+        }
+
+        return inputDate;
+    }
+
+    /**
+     * 指定日の週の先頭日（日曜日）を取得する。
+     */
+    function getWeekStartDate(date) {
+        const daysFromSunday = date.getDay();
+        const weekStartTime = date.getTime() - daysFromSunday * ONE_DAY_MS;
+
+        return new Date(weekStartTime);
+    }
+
+    /**
+     * 2つの日付が同じ年月日か判定する。
+     */
+    function isSameDate(firstDate, secondDate) {
+        const isSameYear = firstDate.getFullYear() === secondDate.getFullYear();
+        const isSameMonth = firstDate.getMonth() === secondDate.getMonth();
+        const isSameDay = firstDate.getDate() === secondDate.getDate();
+
+        return isSameYear && isSameMonth && isSameDay;
+    }
+
+    /**
+     * 現在選択されている日付を YYYY-MM-DD 形式で取得する。
+     */
+    function getSelectedDateText() {
+        if (elements.dateInput && elements.dateInput.value) {
+            return elements.dateInput.value;
+        }
+
+        return formatDateForApi(new Date());
+    }
+
+    // ==================================================
+    // 共通: API取得処理
+    // ==================================================
+
+    /**
+     * 指定日の自分の予約一覧をAPIから取得する。
+     * バックエンドAPIに関わる取得処理なので、関数名とAPI URLは変更しない。
+     */
+    async function fetchMyReservations(dateText) {
+        const requestUrl = `/user/my-reservations?date=${encodeURIComponent(dateText)}`;
+
+        const response = await fetch(requestUrl, {
+            cache: "no-store",
+        });
+
+        return response.json();
+    }
+
+    /**
+     * 指定日の教室ステータスをAPIから取得する。
+     * バックエンドAPIに関わる取得処理なので、関数名とAPI URLは変更しない。
+     */
+    async function fetchRoomStatuses(dateText) {
+        const response = await fetch(`/user/room-status?date=${dateText}`, {
+            cache: "no-store",
+        });
+
+        return response.json();
+    }
+
+    // ==================================================
+    // 共通: 日付表示・週タブ・日付移動
+    // ==================================================
+
+    /**
+     * 選択日が変わったとき、日付表示・教室カード・スマホ用予約状況シートを更新する。
+     */
+    function updateSelectedDateView(date) {
+        // API送信や予約リンクの日付更新で使うため、YYYY-MM-DD 形式に変換する。
+        const dateText = formatDateForApi(date);
+
+        if (elements.mainDate) {
+            elements.mainDate.textContent = formatDateForView(date);
+        }
+
+        if (elements.weekDay) {
+            elements.weekDay.textContent = `（${WEEK_DAYS_JA[date.getDay()]}）`;
+        }
+
+        // 現在選択中の日付を、予約状況シートや予約リンク更新でも使えるように保持する。
+        if (elements.dateInput) {
+            elements.dateInput.value = dateText;
+        }
+
+        reloadRoomStatuses(dateText);
+        refreshMobileStatusSheetIfOpen(dateText);
+    }
+
+    /**
+     * 週表示ストリップの日付と active 状態を描画する。
+     */
+    function renderWeekTabs() {
+        for (let index = 0; index < elements.dayTabs.length; index += 1) {
+            const dayTab = elements.dayTabs[index];
+
+            // 週の先頭日から index 日分進めて、このタブの日付を作る。
+            const tabDate = new Date(
+                weekStartDate.getTime() + index * ONE_DAY_MS,
+            );
+
+            updateWeekTab(dayTab, tabDate);
+        }
+    }
+
+    /**
+     * 日付タブ1つ分の曜日・日付・active状態を更新する。
+     */
+    function updateWeekTab(dayTab, tabDate) {
+        const dayLabel = dayTab.querySelector(".day-label");
+        const dateLabel = dayTab.querySelector(".date-label");
+
+        if (dayLabel) {
+            dayLabel.textContent = WEEK_DAYS_JA[tabDate.getDay()];
+        }
+
+        if (dateLabel) {
+            dateLabel.textContent = formatDateForView(tabDate);
+        }
+
+        // クリック時にこの日付を選択できるよう、YYYY-MM-DD形式の日付を保存する。
+        dayTab.dataset.date = formatDateForApi(tabDate);
+
+        // このタブの日付が選択中の日付と同じ場合だけ active を付ける。
+        dayTab.classList.toggle("active", isSameDate(tabDate, selectedDate));
+    }
+
+    /**
+     * 日付タブ押下時のイベントを設定する。
+     */
+    function setupDayTabEvents() {
+        for (const dayTab of elements.dayTabs) {
+            dayTab.addEventListener("click", () => {
+                selectDateFromTab(dayTab);
+            });
+        }
+    }
+
+    /**
+     * 押下された日付タブの日付を、現在の選択日に反映する。
+     */
+    function selectDateFromTab(dayTab) {
+        const dateText = dayTab.dataset.date;
+
+        if (!dateText) {
+            return;
+        }
+
+        const nextSelectedDate = parseDateText(dateText);
+
+        if (!nextSelectedDate) {
+            return;
+        }
+
+        selectedDate = nextSelectedDate;
+        weekStartDate = getWeekStartDate(selectedDate);
+
+        updateSelectedDateView(selectedDate);
+        renderWeekTabs();
+    }
+
+    /**
+     * 前日・翌日ボタンのイベントを設定する。
+     */
+    function setupDateMoveEvents() {
+        if (elements.previousButton) {
+            elements.previousButton.addEventListener(
+                "click",
+                moveToPreviousDay,
+            );
+        }
+
+        if (elements.nextButton) {
+            elements.nextButton.addEventListener("click", moveToNextDay);
+        }
+    }
+
+    /**
+     * 選択日を1日前に移動する。
+     */
+    function moveToPreviousDay() {
+        selectedDate = new Date(selectedDate.getTime() - ONE_DAY_MS);
+        weekStartDate = new Date(weekStartDate.getTime() - ONE_DAY_MS);
+
+        updateSelectedDateView(selectedDate);
+        renderWeekTabs();
+    }
+
+    /**
+     * 選択日を1日後に移動する。
+     */
+    function moveToNextDay() {
+        selectedDate = new Date(selectedDate.getTime() + ONE_DAY_MS);
+        weekStartDate = new Date(weekStartDate.getTime() + ONE_DAY_MS);
+
+        updateSelectedDateView(selectedDate);
+        renderWeekTabs();
+    }
+
+    /**
+     * 日付入力欄が変更されたときのイベントを設定する。
+     */
+    function setupDateInputEvent() {
+        if (!elements.dateInput) {
+            return;
+        }
+
+        elements.dateInput.addEventListener("change", selectDateFromInput);
+    }
+
+    /**
+     * 日付入力欄の値を、現在の選択日に反映する。
+     */
+    function selectDateFromInput() {
+        const nextSelectedDate = parseDateText(elements.dateInput.value);
+
+        if (!nextSelectedDate) {
+            return;
+        }
+
+        selectedDate = nextSelectedDate;
+        weekStartDate = getWeekStartDate(selectedDate);
+
+        updateSelectedDateView(selectedDate);
+        renderWeekTabs();
+    }
+
+    // ==================================================
+    // PC・スマホ共通: 教室カードの空き状況更新
+    // ==================================================
+
+    /**
+     * 指定日の教室ステータスを取得して、教室カードへ反映する。
+     */
+    async function reloadRoomStatuses(dateText) {
+        showRoomCardsLoading(dateText);
+
+        try {
+            const roomStatuses = await fetchRoomStatuses(dateText);
+            applyRoomStatusesToCards(roomStatuses);
+        } catch (error) {
+            console.error("ステータス取得エラー:", error);
+        }
+    }
+
+    /**
+     * 全ての教室カードを、一時的に読み込み中表示にする。
+     */
+    function showRoomCardsLoading(dateText) {
+        const roomGroups = document.querySelectorAll(".room-group");
+
+        for (const roomGroup of roomGroups) {
+            const timeCards = roomGroup.querySelectorAll(".time-card");
+
+            for (const timeCard of timeCards) {
+                resetRoomCardToLoading(timeCard, dateText);
+            }
+        }
+    }
+
+    /**
+     * 教室カード1枚を、API取得前の読み込み中状態に戻す。
+     */
+    function resetRoomCardToLoading(timeCard, dateText) {
+        // 前回の日付で付いた available / reserved / unavailable などのclassを削除する。
+        removeRoomStatusClasses(timeCard);
+
+        const availableLabel = timeCard.querySelector(".available-label");
+        const unavailableLabel = timeCard.querySelector(".unavailable-label");
+        const reserveButton = timeCard.querySelector(".reserve-btn");
+
+        // API取得中は予約可能か判断できないため、予約ボタンは一時的に隠す。
+        hideElement(availableLabel);
+        showElement(unavailableLabel);
+        hideElement(reserveButton);
+
+        if (unavailableLabel) {
+            unavailableLabel.textContent = "読み込み中...";
+        }
+
+        // API取得後に予約可能になった場合、この日付のリンクで予約画面へ進めるようにする。
+        updateReservationLinkDate(timeCard, reserveButton, dateText);
+    }
+
+    /**
+     * APIから取得した教室ステータスを、画面上の全ての教室カードに反映する。
+     */
+    function applyRoomStatusesToCards(roomStatuses) {
+        if (!Array.isArray(roomStatuses)) {
+            return;
+        }
+
+        const roomGroups = document.querySelectorAll(".room-group");
+
+        for (const roomGroup of roomGroups) {
+            const roomId = roomGroup.dataset.roomId;
+            const timeCards = roomGroup.querySelectorAll(".time-card");
+
+            for (const timeCard of timeCards) {
+                updateRoomCardStatus(timeCard, roomId, roomStatuses);
+            }
+        }
+    }
+
+    /**
+     * 教室カード1枚に、該当するステータスを反映する。
+     */
+    function updateRoomCardStatus(timeCard, roomId, roomStatuses) {
+        const period = Number(timeCard.dataset.period);
+
+        // API結果の中から、この教室ID・この時限に一致するステータスデータを探す。
+        const statusData = findRoomStatus(roomStatuses, roomId, period);
+
+        // 一致するデータがなければ予約可能として扱う。
+        const status = getRoomStatusName(statusData);
+
+        removeRoomStatusClasses(timeCard);
+        timeCard.classList.add(status);
+
+        if (status === "available") {
+            setRoomCardAvailable(timeCard);
+            return;
+        }
+
+        setRoomCardUnavailable(timeCard, status, statusData);
+    }
+
+    /**
+     * 教室IDと時限が一致するステータスデータを探す。
+     */
+    function findRoomStatus(roomStatuses, roomId, period) {
+        return roomStatuses.find((roomStatus) => {
+            const isSameRoom = String(roomStatus.room_id) === String(roomId);
+            const isSamePeriod = Number(roomStatus.period) === period;
+
+            return isSameRoom && isSamePeriod;
+        });
+    }
+
+    /**
+     * ステータスデータから status 名を取得する。
+     */
+    function getRoomStatusName(statusData) {
+        if (!statusData) {
+            return "available";
+        }
+
+        return statusData.status;
+    }
+
+    /**
+     * 教室カードを予約可能状態として表示する。
+     * PC表示用とスマホ表示用の両方を切り替える。
+     */
+    function setRoomCardAvailable(timeCard) {
+        const pcParts = getPcRoomCardParts(timeCard);
+        const spParts = getSpRoomCardParts(timeCard);
+
+        // 予約可能なカードはクリックできるように、保存しておいた予約リンクを戻す。
+        if (timeCard.dataset.baseHref) {
+            timeCard.setAttribute("href", timeCard.dataset.baseHref);
+        }
+
+        timeCard.classList.remove("locked");
+        timeCard.removeAttribute("aria-disabled");
+
+        showElement(pcParts.availableLabel);
+        hideElement(pcParts.unavailableLabel);
+        showElement(pcParts.reserveButton);
+
+        showElement(spParts.availableLabel);
+        hideElement(spParts.unavailableLabel);
+        showElement(spParts.reserveButton);
+    }
+
+    /**
+     * 教室カードを予約不可状態として表示する。
+     * PC表示用とスマホ表示用の両方を切り替える。
+     */
+    function setRoomCardUnavailable(timeCard, status, statusData) {
+        const pcParts = getPcRoomCardParts(timeCard);
+        const spParts = getSpRoomCardParts(timeCard);
+        const unavailableText = getUnavailableText(status, statusData);
+
+        // 予約不可のカードはクリックできないようにする。
+        timeCard.removeAttribute("href");
+        timeCard.classList.add("locked");
+        timeCard.setAttribute("aria-disabled", "true");
+
+        hideElement(pcParts.availableLabel);
+        showElement(pcParts.unavailableLabel);
+        hideElement(pcParts.reserveButton);
+        setTextContent(pcParts.unavailableLabel, unavailableText);
+
+        hideElement(spParts.availableLabel);
+        showElement(spParts.unavailableLabel);
+        hideElement(spParts.reserveButton);
+        setTextContent(spParts.unavailableLabel, unavailableText);
+    }
+
+    /**
+     * PC表示用の教室カード要素を取得する。
+     */
+    function getPcRoomCardParts(timeCard) {
+        return {
+            availableLabel: timeCard.querySelector(
+                ".pc-layout .available-label",
+            ),
+            unavailableLabel: timeCard.querySelector(
+                ".pc-layout .unavailable-label",
+            ),
+            reserveButton: timeCard.querySelector(".reserve-btn.pc-only"),
+        };
+    }
+
+    /**
+     * スマホ表示用の教室カード要素を取得する。
+     */
+    function getSpRoomCardParts(timeCard) {
+        return {
+            availableLabel: timeCard.querySelector(
+                ".sp-layout .available-label",
+            ),
+            unavailableLabel: timeCard.querySelector(
+                ".sp-layout .unavailable-label",
+            ),
+            reserveButton: timeCard.querySelector(".sp-reserve-btn"),
+        };
+    }
+
+    /**
+     * 予約不可時に表示する文言を取得する。
+     */
+    function getUnavailableText(status, statusData) {
+        if (statusData && statusData.lesson_title) {
+            return statusData.lesson_title;
+        }
+
+        if (UNAVAILABLE_STATUS_TEXT[status]) {
+            return UNAVAILABLE_STATUS_TEXT[status];
+        }
+
+        return "利用不可";
+    }
+
+    /**
+     * 教室カードからステータス関連のCSSクラスを削除する。
+     */
+    function removeRoomStatusClasses(timeCard) {
+        for (const statusClass of ROOM_STATUS_CLASSES) {
+            timeCard.classList.remove(statusClass);
+        }
+    }
+
+    // ==================================================
+    // スマホ画面: 予約状況シート
+    // ==================================================
+
+    /**
+     * スマホ用の予約状況シートを使う画面幅か判定する。
+     */
+    function isMobileSheetSize() {
+        return window.matchMedia(MOBILE_SHEET_MEDIA).matches;
+    }
+
+    /**
+     * スマホ用の予約状況シートを開く。
+     */
+    function openMobileStatusSheet() {
+        document.body.classList.add("sheet-open");
+
+        if (elements.statusSheet) {
+            elements.statusSheet.setAttribute("aria-hidden", "false");
+        }
+    }
+
+    /**
+     * スマホ用の予約状況シートを閉じる。
+     */
+    function closeMobileStatusSheet() {
+        document.body.classList.remove("sheet-open");
+
+        if (elements.statusSheet) {
+            elements.statusSheet.setAttribute("aria-hidden", "true");
+        }
+    }
+
+    /**
+     * スマホ幅のときだけ、予約状況シートの開閉イベントを設定する。
+     */
+    function setupMobileStatusSheetEvents() {
+        if (!isMobileSheetSize()) {
+            return;
+        }
+
+        if (elements.openSheetButton) {
+            elements.openSheetButton.addEventListener(
+                "click",
+                openMobileStatusSheetForSelectedDate,
+            );
+        }
+
+        if (elements.closeSheetButton) {
+            elements.closeSheetButton.addEventListener(
+                "click",
+                closeMobileStatusSheet,
+            );
+        }
+
+        autoOpenMobileStatusSheetIfDateQueryExists();
+    }
+
+    /**
+     * 現在選択中の日付で予約状況を読み込み、スマホ用シートを開く。
+     */
+    function openMobileStatusSheetForSelectedDate() {
+        const selectedDateText = getSelectedDateText();
+
+        renderMobileReservationsSheet(selectedDateText);
+        openMobileStatusSheet();
+    }
+
+    /**
+     * URLに date= が含まれている場合、スマホ用予約状況シートを自動で開く。
+     */
+    function autoOpenMobileStatusSheetIfDateQueryExists() {
+        if (!location.search.includes("date=")) {
+            return;
+        }
+
+        // 画面の初期描画が終わる前に開くと表示が崩れる可能性があるため、少し遅らせる。
         setTimeout(() => {
-            const iso = dateInput?.value ? dateInput.value : toISO(new Date());
-            renderMyReservationsSheet(iso);
-            openSheet();
+            openMobileStatusSheetForSelectedDate();
         }, 250);
     }
 
-    /* =========================================
-       09. 初期表示する日付を決定
-    ========================================= */
-    let selectedDate;
+    /**
+     * スマホ用予約状況シートが開いている場合だけ、選択日の予約一覧を再読み込みする。
+     */
+    function refreshMobileStatusSheetIfOpen(dateText) {
+        const isSheetOpen = document.body.classList.contains("sheet-open");
 
-    if (dateInput && dateInput.value) {
-        const [year, month, day] = dateInput.value.split("-").map(Number);
-        selectedDate = new Date(year, month - 1, day);
-    } else {
-        selectedDate = new Date();
-    }
-
-    let startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
-
-    /* =========================================
-       10. 中央の日付表示を更新
-    ========================================= */
-    function updateCenterDisplay(date) {
-        if (mainEl) mainEl.textContent = toMMDD(date);
-        if (wdayEl) wdayEl.textContent = `（${jaWeek[date.getDay()]}）`;
-        if (dateInput) dateInput.value = toISO(date);
-
-        updateRoomStatuses(toISO(date));
-
-        if (document.body.classList.contains("sheet-open") && isMobile560()) {
-            renderMyReservationsSheet(toISO(date));
+        if (!isSheetOpen) {
+            return;
         }
+
+        if (!isMobileSheetSize()) {
+            return;
+        }
+
+        renderMobileReservationsSheet(dateText);
     }
 
-    /* =========================================
-       11. 予約リンク内の日付を書き換える
-    ========================================= */
-    function rewriteReservationUrl(href, date) {
-        let nextHref = href;
+    /**
+     * 指定日の自分の予約一覧を取得して、スマホ用予約状況シートに表示する。
+     */
+    async function renderMobileReservationsSheet(dateText) {
+        if (!elements.statusSheetBody) {
+            return;
+        }
+
+        elements.statusSheetBody.textContent = "読み込み中...";
 
         try {
-            const url = new URL(nextHref, window.location.origin);
+            const reservations = await fetchMyReservations(dateText);
+            const sortedReservations =
+                sortReservationsForMobileSheet(reservations);
 
-            if (url.searchParams.has("next")) {
-                const nextParam = url.searchParams.get("next");
-                const nextUrl = new URL(nextParam, window.location.origin);
+            elements.statusSheetBody.innerHTML = "";
 
-                if (nextUrl.searchParams.has("date")) {
-                    nextUrl.searchParams.set("date", date);
-                    url.searchParams.set("next", nextUrl.pathname + nextUrl.search);
-                }
-            } else if (url.searchParams.has("date")) {
-                url.searchParams.set("date", date);
+            if (sortedReservations.length === 0) {
+                showMobileSheetMessage("この日の予約はありません");
+                return;
             }
 
-            nextHref = nextHref.startsWith("http") ? url.href : url.pathname + url.search;
+            appendMobileReservationCards(sortedReservations);
         } catch (error) {
-            console.warn("[raqoo] URLパースエラー。正規表現でフォールバックします", error);
-            nextHref = nextHref.replace(/date%3D\d{4}-\d{2}-\d{2}/g, `date%3D${date}`);
-            nextHref = nextHref.replace(/date=\d{4}-\d{2}-\d{2}/g, `date=${date}`);
+            console.error(error);
+
+            elements.statusSheetBody.innerHTML = "";
+            showMobileSheetMessage("取得に失敗しました");
+        }
+    }
+
+    /**
+     * スマホ用予約状況シートに表示する予約一覧を並び替える。
+     */
+    function sortReservationsForMobileSheet(reservations) {
+        if (!Array.isArray(reservations)) {
+            return [];
         }
 
-        return nextHref;
-    }
+        return reservations.sort((currentReservation, nextReservation) => {
+            const currentStatusPriority = getReservationStatusPriority(
+                currentReservation.status,
+            );
+            const nextStatusPriority = getReservationStatusPriority(
+                nextReservation.status,
+            );
 
-    /* =========================================
-       12. 教室カードの予約リンク日付だけ更新する
-    ========================================= */
-    function updateRoomCardLinks(date) {
-        document.querySelectorAll(".room-group .time-card").forEach((card) => {
-            const reserveBtn =
-                card.querySelector(".reserve-btn") || card.querySelector(".sp-reserve-btn");
+            if (currentStatusPriority !== nextStatusPriority) {
+                return currentStatusPriority - nextStatusPriority;
+            }
 
-            let href =
-                reserveBtn?.getAttribute("href") ||
-                reserveBtn?.getAttribute("data-href") ||
-                card.dataset.baseHref;
+            if (currentReservation.date === nextReservation.date) {
+                const currentPeriod = currentReservation.period || 0;
+                const nextPeriod = nextReservation.period || 0;
 
-            if (!href || typeof href !== "string") return;
+                return currentPeriod - nextPeriod;
+            }
 
-            href = rewriteReservationUrl(href, date);
-
-            if (reserveBtn?.hasAttribute("href")) reserveBtn.setAttribute("href", href);
-            if (reserveBtn?.hasAttribute("data-href")) reserveBtn.setAttribute("data-href", href);
-
-            card.dataset.baseHref = href;
-            if (card.hasAttribute("href")) card.setAttribute("href", href);
+            return String(currentReservation.date).localeCompare(
+                String(nextReservation.date),
+            );
         });
     }
 
-    /* =========================================
-       13. 利用可能な教室カードの表示に切り替える
-    ========================================= */
-    function applyAvailableStatus(card) {
-        if (card.dataset.baseHref) card.setAttribute("href", card.dataset.baseHref);
+    /**
+     * 予約状況シートで上に表示したいステータス順を数値で返す。
+     */
+    function getReservationStatusPriority(status) {
+        if (status === "reserved" || status === "approved") {
+            return 0;
+        }
 
-        card.classList.remove("locked");
-        card.removeAttribute("aria-disabled");
+        if (status === "pending") {
+            return 1;
+        }
 
-        const availableLabels = card.querySelectorAll(".available-label");
-        const unavailableLabels = card.querySelectorAll(".unavailable-label");
-        const reserveButtons = card.querySelectorAll(".reserve-btn, .sp-reserve-btn");
-
-        availableLabels.forEach((label) => {
-            label.classList.remove("hidden");
-            label.textContent = "利用可能";
-        });
-        unavailableLabels.forEach((label) => label.classList.add("hidden"));
-        reserveButtons.forEach((button) => button.classList.remove("hidden"));
+        return 9;
     }
 
-    /* =========================================
-       14. 利用不可な教室カードの表示に切り替える
-    ========================================= */
-    function applyUnavailableStatus(card, status, statusData) {
-        card.removeAttribute("href");
-        card.classList.add("locked");
-        card.setAttribute("aria-disabled", "true");
+    /**
+     * 予約がない場合や取得失敗時のメッセージを、スマホ用予約状況シートに表示する。
+     */
+    function showMobileSheetMessage(message) {
+        if (!elements.statusSheetBody) {
+            return;
+        }
 
-        const label = getRoomStatusLabel(status, statusData);
+        const messageElement = document.createElement("div");
+        messageElement.className = "my-empty";
+        messageElement.textContent = message;
 
-        const availableLabels = card.querySelectorAll(".available-label");
-        const unavailableLabels = card.querySelectorAll(".unavailable-label");
-        const reserveButtons = card.querySelectorAll(".reserve-btn, .sp-reserve-btn");
-
-        availableLabels.forEach((labelElement) => labelElement.classList.add("hidden"));
-        unavailableLabels.forEach((labelElement) => {
-            labelElement.classList.remove("hidden");
-            labelElement.textContent = label;
-        });
-        reserveButtons.forEach((button) => button.classList.add("hidden"));
+        elements.statusSheetBody.appendChild(messageElement);
     }
 
-    /* =========================================
-       14-b. Blade初期表示へ戻す（API失敗時のフォールバック）
-       - 「読み込み中...」で固まらないようにするための保険
-       - data-* 属性は触らず、ラベル文言は data-init-* があれば復帰
-    ========================================= */
-    function restoreInitialLabels() {
-        document.querySelectorAll(".room-group .time-card").forEach((card) => {
-            const unavailableLabels = card.querySelectorAll(".unavailable-label");
-            unavailableLabels.forEach((label) => {
-                // 「読み込み中...」が残っていたら、安全側の文言に戻す
-                if (label.textContent.includes("読み込み中")) {
-                    label.textContent = "利用不可";
-                }
-            });
-        });
+    /**
+     * 予約一覧をカード形式でスマホ用予約状況シートに追加する。
+     */
+    function appendMobileReservationCards(reservations) {
+        for (const reservation of reservations) {
+            const reservationCard = createMobileReservationCard(reservation);
+            elements.statusSheetBody.appendChild(reservationCard);
+        }
     }
 
-    /* =========================================
-       15. 選択日の教室予約状況を取得して反映
-    ========================================= */
-    function updateRoomStatuses(date) {
-        const roomGroups = document.querySelectorAll(".room-group");
-        if (!roomGroups.length) return;
+    // ==================================================
+    // スマホ画面: 予約状況シート内の予約カード作成
+    // ==================================================
 
-        updateRoomCardLinks(date);
+    /**
+     * スマホ用予約状況シートに表示する、予約1件分のカードを作成する。
+     */
+    function createMobileReservationCard(reservation) {
+        const badgeMeta = getReservationBadgeMeta(reservation.status);
+        const periodTimes = getPeriodTimes(reservation.period);
+        const isApprovedReservation = isApprovedStatus(reservation.status);
 
-        fetch(`/user/room-status?date=${encodeURIComponent(date)}`, {
-            cache: "no-store",
-            headers: { Accept: "application/json" },
-        })
-            .then(async (response) => {
-                if (!response.ok) {
-                    const errorText = await response.text().catch(() => "");
+        const reservationCard = document.createElement("div");
 
-                    // HTTPステータス別に原因が分かるようログ出力
-                    let hint = "";
-                    switch (response.status) {
-                        case 401:
-                        case 419:
-                            hint = "セッション切れ/未ログインの可能性。ログインし直してください。";
-                            break;
-                        case 403:
-                            hint = "権限エラー。ルートのミドルウェア設定を確認してください。";
-                            break;
-                        case 404:
-                            hint = "ルート未定義。/user/room-status のルート定義を確認してください。";
-                            break;
-                        case 500:
-                            hint = "サーバー側エラー。getStatusForPeriod 等の処理を確認してください。";
-                            break;
-                        default:
-                            hint = "想定外のHTTPステータスです。";
-                    }
+        // 確定済みの予約だけ、カード全体を強調表示する。
+        if (isApprovedReservation) {
+            reservationCard.className = "my-card is-approved";
+        } else {
+            reservationCard.className = "my-card";
+        }
 
-                    console.error(
-                        `[raqoo] room-status APIエラー: HTTP ${response.status} - ${hint}`
-                    );
-                    console.error("[raqoo] レスポンス本文:", errorText.slice(0, 500));
+        const cardHeader = createMobileReservationCardHeader(
+            reservation,
+            badgeMeta,
+        );
+        const cardBody = createMobileReservationCardBody(
+            reservation,
+            periodTimes,
+        );
+        const cardFooter = createMobileReservationCardFooter(reservation);
 
-                    throw new Error(`room-status HTTP ${response.status}`);
-                }
+        reservationCard.appendChild(cardHeader);
+        reservationCard.appendChild(cardBody);
+        reservationCard.appendChild(cardFooter);
 
-                // JSON以外（HTMLのエラーページ等）が返ってきた場合も検知
-                const contentType = response.headers.get("content-type") || "";
-                if (!contentType.includes("application/json")) {
-                    const text = await response.text().catch(() => "");
-                    console.error(
-                        "[raqoo] room-status がJSONを返していません。content-type:",
-                        contentType
-                    );
-                    console.error("[raqoo] レスポンス本文(先頭):", text.slice(0, 500));
-                    throw new Error("room-status response is not JSON");
-                }
-
-                return response.json();
-            })
-            .then((data) => {
-                // レスポンス形式の揺れを吸収（配列 / {statuses:[]} / {data:[]}）
-                const statusList = Array.isArray(data)
-                    ? data
-                    : data.statuses ?? data.data ?? [];
-
-                if (!Array.isArray(statusList)) {
-                    console.error("[raqoo] room-status の形式が不正です:", data);
-                    throw new Error("room-status format invalid");
-                }
-
-                console.log("[raqoo] room-status 取得成功:", statusList);
-
-                roomGroups.forEach((roomGroup) => {
-                    const roomId = roomGroup.dataset.roomId;
-
-                    roomGroup.querySelectorAll(".time-card").forEach((card) => {
-                        const period = Number(card.dataset.period);
-
-                        // キー名の揺れ（room_id / roomId / classroom_id, period / period_id）を吸収
-                        const statusData = statusList.find((item) => {
-                            const itemRoomId =
-                                item.room_id ?? item.roomId ?? item.classroom_id;
-                            const itemPeriod =
-                                item.period ?? item.period_id ?? item.periodId;
-                            return (
-                                String(itemRoomId) === String(roomId) &&
-                                Number(itemPeriod) === period
-                            );
-                        });
-
-                        // status文字列を正規化（大文字/別名/未知値を吸収）
-                        const status = normalizeStatus(statusData?.status);
-
-                        card.classList.remove(...roomStatusClasses);
-                        card.classList.add(status);
-
-                        if (status === "available") {
-                            applyAvailableStatus(card);
-                        } else {
-                            applyUnavailableStatus(card, status, statusData);
-                        }
-                    });
-                });
-            })
-            .catch((error) => {
-                /*
-                    API失敗時の保険：
-                    - Blade初期表示を残しつつ、「読み込み中...」が残っていれば文言を戻す
-                    - これで「読み込み中...」のまま固まる問題を防ぐ
-                */
-                console.error("[raqoo] ステータス取得エラー:", error);
-                restoreInitialLabels();
-            });
+        return reservationCard;
     }
 
-    /* =========================================
-       16. 日付タブを描画
-    ========================================= */
-    function renderStrip() {
-        if (!tabs.length) return;
+    /**
+     * スマホ用予約カード上部に表示する、教室名とステータスバッジを作成する。
+     */
+    function createMobileReservationCardHeader(reservation, badgeMeta) {
+        const headerArea = document.createElement("div");
+        headerArea.className = "my-top";
 
-        tabs.forEach((tab, index) => {
-            const date = new Date(startDate.getTime() + index * 86400000);
+        const roomNameElement = document.createElement("div");
+        roomNameElement.className = "my-room";
 
-            const dayLabel = tab.querySelector(".day-label");
-            const dateLabel = tab.querySelector(".date-label");
+        // 教室名がない場合でも表示が空にならないようにする。
+        roomNameElement.textContent = reservation.room_name || "教室";
 
-            if (dayLabel) dayLabel.textContent = jaWeek[date.getDay()];
-            if (dateLabel) dateLabel.textContent = toMMDD(date);
+        const statusBadgeElement = document.createElement("span");
+        statusBadgeElement.className = badgeMeta.className;
+        statusBadgeElement.textContent = badgeMeta.text;
 
-            tab.dataset.date = toISO(date);
+        headerArea.appendChild(roomNameElement);
+        headerArea.appendChild(statusBadgeElement);
 
-            const isActive =
-                date.getFullYear() === selectedDate.getFullYear() &&
-                date.getMonth() === selectedDate.getMonth() &&
-                date.getDate() === selectedDate.getDate();
-
-            tab.classList.toggle("active", isActive);
-        });
+        return headerArea;
     }
 
-    /* =========================================
-       17. 初期描画
-    ========================================= */
-    updateCenterDisplay(selectedDate);
-    renderStrip();
+    /**
+     * スマホ用予約カード中央に表示する、日付・時限情報を作成する。
+     */
+    function createMobileReservationCardBody(reservation, periodTimes) {
+        const bodyArea = document.createElement("div");
+        bodyArea.className = "my-mid";
 
-    /* =========================================
-       18. 日付タブクリック時の処理
-    ========================================= */
-    tabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-            const iso = tab.dataset.date;
-            if (!iso) return;
+        const dateItem = createReservationInfoItem("日付", reservation.date);
+        const periodItem = createReservationPeriodItem(
+            reservation.period,
+            periodTimes,
+        );
 
-            const [year, month, day] = iso.split("-").map(Number);
-            selectedDate = new Date(year, month - 1, day);
-            startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
+        bodyArea.appendChild(dateItem);
+        bodyArea.appendChild(periodItem);
 
-            updateCenterDisplay(selectedDate);
-            renderStrip();
-        });
-    });
+        return bodyArea;
+    }
 
-    /* =========================================
-       19. 前日・翌日ボタンの処理
-    ========================================= */
-    prevBtn?.addEventListener("click", () => {
-        selectedDate = new Date(selectedDate.getTime() - 86400000);
-        startDate = new Date(startDate.getTime() - 86400000);
-        updateCenterDisplay(selectedDate);
-        renderStrip();
-    });
+    /**
+     * スマホ用予約カード下部に表示する、詳細リンクエリアを作成する。
+     */
+    function createMobileReservationCardFooter(reservation) {
+        const footerArea = document.createElement("div");
+        footerArea.className = "my-actions";
 
-    nextBtn?.addEventListener("click", () => {
-        selectedDate = new Date(selectedDate.getTime() + 86400000);
-        startDate = new Date(startDate.getTime() + 86400000);
-        updateCenterDisplay(selectedDate);
-        renderStrip();
-    });
+        const detailLink = document.createElement("a");
+        detailLink.className = "my-detail";
+        detailLink.textContent = "詳細を見る";
+        detailLink.href = reservation.detail_url;
 
-    /* =========================================
-       20. 日付入力欄を変更した時の処理
-    ========================================= */
-    dateInput?.addEventListener("change", () => {
-        const [year, month, day] = dateInput.value.split("-").map(Number);
-        const date = new Date(year, month - 1, day);
-        if (Number.isNaN(date.getTime())) return;
+        footerArea.appendChild(detailLink);
 
-        selectedDate = date;
-        startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
-        updateCenterDisplay(selectedDate);
-        renderStrip();
-    });
+        return footerArea;
+    }
+
+    /**
+     * 予約カード内の「項目名 + 値」の1行表示を作成する。
+     */
+    function createReservationInfoItem(labelText, valueText) {
+        const itemElement = document.createElement("div");
+        itemElement.className = "my-item";
+
+        const labelElement = document.createElement("div");
+        labelElement.className = "my-k";
+        labelElement.textContent = labelText;
+
+        const valueElement = document.createElement("div");
+        valueElement.className = "my-v";
+        valueElement.textContent = valueText;
+
+        itemElement.appendChild(labelElement);
+        itemElement.appendChild(valueElement);
+
+        return itemElement;
+    }
+
+    /**
+     * 予約カード内の時限と時間帯の表示を作成する。
+     */
+    function createReservationPeriodItem(period, periodTimes) {
+        const itemElement = document.createElement("div");
+        itemElement.className = "my-item";
+
+        const labelElement = document.createElement("div");
+        labelElement.className = "my-k";
+        labelElement.textContent = "時限";
+
+        const valueElement = document.createElement("div");
+        valueElement.className = "my-v";
+
+        // 時限と時間帯で見た目を分けるため、時間帯だけ span にする。
+        valueElement.appendChild(document.createTextNode(`${period}限 `));
+
+        const timeElement = document.createElement("span");
+        timeElement.className = "my-time";
+        timeElement.textContent = `${periodTimes[0]}-${periodTimes[1]}`;
+
+        valueElement.appendChild(timeElement);
+        itemElement.appendChild(labelElement);
+        itemElement.appendChild(valueElement);
+
+        return itemElement;
+    }
+
+    /**
+     * 時限から開始時刻・終了時刻を取得する。
+     */
+    function getPeriodTimes(period) {
+        if (PERIOD_TIME_TABLE[period]) {
+            return PERIOD_TIME_TABLE[period];
+        }
+
+        return ["--:--", "--:--"];
+    }
+
+    /**
+     * 予約が確定扱いのステータスか判定する。
+     */
+    function isApprovedStatus(status) {
+        return status === "reserved" || status === "approved";
+    }
+
+    /**
+     * 予約ステータスを、画面表示用の日本語文言とバッジCSSクラスに変換する。
+     */
+    function getReservationBadgeMeta(status) {
+        if (RESERVATION_BADGE_META[status]) {
+            return RESERVATION_BADGE_META[status];
+        }
+
+        return {
+            text: status || "不明",
+            className: "my-badge other",
+        };
+    }
+
+    // ==================================================
+    // 共通: 予約リンクの日付更新
+    // ==================================================
+
+    /**
+     * 予約リンク内の日付を、現在選択中の日付に書き換える。
+     */
+    function updateReservationLinkDate(timeCard, reserveButton, dateText) {
+        if (!reserveButton) {
+            return;
+        }
+
+        let reservationHref = getReservationHref(timeCard, reserveButton);
+
+        if (!reservationHref) {
+            return;
+        }
+
+        reservationHref = replaceDateInHref(reservationHref, dateText);
+
+        if (reserveButton.hasAttribute("href")) {
+            reserveButton.setAttribute("href", reservationHref);
+        }
+
+        if (reserveButton.hasAttribute("data-href")) {
+            reserveButton.setAttribute("data-href", reservationHref);
+        }
+
+        // 予約不可から予約可能に戻すとき、最新の日付URLを復元できるように保持する。
+        timeCard.dataset.baseHref = reservationHref;
+
+        if (timeCard.hasAttribute("href")) {
+            timeCard.setAttribute("href", reservationHref);
+        }
+    }
+
+    /**
+     * 予約ボタンや教室カードが持っている予約URLを取得する。
+     */
+    function getReservationHref(timeCard, reserveButton) {
+        const hrefValue = reserveButton.getAttribute("href");
+
+        if (hrefValue) {
+            return hrefValue;
+        }
+
+        const dataHrefValue = reserveButton.getAttribute("data-href");
+
+        if (dataHrefValue) {
+            return dataHrefValue;
+        }
+
+        return timeCard.dataset.baseHref;
+    }
+
+    /**
+     * 予約URL内の date パラメータを、指定された日付に置き換える。
+     */
+    function replaceDateInHref(href, dateText) {
+        try {
+            return replaceDateByUrlParams(href, dateText);
+        } catch (error) {
+            console.warn(
+                "URLパースエラー。フォールバックとして正規表現を使用します",
+                error,
+            );
+            return replaceDateByRegExp(href, dateText);
+        }
+    }
+
+    /**
+     * URLSearchParamsを使って、予約URL内の date パラメータを書き換える。
+     */
+    function replaceDateByUrlParams(href, dateText) {
+        const url = new URL(href, window.location.origin);
+
+        // 注意事項画面を経由するURLは、next の中に予約URLが入っている。
+        if (url.searchParams.has("next")) {
+            replaceDateInNextParam(url, dateText);
+        } else if (url.searchParams.has("date")) {
+            url.searchParams.set("date", dateText);
+        }
+
+        if (href.startsWith("http")) {
+            return url.href;
+        }
+
+        return url.pathname + url.search;
+    }
+
+    /**
+     * precautions画面を経由するURLの next パラメータ内にある date を書き換える。
+     */
+    function replaceDateInNextParam(url, dateText) {
+        const nextParam = url.searchParams.get("next");
+
+        if (!nextParam) {
+            return;
+        }
+
+        const nextUrl = new URL(nextParam, window.location.origin);
+
+        if (!nextUrl.searchParams.has("date")) {
+            return;
+        }
+
+        nextUrl.searchParams.set("date", dateText);
+        url.searchParams.set("next", nextUrl.pathname + nextUrl.search);
+    }
+
+    /**
+     * URLとして解析できない場合に、正規表現で date 部分を書き換える。
+     */
+    function replaceDateByRegExp(href, dateText) {
+        let updatedHref = href;
+
+        // 通常の date=YYYY-MM-DD と、URLエンコードされた date%3DYYYY-MM-DD の両方に対応する。
+        updatedHref = updatedHref.replace(
+            /date%3D\d{4}-\d{2}-\d{2}/g,
+            `date%3D${dateText}`,
+        );
+        updatedHref = updatedHref.replace(
+            /date=\d{4}-\d{2}-\d{2}/g,
+            `date=${dateText}`,
+        );
+
+        return updatedHref;
+    }
+
+    // ==================================================
+    // 共通: DOM操作
+    // ==================================================
+
+    /**
+     * 要素を表示状態にする。
+     */
+    function showElement(element) {
+        if (!element) {
+            return;
+        }
+
+        element.classList.remove("hidden");
+    }
+
+    /**
+     * 要素を非表示状態にする。
+     */
+    function hideElement(element) {
+        if (!element) {
+            return;
+        }
+
+        element.classList.add("hidden");
+    }
+
+    /**
+     * 要素が存在する場合だけテキストを設定する。
+     */
+    function setTextContent(element, text) {
+        if (!element) {
+            return;
+        }
+
+        element.textContent = text;
+    }
 });

@@ -4,12 +4,15 @@
 <head>
     {{-- =========================================================
         基本設定・外部ファイル読み込み
-        - 文字コード / レスポンシブ設定
-        - キャッシュ無効化
-        - 共通CSS
-        - お知らせ画面専用CSS
-        - Tailwind CSS
-        - Ionicons
+
+        読み込み順：
+        1. 共通CSS
+        2. Tailwind CSS
+        3. お知らせ画面専用CSS
+
+        理由：
+        - ホーム画面とサイドバーの見た目を近づける
+        - notification.css を最後に読み込み、お知らせ画面だけの補正を効かせる
     ========================================================= --}}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,11 +26,11 @@
     <link rel="stylesheet" href="{{ asset('user/home.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('user/home.mobile.css') }}?v={{ time() }}">
 
-    {{-- お知らせ画面専用CSS --}}
-    <link rel="stylesheet" href="{{ asset('user/notification.css') }}?v={{ time() }}">
-
     {{-- ユーティリティCSS --}}
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+    {{-- お知らせ画面専用CSS --}}
+    <link rel="stylesheet" href="{{ asset('user/notification.css') }}?v={{ time() }}">
 
     {{-- アイコンライブラリ --}}
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -37,23 +40,27 @@
 <body class="notification-page">
     {{-- =========================================================
         全体レイアウト
-        - 左側にサイドバー
-        - 右側にお知らせ一覧のメインコンテンツ
+        - 左側に共通サイドバー
+        - 右側にお知らせ一覧
     ========================================================= --}}
     <div class="layout">
 
         {{-- 共通サイドバー --}}
         <x-user.sidebar />
 
+        {{-- スマホ用バックドロップ --}}
+        <div class="m-backdrop" id="navBackdrop" aria-hidden="true"></div>
+
         {{-- =====================================================
-            メインコンテンツエリア
+            お知らせ一覧メインコンテンツ
         ===================================================== --}}
-        <div class="content-area notification-content-area">
+        <main class="content-area notification-content-area">
             <div class="content-container">
 
                 {{-- -------------------------------------------------
                     ページタイトル
-                    - 予約一覧・利用履歴とタイトルデザインを統一
+                    - .page-title の基本デザインは home.css 側を使用
+                    - notification.css 側では余白だけ調整
                 ------------------------------------------------- --}}
                 <div class="page-title-area">
                     <h2 class="page-title">お知らせ一覧</h2>
@@ -61,11 +68,10 @@
 
                 {{-- -------------------------------------------------
                     検索エリア
-                    - keyword パラメータでお知らせを検索
-                    - GET送信なのでURLに検索条件が残る
-                    - request('keyword') で検索後も入力値を保持
+                    - GET送信で keyword パラメータを付ける
+                    - 検索後も request('keyword') で入力値を保持する
                 ------------------------------------------------- --}}
-                <div class="filter-card">
+                <section class="filter-card" aria-label="お知らせ検索">
                     <div class="search-box-wrapper">
                         <label for="search" class="search-label">お知らせ検索</label>
 
@@ -77,8 +83,7 @@
                                     name="keyword"
                                     value="{{ request('keyword') }}"
                                     placeholder="キーワードを入力..."
-                                    class="custom-input"
-                                >
+                                    class="custom-input">
 
                                 <button type="submit" class="notification-search-btn">
                                     検索
@@ -86,69 +91,68 @@
                             </div>
                         </form>
                     </div>
-                </div>
+                </section>
 
                 {{-- -------------------------------------------------
-                    お知らせ一覧エリア
-                    - $notifications がある場合はカード形式で表示
-                    - データがない場合は空状態メッセージを表示
+                    お知らせ一覧
+                    - お知らせがある場合はカード形式で表示
+                    - お知らせがない場合は空状態メッセージを表示
                 ------------------------------------------------- --}}
-                <div class="notification-section">
+                <section class="notification-section" aria-label="お知らせ一覧">
                     @if (isset($notifications) && $notifications->count() > 0)
-                        {{-- お知らせカード一覧 --}}
-                        <div class="notification-list">
-                            @foreach ($notifications as $notification)
-                                <div class="notification-card">
+                    <div class="notification-list">
+                        @foreach ($notifications as $notification)
+                        <article class="notification-card">
 
-                                    {{-- 左側：作成時刻・日付 --}}
-                                    <div class="card-left">
-                                        <div class="time-badge">
-                                            <span class="time-text">
-                                                {{ $notification->created_at->format('H:i') }}
-                                            </span>
+                            {{-- 左側：作成時刻・日付 --}}
+                            <div class="card-left">
+                                <div class="time-badge">
+                                    <span class="time-text">
+                                        {{ $notification->created_at->format('H:i') }}
+                                    </span>
 
-                                            <span class="date-sub">
-                                                {{ $notification->created_at->format('m/d') }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {{-- 右側：お知らせ本文・ステータス --}}
-                                    <div class="card-right">
-                                        <p class="notif-message">
-                                            {{ $notification->message }}
-                                        </p>
-
-                                        <div class="notif-footer">
-                                            {{-- 現状は固定表示。重要度をDB管理する場合はここを条件分岐に変更する --}}
-                                            <span class="status-badge">重要</span>
-                                        </div>
-                                    </div>
+                                    <span class="date-sub">
+                                        {{ $notification->created_at->format('m/d') }}
+                                    </span>
                                 </div>
-                            @endforeach
-                        </div>
-
-                        {{-- ページネーション --}}
-                        @if ($notifications->hasPages())
-                            <div class="pagination-wrapper">
-                                {{ $notifications->links() }}
                             </div>
-                        @endif
-                    @else
-                        {{-- お知らせが存在しない場合の表示 --}}
-                        <div class="empty-state">
-                            <p>現在、新しいお知らせはありません。</p>
-                        </div>
+
+                            {{-- 右側：お知らせ本文・ステータス表示 --}}
+                            <div class="card-right">
+                                <p class="notif-message">
+                                    {{ $notification->message }}
+                                </p>
+
+                                <div class="notif-footer">
+                                    {{-- 現状は固定表示。重要度をDBで管理する場合は、ここを条件分岐に変更する。 --}}
+                                    <span class="status-badge">重要</span>
+                                </div>
+                            </div>
+                        </article>
+                        @endforeach
+                    </div>
+
+                    {{-- ページネーション --}}
+                    @if ($notifications->hasPages())
+                    <div class="pagination-wrapper">
+                        {{ $notifications->links() }}
+                    </div>
                     @endif
-                </div>
+                    @else
+                    <div class="empty-state">
+                        <p>現在、新しいお知らせはありません。</p>
+                    </div>
+                    @endif
+                </section>
             </div>
-        </div>
+        </main>
     </div>
 
-    {{-- 共通サイドバー開閉用JavaScript --}}
-    <script src="{{ asset('user/home.js') }}?v={{ time() }}"></script>
-
-    {{-- お知らせ画面専用JavaScript --}}
+    {{--
+        お知らせ画面用JS。
+        サイドバーの active 制御と、スマホサイドバー開閉を行う。
+        ホーム画面専用の予約ステータス取得処理は読み込まない。
+    --}}
     <script src="{{ asset('user/notification.js') }}?v={{ time() }}"></script>
 </body>
 

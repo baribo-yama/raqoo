@@ -5,13 +5,13 @@
     <!-- =========================================================
         基本設定・外部ファイル読み込み
         - 文字コード / レスポンシブ設定
-        - 予約申請書画面専用CSS
+        - 教室管理申請書画面専用CSS
     ========================================================= -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教室管理申請書</title>
 
-    <!-- 予約申請書画面専用CSS -->
+    <!-- 教室管理申請書画面専用CSS -->
     <link rel="stylesheet" href="{{ asset('user/reservation.css') }}?v={{ time() }}">
 </head>
 
@@ -50,17 +50,27 @@
             <div class="row">
                 <div class="form-group">
                     <label for="representative-name">代表者氏名</label>
-                    <input type="text" id="representative-name" name="representative_name">
+                    <input
+                        type="text"
+                        id="representative-name"
+                        name="representative_name"
+                        autocomplete="name">
                 </div>
 
                 <div class="form-group">
                     <label for="grade">学年</label>
-                    <input type="text" id="grade" name="grade">
+                    <input
+                        type="text"
+                        id="grade"
+                        name="grade">
                 </div>
 
                 <div class="form-group">
                     <label for="course-name">コース名</label>
-                    <input type="text" id="course-name" name="course_name">
+                    <input
+                        type="text"
+                        id="course-name"
+                        name="course_name">
                 </div>
             </div>
 
@@ -70,7 +80,10 @@
             ================================================= -->
             <div class="form-group">
                 <label for="purpose">使用目的</label>
-                <textarea id="purpose" name="purpose" placeholder="詳しく入力してください"></textarea>
+                <textarea
+                    id="purpose"
+                    name="purpose"
+                    placeholder="詳しく入力してください"></textarea>
             </div>
 
             <!-- =================================================
@@ -81,7 +94,10 @@
             <div class="row">
                 <div class="form-group">
                     <label for="use-date">日付</label>
-                    <input type="date" id="use-date" name="use_date">
+                    <input
+                        type="date"
+                        id="use-date"
+                        name="use_date">
                 </div>
 
                 <div class="form-group period-group">
@@ -95,8 +111,8 @@
                             name="start_period"
                             class="period-input"
                             maxlength="2"
-                            aria-label="開始時限"
-                        >
+                            inputmode="numeric"
+                            aria-label="開始時限">
 
                         <span> ～ </span>
 
@@ -105,8 +121,8 @@
                             name="end_period"
                             class="period-input"
                             maxlength="2"
-                            aria-label="終了時限"
-                        >
+                            inputmode="numeric"
+                            aria-label="終了時限">
 
                         <span> )</span>
                     </div>
@@ -117,28 +133,76 @@
                 使用メンバー
                 - 初期表示は6人分の入力欄
                 - 追加ボタンで reservation.js 側の処理を実行
+                - 最大30人まで追加可能
             ================================================= -->
             <div class="form-group">
                 <label>使用メンバー</label>
 
-                <div id="member-container" class="member-grid">
+                <div
+                    id="member-container"
+                    class="member-grid"
+                    data-max-members="30">
                     <!-- 初期6人分の入力欄 -->
-                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー1人目">
-                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー2人目">
-                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー3人目">
-                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー4人目">
-                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー5人目">
-                    <input type="text" name="member[]" class="member-input" aria-label="使用メンバー6人目">
+                    <input
+                        type="text"
+                        name="member[]"
+                        class="member-input"
+                        placeholder="氏名を入力"
+                        maxlength="50"
+                        aria-label="使用メンバー1人目">
+
+                    <input
+                        type="text"
+                        name="member[]"
+                        class="member-input"
+                        placeholder="氏名を入力"
+                        maxlength="50"
+                        aria-label="使用メンバー2人目">
+
+                    <input
+                        type="text"
+                        name="member[]"
+                        class="member-input"
+                        placeholder="氏名を入力"
+                        maxlength="50"
+                        aria-label="使用メンバー3人目">
+
+                    <input
+                        type="text"
+                        name="member[]"
+                        class="member-input"
+                        placeholder="氏名を入力"
+                        maxlength="50"
+                        aria-label="使用メンバー4人目">
+
+                    <input
+                        type="text"
+                        name="member[]"
+                        class="member-input"
+                        placeholder="氏名を入力"
+                        maxlength="50"
+                        aria-label="使用メンバー5人目">
+
+                    <input
+                        type="text"
+                        name="member[]"
+                        class="member-input"
+                        placeholder="氏名を入力"
+                        maxlength="50"
+                        aria-label="使用メンバー6人目">
                 </div>
 
-                <button type="button" class="add-member-btn" id="addMemberButton">
+                <button
+                    type="button"
+                    class="add-member-btn"
+                    id="addMemberButton">
                     ＋ メンバーを追加
                 </button>
             </div>
         </form>
     </div>
 
-    <!-- 予約申請書画面専用JavaScript -->
+    <!-- 教室管理申請書画面専用JavaScript -->
     <script src="{{ asset('user/reservation.js') }}?v={{ time() }}"></script>
 </body>
 

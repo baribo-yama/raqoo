@@ -5,82 +5,86 @@
    お知らせ一覧ページ専用スタイル
 ========================================= */
 
-
-/* =========================================
+/* ==================================================
    01. 共通変数・基本設定
-========================================= */
+================================================== */
+
 :root {
-    --primary-blue: #1a2b4b;
-    --bg-gray: #f5f6fa;
-    --text-dark: #333;
-    --text-gray: #666;
-    --sidebar-width: 260px;
+    --notification-primary-blue: #1a2b4b;
+    --notification-bg-gray: #f5f6fa;
+    --notification-text-dark: #333;
+    --notification-text-gray: #666;
+    --notification-border-gray: #e2e8f0;
+    --notification-card-bg: #fff;
 }
 
 /*
-   お知らせ画面専用body
-   ※ font-family は body では指定しない。
-   理由：<x-user.sidebar /> まで巻き込んで、サイドバー側の見た目がズレる可能性があるため。
+   お知らせ一覧ページ専用のbody設定。
+   font-family は本文エリア側に指定し、サイドバーの見た目へ影響しないようにする。
 */
 body.notification-page {
     margin: 0;
-    background: var(--bg-gray);
-    color: var(--text-dark);
+    background: var(--notification-bg-gray);
+    color: var(--notification-text-dark);
 }
 
-
-/* =========================================
+/* ==================================================
    02. メインレイアウト
-   - お知らせ一覧ページの本文エリア
-   - 他ページの .main-content と衝突しないよう専用classで管理
-========================================= */
+================================================== */
+
+/*
+   お知らせ一覧ページの本文エリア。
+   サイドバー本体とは分離し、このページのコンテンツだけを管理する。
+*/
 .notification-content-area {
     position: relative;
     width: 100%;
     min-height: 100vh;
-    background: var(--bg-gray);
-    transition: 0.3s;
     padding-top: 40px;
     padding-left: 0;
+    background: var(--notification-bg-gray);
     box-sizing: border-box;
     font-family: "Segoe UI", "Meiryo", sans-serif;
 }
 
-
-/* =========================================
+/* ==================================================
    03. コンテンツ幅
-========================================= */
+================================================== */
+
 .content-container {
+    width: 100%;
     max-width: 900px;
     margin: 0 auto;
     padding: 0 40px 40px;
-    width: 100%;
     box-sizing: border-box;
 }
 
-
-/* =========================================
+/* ==================================================
    04. ページタイトル
-   - .page-title 本体は home.css の共通スタイルを使用
-========================================= */
+================================================== */
+
+/*
+   .page-title 本体の見た目は home.css の共通スタイルを使う。
+   ここでは、お知らせ一覧ページ内での余白だけを調整する。
+*/
 .page-title-area {
-    text-align: center;
     margin-bottom: 30px;
+    text-align: center;
 }
 
-
-/* =========================================
+/* ==================================================
    05. 検索エリア
-========================================= */
+================================================== */
+
 .filter-card {
-    background: #fff;
-    border-radius: 15px;
-    padding: 30px 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
-    margin-bottom: 40px;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    margin-bottom: 40px;
+    padding: 30px 20px;
+    border-radius: 15px;
+    background: var(--notification-card-bg);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
 }
 
 .search-box-wrapper {
@@ -90,16 +94,16 @@ body.notification-page {
 
 .search-label {
     display: block;
-    font-size: 13px;
-    color: #666;
     margin-bottom: 8px;
+    color: var(--notification-text-gray);
+    font-size: 13px;
     font-weight: 600;
 }
 
 .search-input-group {
     display: flex;
-    gap: 10px;
     width: 100%;
+    gap: 10px;
 }
 
 .custom-input {
@@ -108,40 +112,43 @@ body.notification-page {
     border: 1px solid #ddd;
     border-radius: 8px;
     outline: none;
-    font-size: 15px;
-    transition: 0.3s;
     background: #f9f9f9;
+    font-size: 15px;
+    transition:
+        background 0.3s,
+        border-color 0.3s,
+        box-shadow 0.3s;
 }
 
 .custom-input:focus {
+    border-color: var(--notification-primary-blue);
     background: #fff;
-    border-color: var(--primary-blue);
     box-shadow: 0 0 0 2px rgba(26, 43, 75, 0.1);
 }
 
 /*
-   お知らせ一覧専用の検索ボタン
-   ※ home.css の .search-btn と衝突しないように専用classで管理
+   お知らせ一覧専用の検索ボタン。
+   home.css の .search-btn と衝突しないように専用classで管理する。
 */
 .notification-search-btn {
+    padding: 0 28px;
+    border: none;
+    border-radius: 8px;
     background: #2d3748;
     color: #fff;
-    border: none;
-    padding: 0 28px;
-    border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.3s;
+    transition: background 0.3s;
 }
 
 .notification-search-btn:hover {
     background: #1a202c;
 }
 
-
-/* =========================================
+/* ==================================================
    06. お知らせ一覧
-========================================= */
+================================================== */
+
 .notification-list {
     display: flex;
     flex-direction: column;
@@ -149,65 +156,67 @@ body.notification-page {
 }
 
 .notification-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     display: flex;
     overflow: hidden;
-    transition: transform 0.2s;
+    border-radius: 12px;
+    background: var(--notification-card-bg);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
 
 .notification-card:hover {
-    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
 }
 
+/* ==================================================
+   07. お知らせカード左側: 日付・時刻
+================================================== */
 
-/* =========================================
-   07. お知らせカード左側：日付・時刻
-========================================= */
 .card-left {
-    background: #edf2f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
     width: 70px;
     min-width: 70px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     padding: 15px 5px;
-    border-right: 1px solid #e2e8f0;
+    border-right: 1px solid var(--notification-border-gray);
+    background: #edf2f7;
 }
 
 .time-text {
+    color: #4a5568;
     font-size: 16px;
     font-weight: bold;
-    color: #4a5568;
     line-height: 1;
 }
 
 .date-sub {
-    font-size: 10px;
-    color: #718096;
     margin-top: 4px;
+    color: #718096;
+    font-size: 10px;
 }
 
+/* ==================================================
+   08. お知らせカード右側: 本文・バッジ
+================================================== */
 
-/* =========================================
-   08. お知らせカード右側：本文・バッジ
-========================================= */
 .card-right {
-    flex: 1;
-    padding: 15px 20px;
     display: flex;
-    flex-direction: column;
     justify-content: center;
+    flex: 1;
+    flex-direction: column;
+    padding: 15px 20px;
 }
 
 .notif-message {
-    font-size: 14px;
-    color: #2d3748;
-    line-height: 1.6;
     margin-bottom: 8px;
+    color: #2d3748;
+    font-size: 14px;
+    line-height: 1.6;
 }
 
 .notif-footer {
@@ -216,38 +225,38 @@ body.notification-page {
 }
 
 .status-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
     background: #4299e1;
     color: #fff;
     font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 10px;
     font-weight: bold;
 }
 
-
-/* =========================================
+/* ==================================================
    09. 空状態・ページネーション
-========================================= */
+================================================== */
+
 .empty-state {
-    text-align: center;
     padding: 60px 20px;
     color: #aaa;
+    text-align: center;
 }
 
 .pagination-wrapper {
-    margin-top: 32px;
     display: flex;
     justify-content: center;
+    margin-top: 32px;
 }
 
+/* ==================================================
+   10. レスポンシブ: 1024px以下
+================================================== */
 
-/* =========================================
-   10. レスポンシブ：1024px以下
-========================================= */
 @media (max-width: 1024px) {
     .notification-content-area {
-        padding-left: 0;
         padding-top: 20px;
+        padding-left: 0;
     }
 
     .content-container {
@@ -255,14 +264,14 @@ body.notification-page {
     }
 }
 
+/* ==================================================
+   11. レスポンシブ: 720px以下
+================================================== */
 
-/* =========================================
-   11. レスポンシブ：720px以下
-========================================= */
 @media (max-width: 720px) {
     .filter-card {
-        padding: 20px;
         flex-direction: column;
+        padding: 20px;
     }
 
     .search-input-group {
@@ -275,10 +284,10 @@ body.notification-page {
     }
 }
 
+/* ==================================================
+   12. レスポンシブ: 560px以下
+================================================== */
 
-/* =========================================
-   12. レスポンシブ：560px以下
-========================================= */
 @media (max-width: 560px) {
     .content-container {
         padding: 0 16px 30px;
@@ -289,12 +298,12 @@ body.notification-page {
     }
 
     .card-left {
-        width: 100%;
         flex-direction: row;
-        gap: 10px;
+        width: 100%;
         padding: 8px;
+        gap: 10px;
         border-right: none;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--notification-border-gray);
     }
 
     .date-sub {

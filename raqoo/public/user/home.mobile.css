@@ -1,42 +1,47 @@
-@charset "utf-8";
-
 /* =========================================
    user/home.mobile.css
-   スマホ・タブレット表示用スタイル
+   Raqoo Mobile UI
+   560px以下専用
 ========================================= */
 
-/* =========================================
-   Tablet / Mobile Sidebar
-   1024px以下のサイドバー開閉
-   - home.js の max-width: 1024px 判定と合わせる
-   - body.nav-open が付いた時にサイドバーを表示
-========================================= */
-@media (max-width: 1024px) {
-    /* -----------------------------------------
-       Menu Button
-       サイドバー開閉ボタン
-    ----------------------------------------- */
-    .nav-toggle {
-        display: flex !important;
-        position: fixed !important;
-        top: 16px !important;
-        right: 16px !important;
-        z-index: 1200 !important;
-        width: 44px !important;
-        height: 44px !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: #ffffff !important;
-        color: #2F4A6A !important;
-        border: 1px solid #e5e7eb !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
-        cursor: pointer !important;
+@media (max-width: 560px) {
+    /* ==================================================
+       共通変数
+    ================================================== */
+
+    :root {
+        --bg: #f5f6fa;
+        --card: #fff;
+        --line: #e6e9ef;
+        --blue: #2f4a6a;
+        --blue-dark: #243955;
+        --tab-active: #4c85b6;
+        --radius: 16px;
+        --shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
     }
 
-    .nav-toggle ion-icon {
-        font-size: 28px !important;
+    body {
+        background: var(--bg);
     }
+
+    body.nav-open {
+        overflow: hidden !important;
+    }
+
+    /*
+       JSが hidden class を付け外しして表示制御する。
+       home.mobile.css は home.css より後に読み込まれるため、ここでも明示する。
+    */
+    .hidden,
+    .sp-reserve-btn.hidden,
+    .available-label.hidden,
+    .unavailable-label.hidden {
+        display: none !important;
+    }
+
+    /* ==================================================
+       スマホナビゲーション
+    ================================================== */
 
     body.nav-open .nav-toggle,
     body.nav-open .m-hamburger {
@@ -44,25 +49,25 @@
     }
 
     .m-hamburger {
-        display: block !important;
         position: absolute;
         top: 15px;
         right: 16px;
         z-index: 1100 !important;
-        cursor: pointer;
+        display: block !important;
+        color: var(--blue);
         font-size: 24px;
-        color: #2F4A6A;
+        cursor: pointer;
     }
 
     .m-backdrop {
-        display: none;
         position: fixed;
         top: 0;
         left: 0;
+        z-index: 900 !important;
+        display: none;
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
-        z-index: 900 !important;
     }
 
     body.nav-open .m-backdrop {
@@ -70,76 +75,44 @@
     }
 
     .navigation {
-        display: block !important;
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
+        z-index: 1000 !important;
+        display: block !important;
         width: 260px !important;
         height: 100vh !important;
-        background-color: #1c2b4a !important;
-        z-index: 1000 !important;
-        transform: translateX(-110%) !important;
-        transition: transform 0.3s ease !important;
         padding-top: 20px !important;
         padding-bottom: 20px !important;
         overflow-y: auto !important;
+        background-color: #1c2b4a !important;
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3) !important;
+        transform: translateX(-110%) !important;
+        transition: transform 0.3s ease !important;
     }
 
     body.nav-open .navigation {
         transform: translateX(0) !important;
     }
 
-    body.nav-open {
-        overflow: hidden !important;
-    }
-
     .m-drawer {
         display: none !important;
     }
-}
 
-/* =========================================
-   Smartphone Layout
-   560px以下のスマホ表示専用スタイル
-========================================= */
-@media (max-width: 560px) {
-    /* =========================================
-       01. スマホ用カラー・共通変数
-    ========================================= */
-    :root {
-        --bg: #f5f6fa;
-        --card: #fff;
-        --line: #e6e9ef;
-        --blue: #2F4A6A;
-        --blue2: #243955;
-        --tab-active: #4C85B6;
-        --radius: 16px;
-        --shadow: 0 8px 22px rgba(0, 0, 0, .08);
-    }
-
-    /* =========================================
-       02. スマホ用の全体レイアウト
-       - PC用の左余白を解除
-       - 横幅いっぱいに表示
-    ========================================= */
-    body {
-        background: var(--bg);
-    }
+    /* ==================================================
+       メインレイアウト
+    ================================================== */
 
     .content-area {
         margin-left: 0 !important;
         padding: 10px 16px 18px !important;
     }
 
-    /* =========================================
-       03. ヘッダー・ロゴ・プロフィール
-    ========================================= */
     .header {
-        padding: 6px 0 4px !important;
-        margin: 0 !important;
-        background: transparent !important;
         position: relative;
+        margin: 0 !important;
+        padding: 6px 0 4px !important;
+        background: transparent !important;
     }
 
     .raqoo-logo {
@@ -148,23 +121,23 @@
 
     .profile-box {
         position: static !important;
-        transform: none !important;
         margin: 6px 0 8px auto !important;
         border-radius: 12px !important;
+        transform: none !important;
     }
 
-    /* =========================================
-       04. 検索フォーム
-       - スマホでは1列表示
-       - ボタンは横幅いっぱいにする
-    ========================================= */
+    /* ==================================================
+       検索フォーム
+    ================================================== */
+
+    .search-card,
     .search-form {
+        max-width: none !important;
         margin: 8px auto 10px !important;
         padding: 14px !important;
-        max-width: none !important;
-        background: var(--card) !important;
         border: 1px solid var(--line) !important;
         border-radius: var(--radius) !important;
+        background: var(--card) !important;
         box-shadow: var(--shadow) !important;
     }
 
@@ -174,10 +147,10 @@
     }
 
     #dateInput {
-        font-size: 18px !important;
         padding: 14px 44px 14px 14px !important;
-        border-radius: 12px !important;
         border: 1px solid var(--line) !important;
+        border-radius: 12px !important;
+        font-size: 18px !important;
     }
 
     .form-row-btn {
@@ -187,48 +160,47 @@
     .search-btn {
         width: 100% !important;
         padding: 16px 0 !important;
+        border-radius: 14px !important;
+        background: linear-gradient(180deg, var(--blue), var(--blue-dark)) !important;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12) !important;
         font-size: 20px !important;
         font-weight: 900 !important;
-        border-radius: 14px !important;
-        background: linear-gradient(180deg, var(--blue), var(--blue2)) !important;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, .12) !important;
     }
 
-    /* =========================================
-       05. 日付タブ
-       - 7日分を横並びで表示
-       - active の日付だけ背景色を変更
-    ========================================= */
+    /* ==================================================
+       日付タブ
+    ================================================== */
+
     .day-tabs {
+        position: relative !important;
         display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         flex-wrap: nowrap !important;
         width: 100% !important;
         height: 72px !important;
         margin: 10px auto 6px !important;
         padding: 0 !important;
         gap: 0 !important;
-        justify-content: center !important;
-        align-items: center !important;
-        position: relative !important;
-        background: #b3b3b3 !important;
         border: 1px solid #9ca3af !important;
         border-radius: 12px !important;
+        background: #b3b3b3 !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
     }
 
     .day-tab {
+        display: flex !important;
         flex: 1 1 0 !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
         min-width: 0 !important;
         height: 72px !important;
-        background: transparent !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 6px !important;
         padding: 0 !important;
+        gap: 6px !important;
         border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
+        background: transparent !important;
         box-sizing: border-box !important;
     }
 
@@ -243,31 +215,30 @@
     .day-label,
     .date-label {
         margin: 0 !important;
-        line-height: 1 !important;
         color: #fff !important;
-        opacity: .92 !important;
+        line-height: 1 !important;
+        letter-spacing: 0 !important;
         white-space: nowrap !important;
+        opacity: 0.92 !important;
     }
 
     .day-label {
         font-size: 14px !important;
-        letter-spacing: .2px !important;
     }
 
     .date-label {
         font-size: 13px !important;
-        letter-spacing: 0 !important;
     }
 
     .day-tabs .strip-btn {
         position: absolute !important;
         top: 50% !important;
-        transform: translateY(-50%) !important;
+        z-index: 20 !important;
         width: 30px !important;
         height: 30px !important;
-        background: #6b7280 !important;
         border-radius: 999px !important;
-        z-index: 20 !important;
+        background: #6b7280 !important;
+        transform: translateY(-50%) !important;
     }
 
     .day-tabs .strip-prev {
@@ -278,13 +249,14 @@
         right: -16px !important;
     }
 
-    /* =========================================
-       06. 日付表示・ステータス凡例
-    ========================================= */
+    /* ==================================================
+       日付表示・凡例
+    ================================================== */
+
     .date-display {
-        transform: none !important;
         margin: 4px auto 6px !important;
         text-align: center !important;
+        transform: none !important;
     }
 
     .date-display .date-main {
@@ -298,22 +270,21 @@
     }
 
     .status-bar-2 {
+        justify-content: center !important;
         width: 100% !important;
         max-width: none !important;
         margin: 8px auto 10px !important;
         padding: 8px 12px !important;
-        border-radius: 10px !important;
-        border: 1px solid #d7dbe3 !important;
-        background: #fff !important;
-        justify-content: center !important;
         gap: 18px !important;
+        border: 1px solid #d7dbe3 !important;
+        border-radius: 10px !important;
+        background: #fff !important;
     }
 
-    /* =========================================
-       07. スマホ用予約状況シート
-       - 画面下から出る予約状況パネル
-       - body.sheet-open で表示
-    ========================================= */
+    /* ==================================================
+       スマホ予約状況シート
+    ================================================== */
+
     .m-status-btn {
         display: block !important;
         width: 100% !important;
@@ -323,22 +294,24 @@
         border-radius: 12px !important;
         background: #fff !important;
         font-weight: 900 !important;
+        cursor: pointer;
     }
 
     .m-status-sheet {
-        display: flex !important;
         position: fixed !important;
-        left: 0 !important;
         right: 0 !important;
         bottom: 0 !important;
-        height: 70vh !important;
-        background: #fff !important;
-        border-radius: 18px 18px 0 0 !important;
-        box-shadow: 0 -12px 30px rgba(0, 0, 0, .18) !important;
-        transform: translateY(110%) !important;
-        transition: transform .25s ease !important;
+        left: 0 !important;
         z-index: 9998 !important;
+        display: flex !important;
         flex-direction: column !important;
+        height: 70vh !important;
+        border-radius: 18px 18px 0 0 !important;
+        background: #fff !important;
+        box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.18) !important;
+        overflow: hidden !important;
+        transform: translateY(110%) !important;
+        transition: transform 0.25s ease !important;
     }
 
     body.sheet-open .m-status-sheet {
@@ -346,26 +319,27 @@
     }
 
     .sheet-head {
-        padding: 14px 14px 10px !important;
-        border-bottom: 1px solid #e6e9ef !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
+        padding: 14px 14px 10px !important;
+        border-bottom: 1px solid #e6e9ef !important;
     }
 
     .sheet-title {
-        font-weight: 900 !important;
         font-size: 16px !important;
+        font-weight: 900 !important;
     }
 
     .sheet-close {
         width: 36px !important;
         height: 36px !important;
-        border-radius: 12px !important;
         border: 1px solid #e6e9ef !important;
+        border-radius: 12px !important;
         background: #fff !important;
         font-size: 22px !important;
         line-height: 1 !important;
+        cursor: pointer;
     }
 
     .sheet-body {
@@ -373,85 +347,176 @@
         overflow: auto !important;
     }
 
-    .sheet-row {
-        border: 1px solid #e6e9ef !important;
-        border-radius: 12px !important;
-        padding: 10px !important;
-        margin-bottom: 10px !important;
-    }
+    /* ==================================================
+       スマホ予約状況シート内カード
+       home.js が .my-card / .my-badge 系を生成する
+    ================================================== */
 
-    .sheet-room {
-        font-weight: 900 !important;
-        margin-bottom: 8px !important;
-    }
-
-    .sheet-grid {
-        display: grid !important;
-        grid-template-columns: repeat(6, 1fr) !important;
-        gap: 6px !important;
-    }
-
-    .sheet-cell {
-        border-radius: 10px !important;
-        padding: 8px 0 !important;
+    .my-empty {
+        padding: 18px 12px !important;
+        color: #6b7280 !important;
+        font-weight: 700 !important;
         text-align: center !important;
-        font-weight: 900 !important;
-        font-size: 12px !important;
-        border: 1px solid #e6e9ef !important;
     }
 
-    .sheet-ok {
+    .my-card {
+        margin-bottom: 12px !important;
+        padding: 14px !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 14px !important;
+        background: #fff !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    }
+
+    .my-card.is-approved {
+        border-color: #60a5fa !important;
         background: #eff6ff !important;
     }
 
-    .sheet-ng {
-        background: #f3f4f6 !important;
-        color: #6b7280 !important;
+    .my-top {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        margin-bottom: 12px !important;
     }
 
-    /* =========================================
-       08. 階数フィルター
-       - スマホでは縦並び寄りに調整
-    ========================================= */
+    .my-room {
+        color: #1f2937 !important;
+        font-size: 16px !important;
+        font-weight: 900 !important;
+    }
+
+    .my-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 70px !important;
+        padding: 4px 10px !important;
+        border-radius: 9999px !important;
+        font-size: 12px !important;
+        font-weight: 900 !important;
+        white-space: nowrap !important;
+    }
+
+    .my-badge.pending {
+        background: #fef3c7 !important;
+        color: #b45309 !important;
+    }
+
+    .my-badge.reserved {
+        background: #dbeafe !important;
+        color: #1d4ed8 !important;
+    }
+
+    .my-badge.in_use {
+        background: #d1fae5 !important;
+        color: #047857 !important;
+    }
+
+    .my-badge.completed {
+        background: #e5e7eb !important;
+        color: #374151 !important;
+    }
+
+    .my-badge.cancelled,
+    .my-badge.rejected,
+    .my-badge.other {
+        background: #fee2e2 !important;
+        color: #b91c1c !important;
+    }
+
+    .my-mid {
+        display: grid !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .my-item {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        font-size: 14px !important;
+    }
+
+    .my-k {
+        color: #6b7280 !important;
+        font-weight: 800 !important;
+    }
+
+    .my-v {
+        color: #1f2937 !important;
+        font-weight: 900 !important;
+        text-align: right !important;
+    }
+
+    .my-time {
+        color: #4b5563 !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
+    }
+
+    .my-actions {
+        display: flex !important;
+        justify-content: flex-end !important;
+    }
+
+    .my-detail {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 8px 12px !important;
+        border-radius: 8px !important;
+        background: var(--blue) !important;
+        color: #fff !important;
+        font-size: 13px !important;
+        font-weight: 900 !important;
+        text-decoration: none !important;
+    }
+
+    /* ==================================================
+       階数フィルター
+    ================================================== */
+
     .floor-filter-container {
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 10px !important;
-        margin: 24px 0 20px !important;
         width: 100% !important;
+        margin: 24px 0 20px !important;
         padding: 0 !important;
+        gap: 10px !important;
     }
 
     .floor-filter-label {
-        font-size: 14px !important;
         margin-left: 2px !important;
         color: #4b5563 !important;
+        font-size: 14px !important;
         font-weight: 900 !important;
     }
 
     .floor-filter-list {
         display: flex !important;
         flex-wrap: wrap !important;
-        gap: 8px !important;
         width: 100% !important;
         padding: 0 !important;
+        gap: 8px !important;
     }
 
     .floor-chip {
         flex: 0 0 auto !important;
         height: 38px !important;
         padding: 0 16px !important;
-        font-size: 13px !important;
-        border-radius: 19px !important;
         margin-bottom: 4px !important;
+        border-radius: 19px !important;
+        font-size: 13px !important;
     }
 
-    /* =========================================
-       09. 教室カード：スマホ用レイアウト
-       - PC用レイアウトを非表示
-       - スマホ用の横並びカードに変更
-    ========================================= */
+    /* ==================================================
+       スマホ教室カード
+    ================================================== */
+
     .pc-layout {
         display: none !important;
     }
@@ -468,21 +533,12 @@
     }
 
     .room-title {
+        margin: 0 !important;
+        padding: 6px 2px !important;
         background: transparent !important;
         color: #111 !important;
         font-size: 20px !important;
         font-weight: 900 !important;
-        padding: 6px 2px 6px !important;
-        margin: 0 !important;
-    }
-
-    .room-capacity {
-        display: block !important;
-        font-size: 12px !important;
-        font-weight: 500 !important;
-        margin-left: 0 !important;
-        margin-top: 2px !important;
-        color: #6b7280 !important;
     }
 
     .room-times {
@@ -491,40 +547,38 @@
         gap: 12px !important;
         margin-top: 6px !important;
         padding: 0 !important;
-        background: transparent !important;
         border: none !important;
+        background: transparent !important;
     }
 
     .time-card {
+        position: relative !important;
         width: 100% !important;
         height: auto !important;
         min-height: 74px !important;
-        background: #fff !important;
+        margin-bottom: 0 !important;
         border: 1px solid #e6e9ef !important;
         border-radius: 12px !important;
+        background: #fff !important;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
-        margin-bottom: 0 !important;
         text-decoration: none !important;
         transition: none !important;
-        position: relative !important;
     }
 
     .time-card:hover {
-        transform: none !important;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
+        transform: none !important;
     }
 
-    .time-card.locked {
+    .time-card.locked,
+    .time-card[aria-disabled="true"] {
         pointer-events: none !important;
         cursor: default !important;
     }
 
-    /* =========================================
-       10. 教室カード：ステータス別背景
-    ========================================= */
     .time-card.available {
-        background: #fff !important;
         border: 1px solid #e6e9ef !important;
+        background: #fff !important;
     }
 
     .time-card.pending {
@@ -548,56 +602,60 @@
         opacity: 0.8 !important;
     }
 
-    /* =========================================
-       11. 教室カード：時限表示
-    ========================================= */
+    .time-card.conflict {
+        border: 2px solid #fb923c !important;
+        background: #fff7ed !important;
+    }
+
+    .time-card.selecting {
+        border: 2px solid #facc15 !important;
+        background: #fefce8 !important;
+    }
+
     .sp-period-box {
         display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
         align-items: center !important;
+        justify-content: center !important;
+        flex-direction: column !important;
+        flex-shrink: 0 !important;
         width: 48px !important;
         height: 48px !important;
-        background: #fff !important;
         border: 1px solid #e5e7eb !important;
         border-radius: 10px !important;
-        flex-shrink: 0 !important;
+        background: #fff !important;
     }
 
     .sp-period-box .p-num {
+        color: #4b5563 !important;
         font-size: 18px !important;
         font-weight: 900 !important;
-        color: #4b5563 !important;
         line-height: 1 !important;
     }
 
     .sp-period-box .p-text {
+        margin-top: 2px !important;
+        color: #9ca3af !important;
         font-size: 10px !important;
         font-weight: bold !important;
-        color: #9ca3af !important;
-        margin-top: 2px !important;
     }
 
-    /* =========================================
-       12. 教室カード：時間・ステータス表示
-    ========================================= */
     .sp-info-box {
-        flex: 1 !important;
         display: flex !important;
+        flex: 1 !important;
         flex-direction: column !important;
-        justify-content: center !important;
         align-items: flex-start !important;
+        justify-content: center !important;
         padding: 0 14px !important;
     }
 
     .sp-time-row {
         display: flex !important;
         align-items: center !important;
+        margin-bottom: 4px !important;
+        color: #111827 !important;
+        font-family: Arial, sans-serif !important;
         font-size: 16px !important;
         font-weight: 900 !important;
-        color: #111827 !important;
-        margin-bottom: 4px !important;
-        font-family: Arial, sans-serif !important;
     }
 
     .sp-time-row .tilde {
@@ -606,16 +664,16 @@
     }
 
     .sp-status-area {
+        margin-top: 2px !important;
         font-size: 12px !important;
         font-weight: 900 !important;
-        margin-top: 2px !important;
     }
 
     .sp-status-area .available-label {
-        color: #3b82f6 !important;
-        background: #eff6ff !important;
         padding: 2px 8px !important;
         border-radius: 10px !important;
+        background: #eff6ff !important;
+        color: #3b82f6 !important;
     }
 
     .time-card.unavailable .unavailable-label {
@@ -623,29 +681,40 @@
     }
 
     .time-card.pending .unavailable-label {
-        color: #d97706 !important;
-        background: #fef3c7 !important;
         padding: 2px 8px !important;
         border-radius: 10px !important;
+        background: #fef3c7 !important;
+        color: #d97706 !important;
     }
 
     .time-card.reserved .unavailable-label {
-        color: #2563eb !important;
-        background: #dbeafe !important;
         padding: 2px 8px !important;
         border-radius: 10px !important;
+        background: #dbeafe !important;
+        color: #2563eb !important;
     }
 
     .time-card.in_use .unavailable-label {
-        color: #059669 !important;
-        background: #d1fae5 !important;
         padding: 2px 8px !important;
         border-radius: 10px !important;
+        background: #d1fae5 !important;
+        color: #059669 !important;
     }
 
-    /* =========================================
-       13. 教室カード：予約ボタン
-    ========================================= */
+    .time-card.conflict .unavailable-label {
+        padding: 2px 8px !important;
+        border-radius: 10px !important;
+        background: #ffedd5 !important;
+        color: #c2410c !important;
+    }
+
+    .time-card.selecting .unavailable-label {
+        padding: 2px 8px !important;
+        border-radius: 10px !important;
+        background: #fef9c3 !important;
+        color: #a16207 !important;
+    }
+
     .sp-action-box {
         flex-shrink: 0 !important;
     }
@@ -653,18 +722,20 @@
     .sp-reserve-btn {
         display: inline-block !important;
         padding: 8px 16px !important;
-        background: #4C85B6 !important;
+        border-radius: 8px !important;
+        background: #4c85b6 !important;
         color: #fff !important;
+        box-shadow: 0 2px 6px rgba(76, 133, 182, 0.3) !important;
         font-size: 13px !important;
         font-weight: 900 !important;
-        border-radius: 8px !important;
-        box-shadow: 0 2px 6px rgba(76, 133, 182, 0.3) !important;
     }
 
     .time-card.unavailable .sp-reserve-btn,
     .time-card.pending .sp-reserve-btn,
     .time-card.reserved .sp-reserve-btn,
     .time-card.in_use .sp-reserve-btn,
+    .time-card.conflict .sp-reserve-btn,
+    .time-card.selecting .sp-reserve-btn,
     .time-card.locked .sp-reserve-btn {
         display: none !important;
     }
