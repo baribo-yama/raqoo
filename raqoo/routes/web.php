@@ -124,9 +124,6 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
     Route::get('/reservations-history', [UserReservationController::class, 'history'])->name('user.reservations.history');
 
-    // ★ チェックボックスON/OFF時のselecting作成・削除API
-    Route::post('/reservations/selecting/toggle', [UserReservationController::class, 'toggleSelecting'])->name('user.reservations.selecting.toggle');
-
     // ユーザー通知
     Route::get('/notifications', [UserNotificationController::class, 'index'])->name('user.notifications.index');
 

@@ -42,12 +42,6 @@
                         <input type="hidden" name="room_id" value="{{ $room->id }}">
                         <input type="hidden" name="date" value="{{ $date }}">
 
-                        <div id="selectingMeta"
-                            data-room-id="{{ $room->id }}"
-                            data-date="{{ $date }}"
-                            data-toggle-url="{{ route('user.reservations.selecting.toggle') }}"
-                        ></div>
-
                         <div class="mb-6 p-4 bg-gray-100 rounded-lg border border-gray-200">
                             <h3 class="text-lg font-bold mb-3 text-gray-800 border-b pb-2">基本情報</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
