@@ -27,10 +27,7 @@ class RoomStatusController extends Controller
             'date' => 'required|date',
         ]);
 
-        clock($validated);
-
         $date = $validated['date'];
-
         $userId = Auth::id();
         $rooms = Room::all();
 
@@ -60,10 +57,14 @@ class RoomStatusController extends Controller
                 ->all()
         );
 
-
+        clock(now());
         // 各部屋の各時限に対しての予約状況をチェックする
         $statuses = [];
+        // 時刻テスト用変数APP_FAKE_が設定されていればそれ使う
         $now = env("APP_FAKE_NOW") ? \Carbon\Carbon::parse(env('APP_FAKE_NOW')) : now();
+        // today()使う代わりに$nowの日付時刻をコピーしてstartOfDay()でその日の初めに設定してtoday()と同じ振る舞いにする
+        // 例：now() → 2026-06-20 14:00:21 / today() → 2026-06-20 00:00:00
+        $today = $now->copy()->startOfDay();
         foreach ($rooms as $room) {
             for ($period = 1; $period <= 6; $period++) {
                 $status = $room->getStatusForPeriod($date, $period, $userId, $lessonMap, $reservationMap);
@@ -77,7 +78,7 @@ class RoomStatusController extends Controller
 
                 // 今の時刻が、各roomの終了時刻より後なら、その部屋を利用不可にする
                 // 今日に対してのみ行う
-                if (Carbon::parse($date)->isSameDay(Carbon::today())) {
+                if (Carbon::parse($date)->isSameDay($today)) {
                     $startTime = Carbon::parse(config("period.{$period}.start_time"));  // startTime使われてないよ
                     $endTime = Carbon::parse(config("period.{$period}.end_time"));
                     if ($now->greaterThan($endTime)) {

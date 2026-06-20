@@ -75,9 +75,12 @@ class ReservationController extends Controller
     /**
      * 予約申請フォームの表示
      */
-    // TODO:フォームを開いた時点でほかの人には対象教室をロックする（前selectingに該当する処理
+    // TODO:6/20フォームを開いた時点でほかの人には対象教室をロックするやつ実装する（前selectingに該当する処理
     public function create(Request $request)
     {
+        $date   = $request->date;
+        $period = (int) $request->period;
+
         /**
          * 今日の予約がすでにある場合、その終了時刻に達するまでその日の新たな予約はできないようにする
          */
@@ -102,7 +105,7 @@ class ReservationController extends Controller
             $endTime = Carbon::parse($endTimeConfig);
 
             // すでに今日の予約がある場合：現在の時刻が終了時刻より前（現在時刻 < 終了時刻）なら新規予約ブロックする
-            if (Carbon::parse($request->date)->isSameDay(Carbon::today()) && now()->lessThan($endTime)) {
+            if (Carbon::parse($date)->isSameDay(Carbon::today()) && now()->lessThan($endTime)) {
                 return redirect()
                     ->route('user.home.index')
                     ->with('error', '今日の予約の利用が終了してから新たに予約してください');
@@ -111,19 +114,14 @@ class ReservationController extends Controller
 
         // URL直叩きブロック処理
         // TODO:この$periodだけ単数になってるのなぜ？ hasEndedPeriodの引数にはarray型のperiodsが入るはず
-        $period = (int) $request->period;
-
-        clock($period); // デバッグ
-
-        if ($period && $this->hasEndedPeriod($request->date, [$period])) {
+        if ($period && $this->hasEndedPeriod($date, [$period])) {
             return redirect()
                 ->route('user.home.index')
                 ->with('error', '選択された時限はすでに終了しています。別の日時を選んでください。');
         }
 
         // 明日以降の各日は2件以上の予約不可 1件までしか予約できません！の処理
-        $date = $request->date;
-        if (Carbon::parse($request->date)->greaterThan(Carbon::today())) {
+        if (Carbon::parse($date)->greaterThan(Carbon::today())) {
             $isExist = Reservation::where('user_id', Auth::id())
                 ->where('date', $date)
                 ->whereIn('status', ['pending', 'reserved', 'in_use'])
@@ -141,26 +139,14 @@ class ReservationController extends Controller
         $maxDate = Carbon::today()->addDays(14)->toDateString();
         $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
 
+        // 選択した教室が存在していなかった場合エラー表示
         if (!$selectedRoom) {
             return redirect()->route('user.home.index')
                 ->with('error', '教室がみつかりません。');
         }
 
-        //-------以下のコードの意図がわからない------//
-        // $date = $validated['date'];
-        // $room = $selectedRoom;
-
-        // // period が無い場合は periods[] の先頭を代表時限として扱う
-        // $period = $validated['period'] ?? null;
-
-        // if (!$period && !empty($validated['periods'])) {
-        //     $periods = array_map('intval', $validated['periods']);
-        //     sort($periods);
-        //     $period = $periods[0];
-        // }
-
         // 2週間を超えていたらエラー表示
-        if ($request->date > $maxDate) {
+        if ($date > $maxDate) {
             return redirect()->route('user.home.index')
                 ->with('error', '予約できるのは2週間先までです。');
         }
@@ -168,9 +154,7 @@ class ReservationController extends Controller
         /**
          * 予約と授業の取得
          */
-        $date   = $request->date;
-        $room   = $selectedRoom;
-        $period = (int) $request->period;
+        $room = $selectedRoom;
 
         $reservedPeriods = Reservation::where('room_id', $room->id)
             ->where('date', $date)
@@ -336,11 +320,6 @@ class ReservationController extends Controller
                     'period' => $validated['periods'][0] ?? null, // create手側がもしperiodを期待しているなら
                 ])->withErrors(['error' => '同時刻にすでにあなたの予約があるため予約できません']);
             }
-
-            // ↑の代替案　リダイレクト方法が異なる
-            // if ($conflict) {
-            //     return back()->withErrors(['error' => '同時刻にすでに予約（申請含む）があるため予約できません。'])->withInput();
-            // }
 
             // 2コマ連続予約してる場合、forで1件ずつ予約をDBに保存する
             foreach ($validated['periods'] as $period) {
