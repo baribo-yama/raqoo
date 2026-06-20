@@ -63,6 +63,7 @@ class RoomStatusController extends Controller
 
         // 各部屋の各時限に対しての予約状況をチェックする
         $statuses = [];
+        $now = env("APP_FAKE_NOW") ? \Carbon\Carbon::parse(env('APP_FAKE_NOW')) : now();
         foreach ($rooms as $room) {
             for ($period = 1; $period <= 6; $period++) {
                 $status = $room->getStatusForPeriod($date, $period, $userId, $lessonMap, $reservationMap);
@@ -79,7 +80,7 @@ class RoomStatusController extends Controller
                 if (Carbon::parse($date)->isSameDay(Carbon::today())) {
                     $startTime = Carbon::parse(config("period.{$period}.start_time"));  // startTime使われてないよ
                     $endTime = Carbon::parse(config("period.{$period}.end_time"));
-                    if (now()->greaterThan($endTime)) {
+                    if ($now->greaterThan($endTime)) {
                         $status = 'unavailable';
                     }
                 }

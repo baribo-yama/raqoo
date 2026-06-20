@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class TimeGuardMiddleware
 {
     /**
-     * Handle an incoming request.
+     * 予約時間外にアクセスしようとした際に /unavailabeページに飛ばす処理
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
