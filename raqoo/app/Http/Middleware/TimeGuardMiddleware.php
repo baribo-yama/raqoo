@@ -21,8 +21,10 @@ class TimeGuardMiddleware
         $now = env('APP_FAKE_NOW') ? \Carbon\Carbon::parse(env('APP_FAKE_NOW')) : now();
         $time = $now->format('H:i'); // 現在時刻を24時間で表示する
 
+
         // 平日は9:10～19:30までしか利用できない
-        if ($now->isWeekday()) {
+        // isWeekday()は「平日かどうか」をチェックする
+        if ($now->isWeekday()) {  // もし今日（$now)が平日なら以下を実行する
             if ($time > '19:30' || $time < '09:10') {
                 return redirect()->route('unavailable');
             }

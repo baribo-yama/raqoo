@@ -24,7 +24,8 @@ class ReservationController extends Controller
      * @param array $periods 判定対象の時限IDの配列
      * @return bool ひとつでも終了済みの時限があればtrue
      **/
-    // 終了時刻を過ぎていたらアウト（true）を返す
+
+    // 教室利用の終了時刻を過ぎていたらアウト（true）を返すプライベートメソッド
     private function hasEndedPeriod(string $date, array $periods): bool  // arrayなのは予約が連続2コマの場合もあるため
     {
         // 予約対象日が「今日」でない場合は、時間の判定自体が不要のためfalse
@@ -35,7 +36,7 @@ class ReservationController extends Controller
 
         // 各時限ごとに限時刻が終了時間を過ぎていないか確認
         foreach ($periods as $period) {
-            $endTimeConfig = config("period.{$period}.end_time");
+            $endTimeConfig = config("period.{$period}.end_time");  // $endTimeはraqoo/config/period.phpで定義されている
 
             // 終了時刻が設定されていなかったらスキップして次のperiodを見に行く
             if (!$endTimeConfig) {
@@ -56,12 +57,27 @@ class ReservationController extends Controller
     }
 
     /**
-     * 予約申請フォームの表示
-     * フォームを開いた時点で selecting レコードを作成して一時ロックする
+     * 2コマ選択された場合、それが「1限と2限」のように連続しているかをチェックするメソッド
      */
+    // 連続してたらtrue, してなければfalseを返す
+    // 連続コマなので、periods配列を引数とする（最低1コマ、最大2コマ
+    private function isConsecutivePeriods(array $periods): bool
+    {
+        for ($i = 1; $i < count($periods); $i++) {
+            if ($periods[$i] - $periods[$i - 1] !== 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
+     * 予約申請フォームの表示
+     */
+    // TODO:フォームを開いた時点でほかの人には対象教室をロックする（前selectingに該当する処理
     public function create(Request $request)
     {
-
         /**
          * 今日の予約がすでにある場合、その終了時刻に達するまでその日の新たな予約はできないようにする
          */
@@ -94,14 +110,18 @@ class ReservationController extends Controller
         }
 
         // URL直叩きブロック処理
+        // TODO:この$periodだけ単数になってるのなぜ？ hasEndedPeriodの引数にはarray型のperiodsが入るはず
         $period = (int) $request->period;
+
+        clock($period); // デバッグ
+
         if ($period && $this->hasEndedPeriod($request->date, [$period])) {
             return redirect()
                 ->route('user.home.index')
                 ->with('error', '選択された時限はすでに終了しています。別の日時を選んでください。');
         }
 
-        // 明日以降の各日は2件以上の予約不可 1件までしか予約できません！
+        // 明日以降の各日は2件以上の予約不可 1件までしか予約できません！の処理
         $date = $request->date;
         if (Carbon::parse($request->date)->greaterThan(Carbon::today())) {
             $isExist = Reservation::where('user_id', Auth::id())
@@ -114,7 +134,6 @@ class ReservationController extends Controller
                     ->with('error', '1件すでに予約が入っているのでできません');
             }
         }
-
 
         /**
          * 今日から二週間分（14日分）の予定だけ表示させる
@@ -145,7 +164,6 @@ class ReservationController extends Controller
             return redirect()->route('user.home.index')
                 ->with('error', '予約できるのは2週間先までです。');
         }
-
 
         /**
          * 予約と授業の取得
@@ -199,12 +217,11 @@ class ReservationController extends Controller
         $periods = array_map('intval', $validated['periods']);
         sort($periods);
 
-        for ($i = 1; $i < count($periods); $i++) {
-            if ($periods[$i] - $periods[$i - 1] !== 1) {
-                return back()
-                    ->withErrors(['periods' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
-                    ->withInput();
-            }
+        // 2コマ予約時に連続した時限になっているかチェック
+        if (!$this->isConsecutivePeriods($periods)) {
+            return back()
+                ->withErrors(['periods' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
+                ->withInput();
         }
 
         $existing = Reservation::where('room_id', $validated['room_id'])
@@ -255,23 +272,24 @@ class ReservationController extends Controller
             'members'    => 'nullable|string', // 利用メンバーは空でもOK（nullable
         ]);
 
+        $date = $validated['date'];
+        $periods = $validated['periods']; // バリデーション（型）が正しいことが証明されたやつだけを使う
+
         // URL直叩きブロック処理：すでに過ぎてしまった時間（時限）の予約をしようとしていないかをチェック
-        if ($this->hasEndedPeriod($validated['date'], $validated['periods'])) {
+        if ($this->hasEndedPeriod($date, $periods)) {
             return back()
                 ->withErrors(['periods' => '選択された時限は既に終了しています。別の時間を選択してください。'])
                 ->withInput();
         }
 
-        $periods = $validated['periods'];  // バリデーション（型）が正しいことが証明されたやつだけを使う
-        sort($periods);  // 下の$periods[$i] - $periods[$i - 1] !== 1が正しく動作するために昇順に並べ替え
+        // 下の$periods[$i] - $periods[$i - 1] !== 1が正しく動作するために昇順に並べ替え
+        sort($periods);
 
         // 2コマ選択された場合、それが「1限と2限」のように連続しているかをチェック
-        for ($i = 1; $i < count($periods); $i++) {
-            if ($periods[$i] - $periods[$i - 1] !== 1) {
-                return back()
-                    ->withErrors(['error' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
-                    ->withInput();
-            }
+        if (!$this->isConsecutivePeriods($periods)) {
+            return back()
+                ->withErrors(['periods' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
+                ->withInput();
         }
 
         return DB::transaction(function () use ($validated, $periods) {   // 関数の外（スコープ外）にある変数をuseで使えるようにする
@@ -303,7 +321,6 @@ class ReservationController extends Controller
             // 選択した時限の教室に他の人の予約が入ってる、もしくは授業が登録されている場合ブロックする（アラートを出す）
             if ($otherPersonReservation || $existingLesson) {
                 $firstPeriod = min($periods);
-
                 return redirect()->route('user.reservations.create', [
                     'room_id' => $validated['room_id'],
                     'date'    => $validated['date'],
@@ -443,5 +460,4 @@ class ReservationController extends Controller
 
         return response()->json($rows);
     }
-
 }
