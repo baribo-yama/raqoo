@@ -37,6 +37,87 @@ function appendModalButton(body, id, text) {
     return btn;
 }
 
+// ★ メンバーをチェックボックス付きテーブルで表示する関数
+function appendMemberTable(body, representative, membersRaw) {
+    // 代表者と全メンバーを1つのリストにまとめる
+    const allMembers = [];
+
+    // 代表者を先頭に追加
+    if (representative) {
+        allMembers.push({ name: representative, isRepresentative: true });
+    }
+
+    // membersは改行区切りの文字列なので分割して追加（空行は除外）
+    if (membersRaw) {
+        const memberNames = membersRaw.split('\n').map(s => s.trim()).filter(s => s !== '');
+        memberNames.forEach(name => {
+            allMembers.push({ name, isRepresentative: false });
+        });
+    }
+
+    // テーブルを作成
+    const table = document.createElement('table');
+    table.className = 'member-checklist-table';
+
+    // ヘッダー行
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+        <tr>
+            <th class="member-checklist-no">No.</th>
+            <th class="member-checklist-name">氏名</th>
+            <th class="member-checklist-role">役割</th>
+            <th class="member-checklist-check">確認</th>
+        </tr>
+    `;
+    table.appendChild(thead);
+
+    // メンバー行
+    const tbody = document.createElement('tbody');
+    allMembers.forEach((member, index) => {
+        const tr = document.createElement('tr');
+
+        const tdNo = document.createElement('td');
+        tdNo.className = 'member-checklist-no';
+        tdNo.textContent = index + 1;
+
+        const tdName = document.createElement('td');
+        tdName.className = 'member-checklist-name';
+        tdName.textContent = member.name;
+
+        const tdRole = document.createElement('td');
+        tdRole.className = 'member-checklist-role';
+        tdRole.textContent = member.isRepresentative ? '代表者' : 'メンバー';
+
+        const tdCheck = document.createElement('td');
+        tdCheck.className = 'member-checklist-check';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'member-checkbox';
+        checkbox.setAttribute('aria-label', `${member.name}の確認`);
+        tdCheck.appendChild(checkbox);
+
+        tr.appendChild(tdNo);
+        tr.appendChild(tdName);
+        tr.appendChild(tdRole);
+        tr.appendChild(tdCheck);
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    body.appendChild(table);
+
+    // 全チェック/解除ボタン
+    const toggleBtn = document.createElement('button');
+    toggleBtn.textContent = 'すべてチェック';
+    toggleBtn.className = 'member-checklist-toggle-btn';
+    toggleBtn.addEventListener('click', () => {
+        const checkboxes = table.querySelectorAll('.member-checkbox');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => cb.checked = !allChecked);
+        toggleBtn.textContent = allChecked ? 'すべてチェック' : 'すべて解除';
+    });
+    body.appendChild(toggleBtn);
+}
+
 // セルに予約、または授業情報が入ってる、または空の場合に表示させるやつ
 function showCellDetailModal(roomId, periodId, date, cell) {
     const modal = document.getElementById('cellDetailModal');
@@ -46,16 +127,14 @@ function showCellDetailModal(roomId, periodId, date, cell) {
     // csrfトークンの定義
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
-    if (!modal || !overlay || !body) return;  // 要素かoverlay要素かbody要素のどちらか1つでも見つからなかったら終了する（早期return）
+    if (!modal || !overlay || !body) return;
 
-    // ここでAPIを呼んでtypeによってmodalの表示内容を切り替える
-    // RoomStatusControllerのgetCellDetail()で処理
     fetch(`/admin/room-cell-detail?room_id=${roomId}&date=${date}&period=${periodId}`)
         .then(res => {
             if (!res.ok) throw new Error(`Http error: ${res.status}`);
             return res.json();
-        })  // レスポンスを受け取る
-        .then(data => {  // レスポンス内にあるデータを展開して取得
+        })
+        .then(data => {
 
             // セルが空の場合→授業名を登録
             if (data.type === 'empty') {
@@ -67,50 +146,38 @@ function showCellDetailModal(roomId, periodId, date, cell) {
                     </form>
                 `;
 
-                // 1. フォームの要素を取得（? は、もしフォームがなくてもエラーにしない安全装置）
                 const form = document.getElementById('lessonForm');
-
                 form?.addEventListener('submit', (e) => {
-                    // 2. 【超重要】ブラウザが勝手にページをリロードするのを止める
-                    // これがないと、fetchの返事が来る前にページが真っ白になって処理が途切れてしまう
                     e.preventDefault();
-
-                    // 3. 入力された「授業名」を取り出し、前後の無駄な空白を消す
                     const title = form.title.value.trim();
-
-                    // 4. もし授業名が空っぽだったら、これ以上先の処理（サーバーへの送信）はしない
                     if (!title) return;
 
-                    // 5. サーバー（Laravel）に非同期で「保存して！」と注文を出す
                     fetch('/admin/room-lesson', {
-                        method: 'POST', // データの新規作成・送信なのでPOST
+                        method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json', // 「JSON形式のデータを送るよ」という宣言
-                            'X-CSRF-TOKEN': csrf, // Laravelが「正規の送信だ」と判断するためのセキュリティトークン
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrf,
                         },
-                        // 6. サーバーが受け取れるように、連想配列をJSONという文字列に変換して送る
-                        body: JSON.stringify({  // キーと名前が同じなら省略しても書ける→ body: JSON.stringify({ room_id: roomId, date, period: periodId, title}),
+                        body: JSON.stringify({
                             room_id: roomId,
                             date: date,
                             period: periodId,
                             title: title
                         }),
                     }).then(() => {
-                        // 7. サーバーから無事に「成功」の返事が届いた後の処理
-                        // closeModal();         // 入力フォーム（モーダル）を閉じる
-                        renderRoomTable();    // ページをリロードせずに、時間割テーブルを最新の状態に更新する
+                        renderRoomTable();
                     }).catch((error) => {
-                        // （おまけ）通信エラーなどが起きた場合の予備処理
                         console.error('保存に失敗しました:', error);
                     });
                 });
 
-            // 予約がある場合→予約キャンセル
+            // ★ 予約がある場合→メンバーチェックボックステーブル＋予約キャンセル
             } else if (data.type === 'reservation') {
                 clearModalBody(body);
                 appendModalHeading(body, '予約情報');
-                appendModalTextRow(body, '代表者', data.reservation.representative);
-                appendModalTextRow(body, 'メンバー', data.reservation.members);
+
+                // ★ チェックボックス付きメンバーテーブルを表示
+                appendMemberTable(body, data.reservation.representative, data.reservation.members);
 
                 const cancelBtn = appendModalButton(body, 'cancelReservationBtn', '予約キャンセル');
                 cancelBtn.addEventListener('click', () => {
@@ -122,7 +189,6 @@ function showCellDetailModal(roomId, periodId, date, cell) {
                         },
                         body: JSON.stringify({ reservation_id: data.reservation.id }),
                     }).then(() => {
-                        // closeModal();　TODO:授業登録時、キャンセル時に自動でモーダルを非表示にしたい場合は別途でcloseModal()を実装する必要あり
                         renderRoomTable();
                     }).catch((error) => {
                         console.error('予約キャンセルに失敗しました:', error);
@@ -145,7 +211,6 @@ function showCellDetailModal(roomId, periodId, date, cell) {
                         },
                         body: JSON.stringify({ room_id: roomId, date, period: periodId }),
                     }).then(() => {
-                        // closeModal();
                         renderRoomTable();
                     }).catch((error) => {
                         console.error('授業キャンセルに失敗しました:', error);
@@ -163,19 +228,15 @@ function showCellDetailModal(roomId, periodId, date, cell) {
 
 // ページ読み込み時DOMが生成されたときにはじめに読み込まれる
 document.addEventListener('DOMContentLoaded', () => {
-    // const modalClose = document.getElementById('modalClose');
     const modal = document.getElementById('cellDetailModal');
     const overlay = document.getElementById('overlay');
 
     if (!modal || !overlay) return;
 
-    // モーダル非表示処理
-    // 親要素cellDetailModalにつけてるので、子要素であるmodalCloseにもクリック処理は引き継がれる（今回はidではなくclass=modal-closeを指定）
-    modal.addEventListener('click', (e) => {  // eの中には「どの要素がクリックされたか」が入っている（クリックに関する情報のまとまり）
-        if (e.target.classList.contains('modal-close')) {   // e.targetは実際にクリックされたDOM要素
+    modal.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-close')) {
             modal.classList.remove('active');
             overlay.classList.remove('active');
         }
     });
-
 });

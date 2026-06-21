@@ -46,7 +46,7 @@
                 <button type="submit" class="login-btn">ログイン</button>
       </form>
       <div id="up" class="mt-2">
-        <a href="{{ url('/signup') }}">サインアップ</a>
+        <a href="{{ url('/signup') }}">新規登録</a>
       </div>
     </div>
   </div>
