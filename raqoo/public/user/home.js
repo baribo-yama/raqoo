@@ -1,37 +1,35 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // 日付や曜日の表示をそろえるために、曜日の配列と日付変換用の関数が用意する
   const jaWeek = ["日", "月", "火", "水", "木", "金", "土"];
-  // 数値を2桁ゼロ埋めして文字列化する（例: 3 -> "03"）
   const pad2 = (n) => String(n).padStart(2, "0");
-  // Dateを "YYYY-MM-DD" 形式の文字列に変換する
   const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-  // Dateを "MM/DD" 形式の文字列に変換する（表示用）
   const toMMDD = (d) => `${pad2(d.getMonth() + 1)}/${pad2(d.getDate())}`;
 
-  // 画面幅が560px以下（スマホ想定）かどうかを返す
+  // 画面幅が560px以下かどうかを調べる関数（スマホ想定）
   const isMobile560 = () => window.matchMedia("(max-width: 560px)").matches;
 
-  // DOM参照（画面内の各要素。存在しないページでも落ちないように optional chaining を多用）
+  // 日付表示の更新で使うHTML要素（日付・曜日・選択中の日付を持つ要素）を取得している
   const mainEl = document.querySelector(".date-main");
   const wdayEl = document.querySelector(".date-weekday");
   const dateInput = document.querySelector("#dateInput");
 
-  // 週ストリップ（曜日タブ）と左右ナビゲーション
+  // 曜日タブ、戻るボタン、進むボタンのHTML要素を取得する
   const tabs = document.querySelectorAll(".day-tabs .day-tab");
   const prevBtn = document.querySelector(".strip-prev");
   const nextBtn = document.querySelector(".strip-next");
 
-  // --- シートDOM ---
+  // 予約状況シートを操作するために、開閉ボタンとシート本体・予約情報の表示場所を取得している
   const openSheetBtn = document.querySelector("#openStatusSheet");
   const closeSheetBtn = document.querySelector("#closeStatusSheet");
   const sheet = document.querySelector("#statusSheet");
   const sheetBody = document.querySelector("#statusSheetBody");
 
-  // 予約状況シートを表示状態にする（bodyのクラスとaria-hiddenを更新）
+  // 予約状況シートの開閉状態を切り替える関数
   const openSheet = () => {
     document.body.classList.add("sheet-open");
     sheet?.setAttribute("aria-hidden", "false");
-  };
-  // 予約状況シートを非表示状態に戻す（bodyのクラスとaria-hiddenを更新）
+  };　
+  
   const closeSheet = () => {
     document.body.classList.remove("sheet-open");
     sheet?.setAttribute("aria-hidden", "true");
