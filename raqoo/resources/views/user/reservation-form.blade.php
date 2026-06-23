@@ -82,6 +82,7 @@
 
                         @php
                             $oldMembers = old('members') ? explode("\n", old('members')) : [];
+                            $initialVisibleMemberCount = 5;
                         @endphp
 
                         <div class="mb-6">
@@ -97,7 +98,7 @@
 
                                 <div class="divide-y divide-gray-200">
                                     @for ($i = 1; $i <= 30; $i++)
-                                        <div class="grid grid-cols-12 items-center px-3 py-1">
+                                        <div class="member-row grid grid-cols-12 items-center px-3 py-1 {{ $i > $initialVisibleMemberCount ? 'hidden' : '' }}">
                                             <div class="col-span-1 text-center text-sm text-gray-400 font-mono">{{ $i }}</div>
                                             <div class="col-span-11 pl-2">
                                                 <input
@@ -114,8 +115,21 @@
                                 </div>
                             </div>
 
-                        <div class="text-sm text-gray-500 mt-1">
-                            入力した分だけ送信されます（空欄はスキップ）
+                            <div class="text-sm text-gray-500 mt-1">
+                                入力した分だけ送信されます（空欄はスキップ）
+                            </div>
+
+                        <div class="mt-3">
+                            <button
+                                type="button"
+                                id="addMemberRowsButton"
+                                class="px-4 py-2 border border-blue-500 text-blue-600 rounded-md hover:bg-blue-50 transition duration-200"
+                            >
+                                5名追加
+                            </button>
+                            <span id="memberRowCount" class="ml-3 text-sm text-gray-500">
+                                5/30名分表示中
+                            </span>
                         </div>
                     </div>
 
