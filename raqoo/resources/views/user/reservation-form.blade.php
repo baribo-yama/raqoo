@@ -98,7 +98,7 @@
 
                                 <div class="divide-y divide-gray-200">
                                     @for ($i = 1; $i <= 30; $i++)
-                                        <div class="member-row grid grid-cols-12 items-center px-3 py-1 {{ $i > $initialVisibleMemberCount ? 'hidden' : '' }}">
+                                        <div class="member-row grid grid-cols-12 items-center px-3 py-1 {{ ($i > $initialVisibleMemberCount && trim($oldMembers[$i - 1] ?? '') === '') ? 'hidden' : '' }}">
                                             <div class="col-span-1 text-center text-sm text-gray-400 font-mono">{{ $i }}</div>
                                             <div class="col-span-11 pl-2">
                                                 <input
