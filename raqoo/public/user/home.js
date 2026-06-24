@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // 日付や曜日の表示をそろえるために、曜日の配列と日付変換用の関数が用意する
+  // 日付や曜日の表示をそろえるために、曜日の配列と日付変換用の関数を用意する
   const jaWeek = ["日", "月", "火", "水", "木", "金", "土"];
   const pad2 = (n) => String(n).padStart(2, "0");
   const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sheet = document.querySelector("#statusSheet");
   const sheetBody = document.querySelector("#statusSheetBody");
 
-  // // sheet-openクラスとaria-hiddenを切り替えて、予約状況シートの開閉状態を管理する
+  // sheet-openクラスとaria-hiddenを切り替えて、予約状況シートの開閉状態を管理する
   const openSheet = () => {
     document.body.classList.add("sheet-open");
     sheet?.setAttribute("aria-hidden", "false");
@@ -34,9 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.remove("sheet-open");
     sheet?.setAttribute("aria-hidden", "true");
   };
-
-  // ---------- ステータス表示（日本語＆色用class） ----------
-  // サーバーのstatus文字列を、表示文言とバッジ用classに変換する
+  
+  // サーバーから受け取った予約状態を、画面に出す文字とCSSクラスに変換する
   function statusMeta(status) {
     switch (status) {
       case "pending": return { text: "申請中", cls: "my-badge pending" };
@@ -51,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // 予約カードで表示する開始時間と終了時間を定義する
   const timeTable = {
     1: ["09:10", "10:40"],
     2: ["10:50", "12:20"],
@@ -60,8 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
     6: ["18:00", "19:30"],
   };
 
-  // ---------- 自分の予約を取得してシート描画 ----------
-  // 指定日(dateISO)の自分の予約一覧を取得し、スマホ用シートにカードとして描画する
+ 指定された日付をもとに、自分の予約情報をサーバーから取得している
   async function renderMyReservationsSheet(dateISO) {
     if (!sheetBody) return;
 
