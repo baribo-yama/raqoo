@@ -33,6 +33,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   // 予約状況シートを非表示状態に戻す（bodyのクラスとaria-hiddenを更新）
   const closeSheet = () => {
+    if (sheet?.contains(document.activeElement)) {
+      openSheetBtn?.focus();
+    }
+
     document.body.classList.remove("sheet-open");
     sheet?.setAttribute("aria-hidden", "true");
   };
