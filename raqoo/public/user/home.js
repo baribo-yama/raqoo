@@ -60,10 +60,11 @@ document.addEventListener("DOMContentLoaded", () => {
     6: ["18:00", "19:30"],
   };
 
- 指定された日付をもとに、自分の予約情報をサーバーから取得している
+  // 指定日の予約情報を取得する前に、予約状況シートへ「読み込み中...」を表示する
   async function renderMyReservationsSheet(dateISO) {
     if (!sheetBody) return;
 
+    //予約情報を取得するまで「読み込み中...」を表示する
     sheetBody.textContent = "読み込み中...";
 
     try {
