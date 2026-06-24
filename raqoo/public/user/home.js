@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sheet = document.querySelector("#statusSheet");
   const sheetBody = document.querySelector("#statusSheetBody");
 
-  // 予約状況シートの開閉状態を切り替える関数
+  // // sheet-openクラスとaria-hiddenを切り替えて、予約状況シートの開閉状態を管理する
   const openSheet = () => {
     document.body.classList.add("sheet-open");
     sheet?.setAttribute("aria-hidden", "false");
