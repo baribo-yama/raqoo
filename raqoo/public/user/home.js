@@ -188,15 +188,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // シートの閉じるボタン
     closeSheetBtn?.addEventListener("click", closeSheet);
-
-    // URLに date= が付いて遷移してきた場合は、ページ表示後に自動でシートを開く
-    if (location.search.includes("date=")) {
-      setTimeout(() => {
-        const iso = dateInput?.value ? dateInput.value : toISO(new Date());
-        renderMyReservationsSheet(iso);
-        openSheet();
-      }, 250);
-    }
   }
 
   // --- 日付の初期化 ---
