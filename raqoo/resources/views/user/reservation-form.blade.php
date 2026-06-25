@@ -77,6 +77,18 @@
                             </div>
                         </div>
 
+                        <div class="mb-6">
+                            <label for="purpose" class="block text-sm font-medium text-gray-700 mb-2">
+                                利用目的 <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="purpose" name="purpose" rows="3" maxlength="100"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="利用目的を入力してください（例：ゼミ発表の練習）" required>{{ old('purpose') }}</textarea>
+                            <div class="text-right text-sm text-gray-500 mt-1">
+                                <span id="purposeCount">0</span>/100文字
+                            </div>
+                        </div>
+
                         <input type="hidden" id="members" value="">
                         <input type="hidden" name="members" id="membersHidden">
 
@@ -186,18 +198,6 @@
                                 @endif
                                 @endfor
                         </div>
-                    </div>
-                </div>
-
-                <div class="mb-6">
-                    <label for="purpose" class="block text-sm font-medium text-gray-700 mb-2">
-                        利用目的 <span class="text-red-500">*</span>
-                    </label>
-                    <textarea id="purpose" name="purpose" rows="3" maxlength="100"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="利用目的を入力してください（例：ゼミ発表の練習）" required>{{ old('purpose') }}</textarea>
-                    <div class="text-right text-sm text-gray-500 mt-1">
-                        <span id="purposeCount">0</span>/100文字
                     </div>
                 </div>
 
