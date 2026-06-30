@@ -117,8 +117,8 @@ document.addEventListener("DOMContentLoaded", () => {
     sheetBody.textContent = "読み込み中...";
 
     try {
-      const res = await fetch(`/user/my-reservations?date=${encodeURIComponent(dateISO)}`, { cache: "no-store" });
-      const rows = await res.json();
+      const response = await fetch(`/user/my-reservations?date=${encodeURIComponent(dateISO)}`, { cache: "no-store" });
+      const reservations = await response.json();
 
       const priority = (status) => {
         if (status === "reserved" || status === "approved") {
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return 9;
       };
 
-      rows.sort((firstReservation, secondReservation) => {
+      reservations.sort((firstReservation, secondReservation) => {
         const firstPriority = priority(firstReservation.status);
         const secondPriority = priority(secondReservation.status);
 
@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       sheetBody.innerHTML = "";
 
-      if (!rows.length) {
+      if (!reservations.length) {
         const emptyDiv = document.createElement("div");
         emptyDiv.className = "my-empty";
         emptyDiv.textContent = "この日の予約はありません";
@@ -157,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      rows.forEach((reservation) => {
+      reservations.forEach((reservation) => {
         const reservationStatusText = getReservationStatusText(reservation.status);
         const timeCardStatus = getTimeCardStatus(reservation.status);
 
