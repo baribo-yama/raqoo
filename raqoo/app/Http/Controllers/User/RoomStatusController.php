@@ -57,7 +57,7 @@ class RoomStatusController extends Controller
                 ->all()
         );
 
-        clock(now());
+
         // 各部屋の各時限に対しての予約状況をチェックする
         $statuses = [];
         // 時刻テスト用変数APP_FAKE_が設定されていればそれ使う
