@@ -39,19 +39,62 @@ document.addEventListener("DOMContentLoaded", () => {
     sheet?.setAttribute("aria-hidden", "true");
   };
   
-  // サーバーから受け取った予約状態を、画面に出す文字とCSSクラスに変換する
-  function statusMeta(status) {
-    switch (status) {
-      case "pending": return { text: "申請中", cls: "my-badge pending" };
-      case "reserved": return { text: "予約済み", cls: "my-badge reserved" };
-      case "in_use": return { text: "利用中", cls: "my-badge in_use" };
-      case "finished": return { text: "利用完了", cls: "my-badge completed" };
-      case "cancelled": return { text: "キャンセル", cls: "my-badge cancelled" };
-      case "rejected": return { text: "却下", cls: "my-badge rejected" };
-      case "approved": return { text: "予約済み", cls: "my-badge reserved" };
-      case "completed": return { text: "完了", cls: "my-badge completed" };
-      default: return { text: status || "不明", cls: "my-badge other" };
+  // 予約状態を、予約状況シートで表示する日本語テキストに変換する
+  function getReservationStatusText(status) {
+    if (status === "pending") {
+      return "申請中";
     }
+
+    if (status === "reserved") {
+      return "予約済み";
+    }
+
+    if (status === "approved") {
+      return "予約済み";
+    }
+
+    if (status === "in_use") {
+      return "利用中";
+    }
+
+    if (status === "finished") {
+      return "利用完了";
+    }
+
+    if (status === "completed") {
+      return "完了";
+    }
+
+    if (status === "cancelled") {
+      return "キャンセル";
+    }
+
+    if (status === "rejected") {
+      return "却下";
+    }
+
+    if (status) {
+      return status;
+    }
+
+    return "不明";
+  }
+
+  // 予約状態を、ホーム画面の時限カードで使う状態クラスに変換する
+  function getTimeCardStatus(status) {
+    if (status === "reserved" || status === "approved") {
+      return "reserved";
+    }
+
+    if (status === "pending") {
+      return "pending";
+    }
+
+    if (status === "in_use") {
+      return "in_use";
+    }
+
+    return "unavailable";
   }
 
   // 予約カードで表示する開始時間と終了時間を定義する
@@ -66,7 +109,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 指定日の予約情報を取得する前に、予約状況シートへ「読み込み中...」を表示する
   async function renderMyReservationsSheet(dateISO) {
-    if (!sheetBody) return;
+    if (!sheetBody) {
+      return;
+    }
 
     //予約情報を取得するまで「読み込み中...」を表示する
     sheetBody.textContent = "読み込み中...";
@@ -75,18 +120,31 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(`/user/my-reservations?date=${encodeURIComponent(dateISO)}`, { cache: "no-store" });
       const rows = await res.json();
 
-      const priority = (st) => {
-        if (st === "reserved" || st === "approved") return 0;
-        if (st === "pending") return 1;
+      const priority = (status) => {
+        if (status === "reserved" || status === "approved") {
+          return 0;
+        }
+
+        if (status === "pending") {
+          return 1;
+        }
+
         return 9;
       };
 
-      rows.sort((a, b) => {
-        const pa = priority(a.status);
-        const pb = priority(b.status);
-        if (pa !== pb) return pa - pb;
-        if (a.date === b.date) return (a.period || 0) - (b.period || 0);
-        return String(a.date).localeCompare(String(b.date));
+      rows.sort((firstReservation, secondReservation) => {
+        const firstPriority = priority(firstReservation.status);
+        const secondPriority = priority(secondReservation.status);
+
+        if (firstPriority !== secondPriority) {
+          return firstPriority - secondPriority;
+        }
+
+        if (firstReservation.date === secondReservation.date) {
+          return (firstReservation.period || 0) - (secondReservation.period || 0);
+        }
+
+        return String(firstReservation.date).localeCompare(String(secondReservation.date));
       });
 
       sheetBody.innerHTML = "";
@@ -99,73 +157,106 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      rows.forEach((r) => {
-        const meta = statusMeta(r.status);
-        const times = timeTable[r.period] || ["--:--", "--:--"];
-        const isApproved = (r.status === "reserved" || r.status === "approved");
+      rows.forEach((reservation) => {
+        const reservationStatusText = getReservationStatusText(reservation.status);
+        const timeCardStatus = getTimeCardStatus(reservation.status);
+
+        let reservationTimes = ["--:--", "--:--"];
+        if (timeTable[reservation.period]) {
+          reservationTimes = timeTable[reservation.period];
+        }
+
+        let roomNameText = "教室";
+        if (reservation.room_name) {
+          roomNameText = reservation.room_name;
+        }
+
+        let periodNumberText = "-";
+        if (reservation.period) {
+          periodNumberText = String(reservation.period);
+        }
 
         const card = document.createElement("div");
-        card.className = `my-card ${isApproved ? "is-approved" : ""}`;
+        const cardClassNames = ["time-card", "sheet-time-card", timeCardStatus];
+        card.className = cardClassNames.join(" ");
 
-        const top = document.createElement("div");
-        top.className = "my-top";
+        const layout = document.createElement("div");
+        layout.className = "sp-layout";
 
-        const roomName = document.createElement("div");
-        roomName.className = "my-room";
-        roomName.textContent = r.room_name || "教室";
+        const periodBox = document.createElement("div");
+        periodBox.className = "sp-period-box";
 
-        const statusBadge = document.createElement("span");
-        statusBadge.className = meta.cls;
-        statusBadge.textContent = meta.text;
+        const periodNumber = document.createElement("span");
+        periodNumber.className = "p-num";
+        periodNumber.textContent = periodNumberText;
 
-        top.appendChild(roomName);
-        top.appendChild(statusBadge);
+        const periodText = document.createElement("span");
+        periodText.className = "p-text";
+        periodText.textContent = "限";
 
-        const mid = document.createElement("div");
-        mid.className = "my-mid";
+        periodBox.appendChild(periodNumber);
+        periodBox.appendChild(periodText);
 
-        const dateItem = document.createElement("div");
-        dateItem.className = "my-item";
-        const dateKey = document.createElement("div");
-        dateKey.className = "my-k";
-        dateKey.textContent = "日付";
-        const dateVal = document.createElement("div");
-        dateVal.className = "my-v";
-        dateVal.textContent = r.date;
-        dateItem.appendChild(dateKey);
-        dateItem.appendChild(dateVal);
+        const infoBox = document.createElement("div");
+        infoBox.className = "sp-info-box";
 
-        const periodItem = document.createElement("div");
-        periodItem.className = "my-item";
-        const periodKey = document.createElement("div");
-        periodKey.className = "my-k";
-        periodKey.textContent = "時限";
-        const periodVal = document.createElement("div");
-        periodVal.className = "my-v";
-        periodVal.appendChild(document.createTextNode(`${r.period}限 `));
-        const timeSpan = document.createElement("span");
-        timeSpan.className = "my-time";
-        timeSpan.textContent = `${times[0]}-${times[1]}`;
-        periodVal.appendChild(timeSpan);
-        periodItem.appendChild(periodKey);
-        periodItem.appendChild(periodVal);
+        const timeRow = document.createElement("div");
+        timeRow.className = "sp-time-row";
 
-        mid.appendChild(dateItem);
-        mid.appendChild(periodItem);
+        const startTime = document.createElement("span");
+        startTime.className = "time-main";
+        startTime.textContent = reservationTimes[0];
 
-        const actions = document.createElement("div");
-        actions.className = "my-actions";
+        const tilde = document.createElement("span");
+        tilde.className = "tilde";
+        tilde.textContent = "~";
+
+        const endTime = document.createElement("span");
+        endTime.className = "time-sub";
+        endTime.textContent = reservationTimes[1];
+
+        timeRow.appendChild(startTime);
+        timeRow.appendChild(tilde);
+        timeRow.appendChild(endTime);
+
+        const statusArea = document.createElement("div");
+        statusArea.className = "sp-status-area";
+
+        const statusLabel = document.createElement("span");
+        statusLabel.className = "unavailable-label";
+        statusLabel.textContent = roomNameText + "・" + reservationStatusText;
+
+        statusArea.appendChild(statusLabel);
+
+        infoBox.appendChild(timeRow);
+        infoBox.appendChild(statusArea);
+
+        const actionBox = document.createElement("div");
+        actionBox.className = "sp-action-box";
 
         const detailLink = document.createElement("a");
-        detailLink.className = "my-detail";
+        detailLink.className = "sp-reserve-btn sheet-detail-link";
         detailLink.textContent = "詳細を見る";
-        detailLink.href = r.detail_url;
 
-        actions.appendChild(detailLink);
+        if (reservation.detail_url) {
+          detailLink.href = reservation.detail_url;
+        } else {
+          detailLink.href = "#";
+          detailLink.setAttribute("aria-disabled", "true");
+        }
 
-        card.appendChild(top);
-        card.appendChild(mid);
-        card.appendChild(actions);
+        detailLink.setAttribute(
+          "aria-label",
+          roomNameText + " " + periodNumberText + "限の詳細を見る"
+        );
+
+        actionBox.appendChild(detailLink);
+
+        layout.appendChild(periodBox);
+        layout.appendChild(infoBox);
+        layout.appendChild(actionBox);
+
+        card.appendChild(layout);
         sheetBody.appendChild(card);
       });
 

@@ -347,4 +347,23 @@
       display: none !important; 
   }
 
+  /* 予約状況シート内カード */
+  .m-status-sheet .sheet-time-card {
+      margin-bottom: 12px !important;
+      text-decoration: none !important;
+      cursor: default !important;
+  }
+
+  /* シート内では状態付きカードでも「詳細を見る」を表示する */
+  .m-status-sheet .sheet-time-card .sp-reserve-btn,
+  .m-status-sheet .sheet-time-card.pending .sp-reserve-btn,
+  .m-status-sheet .sheet-time-card.reserved .sp-reserve-btn,
+  .m-status-sheet .sheet-time-card.in_use .sp-reserve-btn,
+  .m-status-sheet .sheet-time-card.unavailable .sp-reserve-btn {
+      display: inline-block !important;
+  }
+
+  .m-status-sheet .sheet-detail-link {
+      cursor: pointer !important;
+  }
 }
