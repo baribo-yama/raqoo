@@ -243,6 +243,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           detailLink.href = "#";
           detailLink.setAttribute("aria-disabled", "true");
+          detailLink.setAttribute("tabindex", "-1");
+          detailLink.addEventListener("click", (event) => event.preventDefault());
         }
 
         detailLink.setAttribute(
