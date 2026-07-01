@@ -3,6 +3,7 @@
 ========================================= */
 @media (max-width: 560px) {
   :root {
+    /* スマホ全体で使う共通設定 */
     --bg: #f5f6fa;
     --card: #fff;
     --line: #e6e9ef;
@@ -26,11 +27,27 @@
   .header { padding: 6px 0 4px !important; margin: 0 !important; background: transparent !important; position: relative; }
   .raqoo-logo { max-width: 230px !important; }
   .profile-box { position: static !important; transform: none !important; margin: 6px 0 8px auto !important; border-radius: 12px !important; }
-  .search-form { margin: 8px auto 10px !important; padding: 14px !important; max-width: none !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: var(--radius) !important; box-shadow: var(--shadow) !important; }
+  .search-card {
+    margin: 8px auto 10px !important;
+    padding: 14px !important;
+    max-width: none !important;
+    background: var(--card) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: var(--shadow) !important;
+  }
   .form-row { grid-template-columns: 1fr !important; gap: 10px !important; }
   #dateInput { font-size: 18px !important; padding: 14px 44px 14px 14px !important; border-radius: 12px !important; border: 1px solid var(--line) !important; }
   .form-row-btn { margin-top: 10px !important; }
-  .search-btn { width: 100% !important; padding: 16px 0 !important; font-size: 20px !important; font-weight: 900 !important; border-radius: 14px !important; background: linear-gradient(180deg, var(--blue), var(--blue2)) !important; box-shadow: 0 6px 18px rgba(0, 0, 0, .12) !important; }
+  .search-card button[type="submit"] {
+    width: 100% !important;
+    padding: 16px 0 !important;
+    font-size: 20px !important;
+    font-weight: 900 !important;
+    border-radius: 14px !important;
+    background: linear-gradient(180deg, var(--blue), var(--blue2)) !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .12) !important;
+  }
   .day-tabs { display: flex !important; flex-wrap: nowrap !important; width: 100% !important; height: 72px !important; margin: 10px auto 6px !important; padding: 0 !important; gap: 0 !important; justify-content: center !important; align-items: center !important; position: relative !important; background: #b3b3b3 !important; border: 1px solid #9ca3af !important; border-radius: 12px !important; overflow: hidden !important; box-sizing: border-box !important; }
   .day-tab { flex: 1 1 0 !important; min-width: 0 !important; height: 72px !important; background: transparent !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 6px !important; padding: 0 !important; border-right: 1px solid rgba(255, 255, 255, 0.3) !important; box-sizing: border-box !important; }
   .day-tab:last-child { border-right: none !important; }
@@ -52,6 +69,17 @@
   .sheet-title { font-weight: 900 !important; font-size: 16px !important; }
   .sheet-close { width: 36px !important; height: 36px !important; border-radius: 12px !important; border: 1px solid #e6e9ef !important; background: #fff !important; font-size: 22px !important; line-height: 1 !important; }
   .sheet-body { padding: 12px 14px 18px !important; overflow: auto !important; }
+  /* 予約状況シート：JSで生成する自分の予約カード */
+  .my-empty {
+    padding: 18px 12px !important;
+    text-align: center !important;
+    color: #6b7280 !important;
+    font-weight: 900 !important;
+    background: #f9fafb !important;
+    border: 1px solid #e6e9ef !important;
+    border-radius: 12px !important;
+  }
+
   .sheet-row { border: 1px solid #e6e9ef !important; border-radius: 12px !important; padding: 10px !important; margin-bottom: 10px !important; }
   .sheet-room { font-weight: 900 !important; margin-bottom: 8px !important; }
   .sheet-grid { display: grid !important; grid-template-columns: repeat(6, 1fr) !important; gap: 6px !important; }
@@ -120,9 +148,10 @@
 
   .sp-period-box {
       display: flex !important;
-      flex-direction: column !important;
+      flex-direction: row !important;
       justify-content: center !important;
       align-items: center !important;
+      gap: 1px !important;
       width: 48px !important;
       height: 48px !important;
       background: #fff !important;
@@ -130,8 +159,29 @@
       border-radius: 10px !important;
       flex-shrink: 0 !important;
   }
-  .sp-period-box .p-num { font-size: 18px !important; font-weight: 900 !important; color: #4b5563 !important; line-height: 1 !important; }
-  .sp-period-box .p-text { font-size: 10px !important; font-weight: bold !important; color: #9ca3af !important; margin-top: 2px !important; }
+
+  .sp-period-box .p-num,
+  .sp-period-box .p-text {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-family: "Yu Gothic UI", "Yu Gothic", "Meiryo", system-ui, sans-serif !important;
+      font-weight: 700 !important;
+      color: #334155 !important;
+      line-height: 1 !important;
+      margin: 0 !important;
+      transform: translateY(1px) !important;
+  }
+
+  .sp-period-box .p-num {
+      font-size: 15px !important;
+      letter-spacing: -0.02em !important;
+  }
+
+  .sp-period-box .p-text {
+      font-size: 12px !important;
+      letter-spacing: -0.04em !important;
+  }
 
   .sp-info-box {
       flex: 1 !important;
@@ -181,4 +231,23 @@
       display: none !important; 
   }
 
+  /* 予約状況シート内カード */
+  .m-status-sheet .sheet-time-card {
+      margin-bottom: 12px !important;
+      text-decoration: none !important;
+      cursor: default !important;
+  }
+
+  /* シート内では状態付きカードでも「詳細を見る」を表示する */
+  .m-status-sheet .sheet-time-card .sp-reserve-btn,
+  .m-status-sheet .sheet-time-card.pending .sp-reserve-btn,
+  .m-status-sheet .sheet-time-card.reserved .sp-reserve-btn,
+  .m-status-sheet .sheet-time-card.in_use .sp-reserve-btn,
+  .m-status-sheet .sheet-time-card.unavailable .sp-reserve-btn {
+      display: inline-block !important;
+  }
+
+  .m-status-sheet .sheet-detail-link {
+      cursor: pointer !important;
+  }
 }
