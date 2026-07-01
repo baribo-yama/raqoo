@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const openSheet = () => {
     document.body.classList.add("sheet-open");
     sheet?.setAttribute("aria-hidden", "false");
-  };　
+  };
   
   const closeSheet = () => {
     if (sheet?.contains(document.activeElement)) {
