@@ -32,7 +32,7 @@
                     <h2 class="page-title">お知らせ一覧</h2>
                 </div>
 
-                <div class="filter-card">
+                <!-- <div class="filter-card">
                     <div class="search-box-wrapper">
                         <label for="search" class="search-label">お知らせ検索</label>
 
@@ -50,7 +50,7 @@
                             </div>
                         </form>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="notification-section">
                     @if (isset($notifications) && $notifications->count() > 0)
