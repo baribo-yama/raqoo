@@ -60,11 +60,9 @@ class RoomStatusController extends Controller
 
         // 各部屋の各時限に対しての予約状況をチェックする
         $statuses = [];
-        // 時刻テスト用変数APP_FAKE_が設定されていればそれ使う
-        $now = env("APP_FAKE_NOW") ? \Carbon\Carbon::parse(env('APP_FAKE_NOW')) : now();
-        // today()使う代わりに$nowの日付時刻をコピーしてstartOfDay()でその日の初めに設定してtoday()と同じ振る舞いにする
-        // 例：now() → 2026-06-20 14:00:21 / today() → 2026-06-20 00:00:00
-        $today = $now->copy()->startOfDay();
+        // .envにAPP_FAKE_NOWを設定すると、AppServiceProviderのCarbon::setTestNow()によりnow()/today()がその時刻を返す
+        $now = now();
+        $today = today();
         foreach ($rooms as $room) {
             for ($period = 1; $period <= 6; $period++) {
                 $status = $room->getStatusForPeriod($date, $period, $userId, $lessonMap, $reservationMap);
