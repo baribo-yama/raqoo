@@ -36,10 +36,10 @@
       <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        Email<br>
-        <input type="email" id="email" name="email" placeholder="メールアドレス" required><br>
+        <label for='email'>Email</label><br>
+        <input type="text" id="email" name="email" placeholder="メールアドレス" required><br>
 
-        Password<br>
+        <label for='password'>Password</label><br>
         <input type="password" id="password" name="password" placeholder="パスワード" required><br>
 
                 <br>
