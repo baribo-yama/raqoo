@@ -63,6 +63,7 @@ class RoomStatusController extends Controller
         // .envにAPP_FAKE_NOWを設定すると、AppServiceProviderのCarbon::setTestNow()によりnow()/today()がその時刻を返す
         $now = now();
         $today = today();
+
         foreach ($rooms as $room) {
             for ($period = 1; $period <= 6; $period++) {
                 $status = $room->getStatusForPeriod($date, $period, $userId, $lessonMap, $reservationMap);
