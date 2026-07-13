@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ReservationApproved;
+use App\Mail\ReservationRejected;
 use App\Models\Reservation;
 use App\Models\RoomStatus;
 use App\Models\Notification;
@@ -156,8 +158,8 @@ class ReservationController extends Controller
             'is_read' => false
         ]);
 
-        // テストメール送信
-        Mail::to($reservation->user->email)->send(new TestMail());
+        // 予約承認メール送信
+        Mail::to($reservation->user->email)->send(new ReservationApproved($reservation));
 
         return redirect()->back()->with('success', '予約を承認しました。');
     }
@@ -179,6 +181,10 @@ class ReservationController extends Controller
             'message' => "予約が却下されました。{$reservation->room->name} - {$dateDisplay} {$reservation->period}限",
             'is_read' => false,
         ]);
+
+        // 予約却下メール送信
+        Mail::to($reservation->user->email)->send(new ReservationRejected($reservation));
+
         return redirect()->back()->with('success', '予約を却下しました。');
     }
 
