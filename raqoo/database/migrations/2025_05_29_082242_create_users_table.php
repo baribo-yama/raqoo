@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id(); // オートインクリメントの主キー
-            $table->string('student_id'); // 学籍番号
-            $table->string('email');// メールアドレス
-            $table->string('password');// charのpassからstringのpasswordに変更
-            $table->char('name');
+            $table->string('family_name', 50)->nullable();// 姓
+            $table->string('first_name', 50)->nullable();// 名
+            $table->string('student_id', 12)->nullable()->unique();
+            $table->foreignId('major_id')->nullable()->constrained('majors'); // 専攻テーブルを参照
+            $table->string('email')->unique();
+            $table->string('password')->nullable();// charのpassからstringのpasswordに変更
             $table->timestamps();
         });
     }

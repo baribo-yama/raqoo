@@ -69,7 +69,7 @@
                         <div class="mb-6">
                             <h4 class="font-semibold text-lg mb-2 text-gray-700">代表者</h4>
                             <div class="p-3 bg-gray-50 rounded border">
-                                {{ Auth::user()->name }} ({{ Auth::user()->student_id }})
+                                {{ Auth::user()->family_name }} {{ Auth::user()->first_name }} ({{ Auth::user()->student_id }})
                             </div>
                         </div>
 

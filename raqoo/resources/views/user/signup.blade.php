@@ -26,20 +26,16 @@
             <!-- サインアップフォーム -->
             <form method="POST" action="/signup">
                 @csrf
-                Name<br>
-                <input type="text" id="name" name="name" placeholder="名前"><br>
-                StudentID
+                名字<br>
+                <input type="text" id="name" name="family_name" placeholder="姓"><br>
+                名前<br>
+                <input type="text" id="name" name="first_name" placeholder="名"><br>
+                学籍番号
                 <input type="text" id="student_id" name="student_id" placeholder="学籍番号"><br>
-                Major
-                <input type="text" id="major" name="major" placeholder="専攻名(正式名称)"><br>
-                Email<br>
-                <input type="email" id="email" name="email" placeholder="学校のメールアドレス"><br>
-                Password<br>
-                <input type="password" id="password" name="password" placeholder="パスワードを設定"><br>
-                <font size="-1s">
-                    パスワードは以下の条件を満たす必要があります。<br>
-                    ・英数字大文字含む8文字以上20文字以内
-                </font>
+                <!-- Major
+                <input type="text" id="major" name="major" placeholder="専攻名(正式名称)"><br> -->
+                メールアドレス<br>
+                <input type="email" id="email" name="email" value="{{ auth()->user()->email }}" readonly><br>
                 <br>
 
                 <button type="submit">登録</button>
