@@ -47,6 +47,8 @@ function appendMemberTable(body, representative, membersRaw) {
         allMembers.push({ name: representative, isRepresentative: true });
     }
 
+    console.log('代表者名', representative);
+
     // membersは改行区切りの文字列なので分割して追加（空行は除外）
     if (membersRaw) {
         const memberNames = membersRaw.split('\n').map(s => s.trim()).filter(s => s !== '');
@@ -54,6 +56,7 @@ function appendMemberTable(body, representative, membersRaw) {
             allMembers.push({ name, isRepresentative: false });
         });
     }
+    console.log('利用メンバー', allMembers);
 
     // テーブルを作成
     const table = document.createElement('table');
@@ -178,6 +181,7 @@ function showCellDetailModal(roomId, periodId, date, cell) {
 
                 // ★ チェックボックス付きメンバーテーブルを表示
                 appendMemberTable(body, data.reservation.representative, data.reservation.members);
+                console.log('data.reservationの中身', data.reservation);
 
                 const cancelBtn = appendModalButton(body, 'cancelReservationBtn', '予約キャンセル');
                 cancelBtn.addEventListener('click', () => {

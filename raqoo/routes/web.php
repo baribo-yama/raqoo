@@ -19,7 +19,7 @@ use App\Http\Controllers\User\UnavailableController;
 // use Illuminate\Auth\Events\Verified;
 use App\Http\Controllers\User\GoogleLoginController;
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 /*======= 認証関連 ========*/
 // ユーザーログイン
@@ -28,7 +28,7 @@ Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // ユーザー新規登録
-Route::get('/signup', function() {
+Route::get('/signup', function () {
     return view('user.signup');
 });
 Route::post('/signup', [SignupController::class, 'up']);
@@ -95,20 +95,24 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
 });
 
 // 管理者教室管理
-Route::get('/admin/rooms', [AdminDashBoardController::class, 'roomsIndex'])->name('admin.rooms.index');
+Route::get('/admin/rooms', [AdminDashBoardController::class, 'roomsIndex'])
+    ->middleware('auth:admin')
+    ->name('admin.rooms.index');
 
 // 管理者お知らせ管理
-Route::get('/admin/notifications', function() {
+Route::get('/admin/notifications', function () {
     return view('admin.notifications-index');
-})->name('admin.notifications.index');
+})->middleware('auth:admin')
+    ->name('admin.notifications.index')
+;
 
 
 /*======= ユーザー画面 ========*/
 Route::middleware('auth', /*'verified'*/)->group(function () {
     // ユーザーホーム
     Route::get('/home', [UserRoomController::class, 'index'])
-    ->middleware('time.guard')
-    ->name('user.home.index');
+        ->middleware('time.guard')
+        ->name('user.home.index');
 
     // 夜間注意事項ページ
     Route::get('/night-precautions', function () {
@@ -124,9 +128,6 @@ Route::middleware('auth', /*'verified'*/)->group(function () {
     // 予約キャンセル
     Route::patch('/reservations/{reservation}/cancel', [UserReservationController::class, 'cancel'])->name('user.reservations.cancel');
     Route::get('/reservations-history', [UserReservationController::class, 'history'])->name('user.reservations.history');
-
-    // ★ チェックボックスON/OFF時のselecting作成・削除API
-    Route::post('/reservations/selecting/toggle', [UserReservationController::class, 'toggleSelecting'])->name('user.reservations.selecting.toggle');
 
     // ユーザー通知
     Route::get('/notifications', [UserNotificationController::class, 'index'])->name('user.notifications.index');

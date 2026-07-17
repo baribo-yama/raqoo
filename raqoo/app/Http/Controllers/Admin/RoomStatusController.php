@@ -164,7 +164,7 @@ class RoomStatusController extends Controller
                 'type' => 'reservation',
                 'reservation' => [
                     'id' => $reservation->id,
-                    'representative' => $reservation->user?->name, // 代表者名
+                    'representative' => [($reservation->user?->family_name). ($reservation->user?->first_name)], // 代表者名
                     'members' => $reservation->members, // メンバー
                     'status' => $reservation->status, // ステータス
                 ],

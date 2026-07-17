@@ -87,6 +87,7 @@
                         
                         {{-- ▼▼▼ 修正：戻るボタン（入力値を保持して戻る） ▼▼▼ --}}
                         <form action="{{ route('user.reservations.create') }}" method="GET">
+                            <input type="hidden" name="period" value="{{ $reservationData['periods'][0] }}">
                             <input type="hidden" name="room_id" value="{{ $reservationData['room_id'] }}">
                             <input type="hidden" name="date" value="{{ $reservationData['date'] }}">
                             @foreach($reservationData['periods'] as $period)

@@ -139,7 +139,7 @@
                     <div class="mb-6">
                         <h3 class="text-xl font-semibold mb-2">代表者</h3>
                         <div class="p-4 bg-gray-50 rounded-lg">
-                            <p>{{ $reservation->user->name }} ({{ $reservation->user->student_id }})</p>
+                            <p>{{ $reservation->user->family_name }}{{ $reservation->user->first_name }} ({{ $reservation->user->student_id }})</p>
                         </div>
                     </div>
 
