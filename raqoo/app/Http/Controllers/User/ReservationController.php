@@ -5,7 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
 use App\Models\Room;
-use App\Models\RoomLesson; // モデルのインポート
+use App\Models\RoomLesson;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -19,37 +19,154 @@ class ReservationController extends Controller
     }
 
     /**
+     * 選択された時限の中に、既に終了時刻を過ぎているものがあるか判定する
+     * @param string $date 予約対象日 (Y-m-d)
+     * @param array $periods 判定対象の時限IDの配列
+     * @return bool ひとつでも終了済みの時限があればtrue
+     **/
+
+    // 教室利用の終了時刻を過ぎていたらアウト（true）を返すプライベートメソッド
+    private function hasEndedPeriod(string $date, array $periods): bool  // arrayなのは予約が連続2コマの場合もあるため
+    {
+        // 予約対象日が「今日」でない場合は、時間の判定自体が不要のためfalse
+        // today()は日付を軸に取得 (ex)2026-05-31 00:00:00
+        if (!Carbon::parse($date)->isSameDay(Carbon::today())) {
+            return false;
+        }
+
+        // 各時限ごとに限時刻が終了時間を過ぎていないか確認
+        foreach ($periods as $period) {
+            $endTimeConfig = config("period.{$period}.end_time");  // $endTimeはraqoo/config/period.phpで定義されている
+
+            // 終了時刻が設定されていなかったらスキップして次のperiodを見に行く
+            if (!$endTimeConfig) {
+                continue;
+            }
+
+            $periodEndAt = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$endTimeConfig}");
+
+            // 「現在時刻 >= 終了時刻」であれば、その時限は終了済みとみなす
+            // now()は今個の週間、日付＋秒単位で取得 (ex)2026-05-31 22:25:03
+            if (now()->greaterThanOrEqualTo($periodEndAt)) {
+                return true;  // 終了済みがあればtrueを返す
+            }
+        }
+
+        // 全ての時限が終了前であればセーフ（false）を返す
+        return false;
+    }
+
+    /**
+     * 2コマ選択された場合、それが「1限と2限」のように連続しているかをチェックするメソッド
+     */
+    // 連続してたらtrue, してなければfalseを返す
+    // 連続コマなので、periods配列を引数とする（最低1コマ、最大2コマ
+    private function isConsecutivePeriods(array $periods): bool
+    {
+        for ($i = 1; $i < count($periods); $i++) {
+            if ($periods[$i] - $periods[$i - 1] !== 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
      * 予約申請フォームの表示
      */
+    // TODO:6/20フォームを開いた時点でほかの人には対象教室をロックするやつ実装する（前selectingに該当する処理
     public function create(Request $request)
     {
-        $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
-
-        if (!$request->date) {
-            return redirect()->route('user.home.index')->with('error', '日付が指定されていません。');
-        }
-        if (!$selectedRoom) {
-            return redirect()->route('user.home.index')->with('error', '教室がみつかりません。');
-        }
-
         $date   = $request->date;
-        $room   = $selectedRoom;
         $period = (int) $request->period;
 
-        // 1. 他の人の「予約」を取得
+        /**
+         * 今日の予約がすでにある場合、その終了時刻に達するまでその日の新たな予約はできないようにする
+         */
+        //TODO: この「終了時刻まで予約ブロック処理」と、「二週間先のブロック処理」を関数にまとめる
+        //TODO: 2限連続で予約された場合の対処p_minとp_max ← これ優先的にテストしたほうがいい
+
+        // 今日の予約があるかチェック
+        $todayReservations = Reservation::where('user_id', Auth::id())
+            ->whereDate('date', today())
+            ->whereIn('status', ['pending', 'reserved', 'in_use'])
+            ->get();
+
+        // 今日の自分の予約に対して1件ずつチェック
+        foreach ($todayReservations as $reservation) {
+            $endTimeConfig = config("period.{$reservation->period}.end_time");
+            // 終了時刻がconfigに存在しない場合は、この1件はブロックして次の予約をチェックする
+            if (!$endTimeConfig) {
+                continue;
+            }
+
+            // 日付（HH:MM）に変換
+            $endTime = Carbon::parse($endTimeConfig);
+
+            // すでに今日の予約がある場合：現在の時刻が終了時刻より前（現在時刻 < 終了時刻）なら新規予約ブロックする
+            if (Carbon::parse($date)->isSameDay(Carbon::today()) && now()->lessThan($endTime)) {
+                return redirect()
+                    ->route('user.home.index')
+                    ->with('error', '今日の予約の利用が終了してから新たに予約してください');
+            }
+        }
+
+        // URL直叩きブロック処理
+        // TODO:この$periodだけ単数になってるのなぜ？ hasEndedPeriodの引数にはarray型のperiodsが入るはず
+        if ($period && $this->hasEndedPeriod($date, [$period])) {
+            return redirect()
+                ->route('user.home.index')
+                ->with('error', '選択された時限はすでに終了しています。別の日時を選んでください。');
+        }
+
+        // 明日以降の各日は2件以上の予約不可 1件までしか予約できません！の処理
+        if (Carbon::parse($date)->greaterThan(Carbon::today())) {
+            $isExist = Reservation::where('user_id', Auth::id())
+                ->where('date', $date)
+                ->whereIn('status', ['pending', 'reserved', 'in_use'])
+                ->exists();
+            if ($isExist) {
+                return redirect()
+                    ->route('user.home.index')
+                    ->with('error', '1件すでに予約が入っているのでできません');
+            }
+        }
+
+        /**
+         * 今日から二週間分（14日分）の予定だけ表示させる
+         */
+        $maxDate = Carbon::today()->addDays(14)->toDateString();
+        $selectedRoom = $request->room_id ? Room::find($request->room_id) : null;
+
+        // 選択した教室が存在していなかった場合エラー表示
+        if (!$selectedRoom) {
+            return redirect()->route('user.home.index')
+                ->with('error', '教室がみつかりません。');
+        }
+
+        // 2週間を超えていたらエラー表示
+        if ($date > $maxDate) {
+            return redirect()->route('user.home.index')
+                ->with('error', '予約できるのは2週間先までです。');
+        }
+
+        /**
+         * 予約と授業の取得
+         */
+        $room = $selectedRoom;
+
         $reservedPeriods = Reservation::where('room_id', $room->id)
             ->where('date', $date)
-            ->where('status', '!=', 'cancelled')
+            ->whereIn('status', ['pending', 'reserved', 'in_use'])
             ->pluck('period')
             ->toArray();
 
-        // 2. 管理者が登録した「授業」を取得
         $lessonPeriods = RoomLesson::where('room_id', $room->id)
             ->where('date', $date)
             ->pluck('period')
             ->toArray();
 
-        // compactの中に 'lessonPeriods' を追加して、Blade側で使えるようにする
         return view('user.reservation-form', compact('room', 'date', 'period', 'reservedPeriods', 'lessonPeriods'));
     }
 
@@ -61,44 +178,52 @@ class ReservationController extends Controller
         $validated = $request->validate([
             'room_id'    => 'required|exists:rooms,id',
             'date'       => 'required|date|after_or_equal:today',
-            // ▼ Copilot指摘対応: max:2 を追加して不正な多重予約を防止
             'periods'    => 'required|array|min:1|max:2',
             'periods.*'  => 'integer|min:1|max:6',
             'purpose'    => 'required|string|max:100',
             'members'    => 'nullable|string',
         ]);
 
+        // URL直叩きブロック処理
+        if ($this->hasEndedPeriod($validated['date'], $validated['periods'])) {
+            return back()
+                ->withErrors(['periods' => '選択された時限は既に終了しています。別の時間を選択してください。'])
+                ->withInput();
+        }
+
         $selectedRoom = Room::find($validated['room_id']);
 
-        // 予約テーブルとの重複チェック
+        if (!$selectedRoom) {
+            return redirect()->route('user.home.index')
+                ->with('error', '教室がみつかりません。');
+        }
+
+        $periods = array_map('intval', $validated['periods']);
+        sort($periods);
+
+        // 2コマ予約時に連続した時限になっているかチェック
+        if (!$this->isConsecutivePeriods($periods)) {
+            return back()
+                ->withErrors(['periods' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
+                ->withInput();
+        }
+
         $existing = Reservation::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
-            ->whereIn('period', $validated['periods'])
-            ->where('status', '!=', 'cancelled')
+            ->whereIn('period', $periods)
+            ->where('user_id', '!=', Auth::id())
+            ->whereIn('status', ['pending', 'reserved', 'in_use'])
             ->exists();
 
-        // 授業テーブルとの重複チェック
         $existingLesson = RoomLesson::where('room_id', $validated['room_id'])
             ->where('date', $validated['date'])
-            ->whereIn('period', $validated['periods'])
+            ->whereIn('period', $periods)
             ->exists();
 
         if ($existing || $existingLesson) {
             return back()
                 ->withErrors(['periods' => '選択された時間帯の中に、すでに予約済みまたは授業が登録されている枠が含まれています。'])
                 ->withInput();
-        }
-
-        $periods = $validated['periods'];
-        sort($periods);
-
-        // 連続した時限かどうかのチェック
-        for ($i = 1; $i < count($periods); $i++) {
-            if ($periods[$i] - $periods[$i - 1] !== 1) {
-                return back()
-                    ->withErrors(['periods' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
-                    ->withInput();
-            }
         }
 
         $reservationData = [
@@ -122,55 +247,87 @@ class ReservationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'room_id'    => 'required|exists:rooms,id',
-            'date'       => 'required|date|after_or_equal:today',
+            'room_id'    => 'required|exists:rooms,id',  // ちゃんと教室存在してるか
+            'date'       => 'required|date|after_or_equal:today',  // 今日以降
             // ▼ Copilot指摘対応: こちらにも max:2 を追加
-            'periods'    => 'required|array|min:1|max:2',
-            'periods.*'  => 'integer|min:1|max:6',
-            'purpose'    => 'required|string|max:500',
-            'members'    => 'nullable|string',
+            'periods'    => 'required|array|min:1|max:2',  // 最低1コマ、最大2コマ
+            'periods.*'  => 'integer|min:1|max:6',  // 中身は全部整数で、選べる時限は「1～6限」の間だよ
+            'purpose'    => 'required|string|max:100',
+            'members'    => 'nullable|string', // 利用メンバーは空でもOK（nullable
         ]);
 
-        $periods = $validated['periods'];
-        sort($periods);
+        $date = $validated['date'];
+        $periods = $validated['periods']; // バリデーション（型）が正しいことが証明されたやつだけを使う
 
-        // ▼ Copilot指摘対応: DB保存前にも連続した時限かどうかのチェックを復活（二重チェック）
-        for ($i = 1; $i < count($periods); $i++) {
-            if ($periods[$i] - $periods[$i - 1] !== 1) {
-                return back()
-                    ->withErrors(['error' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
-                    ->withInput();
-            }
+        // URL直叩きブロック処理：すでに過ぎてしまった時間（時限）の予約をしようとしていないかをチェック
+        if ($this->hasEndedPeriod($date, $periods)) {
+            return back()
+                ->withErrors(['periods' => '選択された時限は既に終了しています。別の時間を選択してください。'])
+                ->withInput();
         }
 
-        return DB::transaction(function () use ($validated) {
-            // 保存直前の重複チェック
-            $existing = Reservation::where('room_id', $validated['room_id'])
+        // 下の$periods[$i] - $periods[$i - 1] !== 1が正しく動作するために昇順に並べ替え
+        sort($periods);
+
+        // 2コマ選択された場合、それが「1限と2限」のように連続しているかをチェック
+        if (!$this->isConsecutivePeriods($periods)) {
+            return back()
+                ->withErrors(['periods' => '複数時限を予約する場合は、連続した時限のみ選択してください。'])
+                ->withInput();
+        }
+
+        return DB::transaction(function () use ($validated, $periods) {   // 関数の外（スコープ外）にある変数をuseで使えるようにする
+            // 保存直前の重複チェック（今選択している時限の教室に他の人の予約がないかチェック）
+            $otherPersonReservation = Reservation::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
                 ->whereIn('period', $validated['periods'])
-                ->where('status', '!=', 'cancelled')
+                ->where('status', '!=', 'cancelled') // キャンセル以外(pending, in_use, reserved)が存在していないか→存在していたら予約できない＝重複になってしまうため
                 ->lockForUpdate()
                 ->exists();
 
+            // 同一ユーザーの同時刻の別教室予約の重複チェック
+            // 例）一人のユーザーがスマホとPCの二つの端末から同じ教室を予約しようとしたときなどの対処
+            $conflict = Reservation::where('user_id', Auth::id())
+                ->where('date', $validated['date'])
+                ->whereIn('period', $validated['periods'])
+                ->whereIn('status', ['pending', 'reserved', 'in_use'])
+                ->where('room_id', '!=', $validated['room_id']) // 今予約しようとしている部屋「以外」ですでに予約をもっていないか
+                ->lockForUpdate()
+                ->exists();
+
+            // 授業が選択教室にすでに登録されているかチェック
             $existingLesson = RoomLesson::where('room_id', $validated['room_id'])
                 ->where('date', $validated['date'])
-                ->whereIn('period', $validated['periods'])
+                ->whereIn('period', $periods)
                 ->lockForUpdate()
                 ->exists();
 
-            if ($existing || $existingLesson) {
+            // 選択した時限の教室に他の人の予約が入ってる、もしくは授業が登録されている場合ブロックする（アラートを出す）
+            if ($otherPersonReservation || $existingLesson) {
+                $firstPeriod = min($periods);
                 return redirect()->route('user.reservations.create', [
                     'room_id' => $validated['room_id'],
                     'date'    => $validated['date'],
-                ])->withErrors(['error' => 'タッチの差で予約または授業が埋まってしまいました。']);
+                    'period'  => $firstPeriod,
+                ])->withErrors(['error' => 'タッチの差でほかの予約か授業で教室が埋まってしまいました。']);
             }
 
+            // その日に対して、同時刻にすでに自分の予約がある場合ブロックする
+            if ($conflict) {
+                return redirect()->route('user.reservations.create', [
+                    'room_id' => $validated['room_id'],
+                    'date' => $validated['date'],
+                    'period' => $validated['periods'][0] ?? null, // create手側がもしperiodを期待しているなら
+                ])->withErrors(['error' => '同時刻にすでにあなたの予約があるため予約できません']);
+            }
+
+            // 2コマ連続予約してる場合、forで1件ずつ予約をDBに保存する
             foreach ($validated['periods'] as $period) {
                 Reservation::create([
                     'user_id' => Auth::id(),
                     'room_id' => $validated['room_id'],
                     'date'    => $validated['date'],
-                    'period'  => (int) $period,
+                    'period'  => $period,
                     'purpose' => $validated['purpose'],
                     'members' => $validated['members'],
                     'status'  => 'pending',
@@ -184,6 +341,9 @@ class ReservationController extends Controller
 
     // --- 以降の index, show, cancel, history, myReservations は変更なし ---
 
+    /**
+     * 予約詳細
+     */
     public function index()
     {
         $reservations = Reservation::where('user_id', Auth::id())
@@ -198,14 +358,21 @@ class ReservationController extends Controller
 
     public function show(Reservation $reservation)
     {
-        if ($reservation->user_id !== Auth::id()) abort(403);
+        if ($reservation->user_id !== Auth::id()) {
+            abort(403);
+        }
+
         return view('user.reservation-detail', compact('reservation'));
     }
 
-    // キャンセル処理
+    /**
+     * 学生側の予約キャンセル処理
+     */
     public function cancel(Reservation $reservation)
     {
-        if ($reservation->user_id !== Auth::id()) abort(403);
+        if ($reservation->user_id !== Auth::id()) {
+            abort(403);
+        }
 
         if (!in_array($reservation->status, ['pending', 'reserved'], true)) {
             return back()->withErrors(['error' => 'この予約はキャンセルできません。']);
@@ -217,6 +384,9 @@ class ReservationController extends Controller
             ->with('success', '予約をキャンセルしました。');
     }
 
+    /**
+     * 予約履歴
+     */
     public function history()
     {
         $historyReservations = Reservation::where(function ($query) {
@@ -231,6 +401,9 @@ class ReservationController extends Controller
         return view('user.reservations-history', compact('historyReservations'));
     }
 
+    /**
+     * 予約一覧
+     */
     public function myReservations(Request $request)
     {
         $request->validate([

@@ -1,47 +1,57 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // 日付や曜日の表示をそろえるために、曜日の配列と日付変換用の関数が用意する
   const jaWeek = ["日", "月", "火", "水", "木", "金", "土"];
   const pad2 = (n) => String(n).padStart(2, "0");
   const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   const toMMDD = (d) => `${pad2(d.getMonth() + 1)}/${pad2(d.getDate())}`;
 
+  // 画面幅が560px以下かどうかを調べる関数（スマホ想定）
   const isMobile560 = () => window.matchMedia("(max-width: 560px)").matches;
 
-  // DOM
+  // 日付表示の更新で使うHTML要素（日付・曜日・選択中の日付を持つ要素）を取得している
   const mainEl = document.querySelector(".date-main");
   const wdayEl = document.querySelector(".date-weekday");
   const dateInput = document.querySelector("#dateInput");
 
+  // 曜日タブ、戻るボタン、進むボタンのHTML要素を取得する
   const tabs = document.querySelectorAll(".day-tabs .day-tab");
   const prevBtn = document.querySelector(".strip-prev");
   const nextBtn = document.querySelector(".strip-next");
 
-  // --- シートDOM ---
+  // 予約状況シートを操作するために、開閉ボタンとシート本体・予約情報の表示場所を取得している
   const openSheetBtn = document.querySelector("#openStatusSheet");
   const closeSheetBtn = document.querySelector("#closeStatusSheet");
   const sheet = document.querySelector("#statusSheet");
   const sheetBody = document.querySelector("#statusSheetBody");
 
+  // 予約状況シートの開閉状態を切り替える関数
   const openSheet = () => {
     document.body.classList.add("sheet-open");
     sheet?.setAttribute("aria-hidden", "false");
-  };
+  };　
+  
   const closeSheet = () => {
+    if (sheet?.contains(document.activeElement)) {
+      openSheetBtn?.focus();
+    }
+
     document.body.classList.remove("sheet-open");
     sheet?.setAttribute("aria-hidden", "true");
   };
 
   // ---------- ステータス表示（日本語＆色用class） ----------
+  // サーバーのstatus文字列を、表示文言とバッジ用classに変換する
   function statusMeta(status) {
     switch (status) {
-      case "pending":    return { text: "申請中",   cls: "my-badge pending" };
-      case "reserved":   return { text: "予約済み", cls: "my-badge reserved" };
-      case "in_use":     return { text: "利用中",   cls: "my-badge in_use" };
-      case "finished":   return { text: "利用完了", cls: "my-badge completed" }; 
-      case "cancelled":  return { text: "キャンセル", cls: "my-badge cancelled" };
-      case "rejected":   return { text: "却下",     cls: "my-badge rejected" }; 
-      case "approved":   return { text: "予約済み", cls: "my-badge reserved" };
-      case "completed":  return { text: "完了",     cls: "my-badge completed" };
-      default:           return { text: status || "不明", cls: "my-badge other" };
+      case "pending": return { text: "申請中", cls: "my-badge pending" };
+      case "reserved": return { text: "予約済み", cls: "my-badge reserved" };
+      case "in_use": return { text: "利用中", cls: "my-badge in_use" };
+      case "finished": return { text: "利用完了", cls: "my-badge completed" };
+      case "cancelled": return { text: "キャンセル", cls: "my-badge cancelled" };
+      case "rejected": return { text: "却下", cls: "my-badge rejected" };
+      case "approved": return { text: "予約済み", cls: "my-badge reserved" };
+      case "completed": return { text: "完了", cls: "my-badge completed" };
+      default: return { text: status || "不明", cls: "my-badge other" };
     }
   }
 
@@ -55,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // ---------- 自分の予約を取得してシート描画 ----------
+  // 指定日(dateISO)の自分の予約一覧を取得し、スマホ用シートにカードとして描画する
   async function renderMyReservationsSheet(dateISO) {
     if (!sheetBody) return;
 
@@ -98,11 +109,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const top = document.createElement("div");
         top.className = "my-top";
-        
+
         const roomName = document.createElement("div");
         roomName.className = "my-room";
         roomName.textContent = r.room_name || "教室";
-        
+
         const statusBadge = document.createElement("span");
         statusBadge.className = meta.cls;
         statusBadge.textContent = meta.text;
@@ -144,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const actions = document.createElement("div");
         actions.className = "my-actions";
-        
+
         const detailLink = document.createElement("a");
         detailLink.className = "my-detail";
         detailLink.textContent = "詳細を見る";
@@ -168,35 +179,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ---------- シート開閉 ----------
+  // ---------- シート開閉（スマホ時のみ有効） ----------
   if (isMobile560()) {
+    // 「予約状況」ボタン押下で、その日付の自分の予約を読み込み→シートを開く
     openSheetBtn?.addEventListener("click", () => {
       const iso = dateInput?.value ? dateInput.value : toISO(new Date());
       renderMyReservationsSheet(iso);
       openSheet();
     });
 
+    // シートの閉じるボタン
     closeSheetBtn?.addEventListener("click", closeSheet);
-
-    if (location.search.includes("date=")) {
-      setTimeout(() => {
-        const iso = dateInput?.value ? dateInput.value : toISO(new Date());
-        renderMyReservationsSheet(iso);
-        openSheet();
-      }, 250);
-    }
   }
 
   // --- 日付の初期化 ---
   let selectedDate;
   if (dateInput && dateInput.value) {
+    // hidden/inputの値（YYYY-MM-DD）がある場合はその日付を初期表示にする
     const [year, month, day] = dateInput.value.split("-").map(Number);
     selectedDate = new Date(year, month - 1, day);
   } else {
+    // 値が無い場合は今日を初期表示にする
     selectedDate = new Date();
   }
+  // ストリップは「週の先頭（日曜）」から7日を描画するため、選択日から週頭を算出
   let startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
 
+  // 中央の日付表示・hidden input・空き状況表示を、指定Dateに合わせて更新する
   function updateCenterDisplay(d) {
     if (mainEl) mainEl.textContent = toMMDD(d);
     if (wdayEl) wdayEl.textContent = `（${jaWeek[d.getDay()]}）`;
@@ -209,7 +218,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // 指定日(date)の教室×時限ステータスを取得し、各カードの表示/リンク/ボタン状態へ反映する
   function updateRoomStatuses(date) {
+    // まずUIを「読み込み中」に寄せる（前日/前回の表示が残らないように初期化）
     document.querySelectorAll('.room-group').forEach((roomGroup) => {
       roomGroup.querySelectorAll('.time-card').forEach((card) => {
         // ★Copilot指摘対応：初期化時に locked クラスも確実に削除する
@@ -227,21 +238,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (reserveBtn) reserveBtn.classList.add('hidden');
 
+        // 予約ボタン/カードのリンクを「選択日」に合わせて更新する
         // ★Copilot指摘対応：正規表現ではなくURL/URLSearchParamsを使った堅牢なURL書き換え
         if (reserveBtn) {
           let href = reserveBtn.getAttribute('href') || reserveBtn.getAttribute('data-href') || card.dataset.baseHref;
-          
+
           if (href && typeof href === 'string') {
             try {
               // 相対パスを解析できるよう、ダミーのベースURL（location.origin）を付与
               const url = new URL(href, window.location.origin);
 
-              // パターン1: ?next=... の中にエンコードされて date が含まれている場合 
+              // パターン1: ?next=... の中にエンコードされて date が含まれている場合
               // (例: /user/precautions?next=/user/reservations/create?date=...)
               if (url.searchParams.has('next')) {
                 const nextParam = url.searchParams.get('next');
                 const nextUrl = new URL(nextParam, window.location.origin);
-                
+
                 if (nextUrl.searchParams.has('date')) {
                   nextUrl.searchParams.set('date', date);
                   // pathname + search で相対パスに戻してセット
@@ -265,16 +277,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (reserveBtn.hasAttribute('href')) reserveBtn.setAttribute("href", href);
             if (reserveBtn.hasAttribute('data-href')) reserveBtn.setAttribute("data-href", href);
-            
+
             card.dataset.baseHref = href;
             if (card.hasAttribute('href')) {
-               card.setAttribute("href", href);
+              card.setAttribute("href", href);
             }
           }
         }
       });
     });
 
+    // 指定日のステータスをAPIから取得して、room_id×periodにマッチするカードへ反映
     fetch(`/user/room-status?date=${date}`, { cache: "no-store" })
       .then((response) => response.json())
       .then((data) => {
@@ -283,6 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           roomGroup.querySelectorAll(".time-card").forEach((card) => {
             const period = Number(card.dataset.period);
+            // API結果から「この教室・この時限」のレコードを探す（無ければ available 扱い）
             const statusData = data.find((item) => item.room_id == roomId && Number(item.period) === period);
             const status = statusData ? statusData.status : "available";
 
@@ -293,13 +307,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const availableLabel = card.querySelector(".pc-layout .available-label");
             const unavailableLabel = card.querySelector(".pc-layout .unavailable-label");
             const reserveBtn = card.querySelector(".reserve-btn.pc-only");
-            
+
             // スマホ用の要素群
             const spAvailableLabel = card.querySelector(".sp-layout .available-label");
             const spUnavailableLabel = card.querySelector(".sp-layout .unavailable-label");
             const spReserveBtn = card.querySelector(".sp-reserve-btn");
 
             if (status === 'available') {
+              // 利用可能：リンク有効・ボタン表示・「空き」ラベル表示
               card.setAttribute("href", card.dataset.baseHref);
               card.classList.remove('locked');
               // ★ Copilot指摘対応: 利用可能な時は aria-disabled を外す
@@ -309,13 +324,14 @@ document.addEventListener("DOMContentLoaded", () => {
               if (availableLabel) availableLabel.classList.remove("hidden");
               if (unavailableLabel) unavailableLabel.classList.add("hidden");
               if (reserveBtn) reserveBtn.classList.remove("hidden");
-              
+
               // スマホ表示
               if (spAvailableLabel) spAvailableLabel.classList.remove("hidden");
               if (spUnavailableLabel) spUnavailableLabel.classList.add("hidden");
               if (spReserveBtn) spReserveBtn.classList.remove("hidden");
-              
+
             } else {
+              // 利用不可：リンク無効・ボタン非表示・理由（授業名 or ステータス）を表示
               card.removeAttribute("href");
               card.classList.add('locked');
               // ★ Copilot指摘対応: 利用不可の時は aria-disabled をつける
@@ -326,7 +342,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 'reserved': '予約済み',
                 'in_use': '利用中',
                 'unavailable': '利用不可',
+                'conflict': '同時刻に予約あり',
               };
+
               const label = statusData?.lesson_title ?? statusLabels[status] ?? '利用不可';
 
               // PC表示
@@ -336,7 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 unavailableLabel.textContent = label;
               }
               if (reserveBtn) reserveBtn.classList.add("hidden");
-              
+
               // スマホ表示
               if (spAvailableLabel) spAvailableLabel.classList.add("hidden");
               if (spUnavailableLabel) {
@@ -351,6 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch((error) => console.error("ステータス取得エラー:", error));
   }
 
+  // 週表示ストリップ（曜日/日付ラベルとactive状態）を、startDate〜7日分で描画する
   function renderStrip() {
     tabs.forEach((tab, i) => {
       const d = new Date(startDate.getTime() + i * 86400000);
@@ -359,15 +378,17 @@ document.addEventListener("DOMContentLoaded", () => {
       tab.dataset.date = toISO(d);
 
       const active = d.getFullYear() === selectedDate.getFullYear() &&
-                     d.getMonth() === selectedDate.getMonth() &&
-                     d.getDate() === selectedDate.getDate();
+        d.getMonth() === selectedDate.getMonth() &&
+        d.getDate() === selectedDate.getDate();
       tab.classList.toggle("active", active);
     });
   }
 
+  // 初期表示：中央の日付＋空き状況を反映し、ストリップ（1週間）を描画
   updateCenterDisplay(selectedDate);
   renderStrip();
 
+  // ストリップの各日付タブ：クリックした日を選択日として反映
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       const iso = tab.dataset.date;
@@ -375,11 +396,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const [year, month, day] = iso.split("-").map(Number);
       selectedDate = new Date(year, month - 1, day);
       updateCenterDisplay(selectedDate);
+      // 選択日が変わったら、その週の日曜を再計算してストリップを描き直す
       startDate = new Date(selectedDate.getTime() - selectedDate.getDay() * 86400000);
       renderStrip();
     });
   });
 
+  // 前日へ移動：選択日とストリップ開始日を1日戻して反映
   prevBtn?.addEventListener("click", () => {
     selectedDate = new Date(selectedDate.getTime() - 86400000);
     startDate = new Date(startDate.getTime() - 86400000);
@@ -387,6 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderStrip();
   });
 
+  // 翌日へ移動：選択日とストリップ開始日を1日進めて反映
   nextBtn?.addEventListener("click", () => {
     selectedDate = new Date(selectedDate.getTime() + 86400000);
     startDate = new Date(startDate.getTime() + 86400000);
@@ -394,6 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderStrip();
   });
 
+  // 日付入力（カレンダー等）変更：選択日を更新し、週ストリップと空き状況を再描画
   dateInput?.addEventListener("change", () => {
     const [year, month, day] = dateInput.value.split("-").map(Number);
     const d = new Date(year, month - 1, day);
