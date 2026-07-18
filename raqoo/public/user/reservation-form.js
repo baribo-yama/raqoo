@@ -11,7 +11,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const membersHidden = document.getElementById('membersHidden');
     const membersProxy = document.getElementById('members');
     const memberInputs = document.querySelectorAll('.member-name-input');
+    const memberRows = document.querySelectorAll('.member-row');
+    const addMemberRowsButton = document.getElementById('addMemberRowsButton');
+    const memberRowCount = document.getElementById('memberRowCount');
+    const maxVisibleMemberCount = 30;
+    const addMemberCount = 5;
 
+    function updateMemberRowCount() {
+        const visibleMemberCount = Array.from(memberRows)
+            .filter(row => !row.classList.contains('hidden'))
+            .length;
+
+        if (memberRowCount) {
+            memberRowCount.textContent = `${visibleMemberCount}/${maxVisibleMemberCount}名分表示中`;
+        }
+
+        if (addMemberRowsButton && visibleMemberCount >= maxVisibleMemberCount) {
+            addMemberRowsButton.classList.add('hidden');
+        }
+    }
+
+    if (addMemberRowsButton) {
+        addMemberRowsButton.addEventListener('click', function() {
+            const hiddenRows = Array.from(memberRows)
+                .filter(row => row.classList.contains('hidden'))
+                .slice(0, addMemberCount);
+
+            hiddenRows.forEach(row => {
+                row.classList.remove('hidden');
+            });
+
+            updateMemberRowCount();
+        });
+    }
+
+    updateMemberRowCount();
     const hasOldMembers = Array.from(memberInputs).some(i => i.value.trim() !== '');
     if (hasOldMembers) {
         membersProxy.value = 'dummy';
