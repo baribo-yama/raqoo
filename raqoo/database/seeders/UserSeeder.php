@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'ばやし',
             'email' => 'bayashi@example.com',
-            'email_verified_at' => '2026-07-22 05:23:37',
+            'email_verified_at' => now(),
             'password' => Hash::make('123456'),
             'student_id' => 'ST001',
             'major' => 'エンジニア専攻',
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => '佐藤花子',
             'email' => 'sato@example.com',
-            'email_verified_at' => '2026-07-22 05:23:37',
+            'email_verified_at' => now(),
             'password' => Hash::make('password123'),
             'student_id' => 'ST002',
             'major' => 'クリエーター専攻',
@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => '山田次郎',
             'email' => 'yamada@example.com',
-            'email_verified_at' => '2026-07-22 05:23:37',
+            'email_verified_at' => now(),
             'password' => Hash::make('password123'),
             'student_id' => 'ST003',
             'major' => 'ハッカー専攻',
