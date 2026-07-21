@@ -1,16 +1,16 @@
 name: "raqoo"
 
 services:
-  app-appli4:
-    container_name: app-appli4
+  app:
+    container_name: app
     build: ./docker/php
     volumes:
       - ./raqoo:/var/www
       - ./docker/php/php.ini:/usr/local/etc/php/php.ini
       - ./log:/var/log
 
-  nginx-appli4:
-    container_name: nginx-appli4
+  nginx:
+    container_name: nginx
     image: nginx
     ports:
       - "127.0.0.1:8881:80"
@@ -19,9 +19,9 @@ services:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
 
   # .envファイルの「DB_HOST」とサービス名を合わせる
-  db-appli4:
+  db:
     image: mariadb:latest
-    container_name: db-appli4
+    container_name: db
     environment:
       MYSQL_ROOT_PASSWORD: root
       # .envファイルの「DB_DATABASE」とMYSQL_DATABASEを合わせる
