@@ -87,6 +87,13 @@ button{
     transform: translateY(0);
 }
 
+/* Googleログインのボタン */
+.google-login-link {
+  display: block;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
 #up{
     text-align: right;
     text-decoration: underline; 

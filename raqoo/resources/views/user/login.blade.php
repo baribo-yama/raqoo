@@ -45,7 +45,7 @@
                 <br>
                 <button type="submit" class="login-btn">ログイン</button>
       </form><br>
-      <a href="/auth/google/redirect"><button class="login-btn">Googleでログイン</button></a>
+      <a href="/auth/google/redirect" class="login-btn google-login-link">Googleでログイン</a>
       <font size="-1">Googleログインは学校のアカウントで行ってください</font>
       <!-- <div id="up" class="mt-2">
         <a href="{{ url('/signup') }}">新規登録</a>
