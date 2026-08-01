@@ -19,7 +19,7 @@ class SignupController extends Controller
             'first_name' => 'required|string|max:255',
             'student_id' => 'required|string|max:255|unique:users,student_id',
             // 'major_id' => 'required',
-            'email' => 'required|string|max:255',
+            // 'email' => 'required|string|max:255',
         ]);
 
         // ドメイン制限（登録はtechもしくはssmの学生・先生のみができる）
@@ -38,7 +38,7 @@ class SignupController extends Controller
             'first_name' => $request->first_name,
             'student_id' => $request->student_id,
             // 'major_id' => $request -> major_id,
-            'email' => $request->email,
+            // 'email' => $request->email,
             // 'password' => Hash::make($request->password),
 
         ]);

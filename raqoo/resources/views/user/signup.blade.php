@@ -27,15 +27,15 @@
             <form method="POST" action="/signup">
                 @csrf
                 名字<br>
-                <input type="text" id="name" name="family_name" placeholder="姓"><br>
+                <input type="text" id="family_name" name="family_name" placeholder="姓"><br>
                 名前<br>
-                <input type="text" id="name" name="first_name" placeholder="名"><br>
+                <input type="text" id="first_name" name="first_name" placeholder="名"><br>
                 学籍番号
                 <input type="text" id="student_id" name="student_id" placeholder="学籍番号"><br>
                 <!-- Major
                 <input type="text" id="major" name="major" placeholder="専攻名(正式名称)"><br> -->
                 メールアドレス<br>
-                <input type="email" id="email" name="email" value="{{ auth()->user()->email }}" readonly><br>
+                <input type="email" id="email" name="email" value="{{ auth()->user()?->email }}" readonly><br>
                 <br>
 
                 <button type="submit">登録</button>

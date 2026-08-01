@@ -108,7 +108,7 @@ Route::get('/admin/notifications', function () {
 
 
 /*======= ユーザー画面 ========*/
-Route::middleware('auth', /*'verified'*/)->group(function () {
+Route::middleware('auth')->group(function () {
     // ユーザーホーム
     Route::get('/home', [UserRoomController::class, 'index'])
         ->middleware('time.guard')
