@@ -180,7 +180,6 @@ function showCellDetailModal(roomId, periodId, date, cell) {
                 appendMemberTable(body, data.reservation.representative, data.reservation.members);
 
                 const cancelBtn = appendModalButton(body, 'cancelReservationBtn', '予約キャンセル');
-                cancelBtn.classList.add('modal-close');
                 cancelBtn.addEventListener('click', () => {
                     fetch('/admin/reservations/cancel', {
                         method: 'POST',
