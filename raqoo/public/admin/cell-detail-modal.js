@@ -142,7 +142,7 @@ function showCellDetailModal(roomId, periodId, date, cell) {
                     <h3>授業名を登録</h3>
                     <form id="lessonForm">
                         <input type="text" name="title" placeholder="授業名">
-                        <button type="submit">登録</button>
+                        <button type="submit" class="modal-close">登録</button>
                     </form>
                 `;
 
@@ -202,6 +202,7 @@ function showCellDetailModal(roomId, periodId, date, cell) {
                 appendModalParagraph(body, data.lesson.title);
 
                 const cancelBtn = appendModalButton(body, 'cancelLessonBtn', '授業キャンセル');
+                cancelBtn.classList.add('modal-close');
                 cancelBtn.addEventListener('click', () => {
                     fetch('/admin/room-lesson/cancel', {
                         method: 'DELETE',
