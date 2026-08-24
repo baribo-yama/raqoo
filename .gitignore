@@ -30,3 +30,4 @@ Homestead.json
 auth.json
 docker/db/data/
 log/xdebug.log
+docker-compose.override.yml

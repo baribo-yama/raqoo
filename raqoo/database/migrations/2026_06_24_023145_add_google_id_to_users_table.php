@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // email_verified_atを追加（メール認証済みかどうかのカラム）、majorも
         Schema::table('users', function (Blueprint $table) {
-            $table->timestamp('email_verified_at')->nullable()->after('email');
-            $table->char('major')->after('student_id'); // 専攻名
+            $table->string('google_id')->nullable()->unique()->after('email'); // google_idをemailカラムの後に追加する
         });
     }
 
@@ -23,9 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('email_verified_at');
+            $table->dropColumn('google_id');
         });
     }
 };

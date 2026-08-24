@@ -70,7 +70,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">代表者</label>
                             <div class="p-3 bg-gray-100 rounded-md text-gray-600">
                                 @auth
-                                    {{ Auth::user()->major }}　{{ Auth::user()->name }} ({{ Auth::user()->student_id }})
+                                    {{ Auth::user()->major?->name }}　{{ Auth::user()->family_name }}{{ Auth::user()->first_name }} ({{ Auth::user()->student_id }})
                                 @else
                                     <span class="text-red-500">ログインが必要です</span>
                                 @endauth

@@ -18,8 +18,12 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/clockwork
 /vendor
 Homestead.json
 Homestead.yaml
 Thumbs.db
 /log/xdebug.log
+log/*.log
+*.swp
+FETCH_HEAD
