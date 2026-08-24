@@ -183,7 +183,7 @@
 
                                         <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border border-gray-100">
                                             <span class="font-medium">
-                                                {{ Auth::user()->name }} (代表)
+                                                {{ Auth::user()->family_name }}{{ Auth::user()->first_name }} (代表)
                                             </span>
 
                                             @php

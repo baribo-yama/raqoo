@@ -89,8 +89,8 @@
             @forelse($reservations as $group)
                 <div class="request-card">
                     <div class="request-card-header">
-                        <h4>{{ $group->user->name }}</h4>
-                        <small>専攻名: {{ $group->user->major }}</small><br>
+                        <h4>{{ $group->user->family_name }}{{ $group->user->first_name }}</h4>
+                        <small>専攻名: {{ $group->->major?->name }}</small><br>
                         <small>学籍番号: {{ $group->user->student_id }}</small>
                     </div>
                     <div class="request-card-info">教室: {{ $group->room->name }}</div>

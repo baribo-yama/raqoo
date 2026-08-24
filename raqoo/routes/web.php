@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\SignupController;
 use App\Http\Controllers\User\UnavailableController;
-use Illuminate\Auth\Events\Verified;
+// use Illuminate\Auth\Events\Verified;
+use App\Http\Controllers\User\GoogleLoginController;
 
 require __DIR__ . '/auth.php';
 
@@ -107,7 +108,7 @@ Route::get('/admin/notifications', function () {
 
 
 /*======= ユーザー画面 ========*/
-Route::middleware('auth', 'verified')->group(function () {
+Route::middleware('auth')->group(function () {
     // ユーザーホーム
     Route::get('/home', [UserRoomController::class, 'index'])
         ->middleware('time.guard')
@@ -152,3 +153,7 @@ Route::middleware('auth', 'verified')->group(function () {
     // 予約申請できない時間帯に出す画面
     Route::get('/unavailable', [UnavailableController::class, 'showUnavailable'])->name('unavailable');
 });
+
+// Googleログイン用
+Route::get('/auth/google/redirect', [GoogleLoginController::class, 'redirect']);
+Route::get('/auth/google/callback', [GoogleLoginController::class, 'callback']);

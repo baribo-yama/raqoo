@@ -39,7 +39,7 @@
                 </div>
                 <div class="profile-detail">
                     <div class="profile-id">学籍番号 {{ Auth::user()->student_id ?? '未設定' }}</div>
-                    <div class="profile-name">{{ Auth::user()->name ?? 'ゲスト' }}</div>
+                    <div class="profile-name">{{ Auth::user()->family_name }}{{ Auth::user()->first_name ?? 'ゲスト' }}</div>
                 </div>
             </div>
 
