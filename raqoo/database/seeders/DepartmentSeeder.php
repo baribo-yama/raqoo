@@ -17,6 +17,7 @@ class DepartmentSeeder extends Seeder
         $departments = [
             'AI&テクノロジー科',
             'デジタルテクノロジー科',
+            'クリエイティブデザイン科',
         ];
 
         foreach ($departments as $name){
