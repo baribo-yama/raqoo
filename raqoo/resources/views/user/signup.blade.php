@@ -6,7 +6,7 @@
     <title>Signup</title>
     <link rel="stylesheet" href="{{ asset('user/login_sign.css') }}">
 </head>
-
+<script src="{{ asset('user/signup.js') }}"></script>
 <body>
     <div class="main">
         <p align="center">
@@ -32,8 +32,17 @@
                 <input type="text" id="first_name" name="first_name" placeholder="名"><br>
                 学籍番号
                 <input type="text" id="student_id" name="student_id" placeholder="学籍番号"><br>
-                <!-- Major
-                <input type="text" id="major" name="major" placeholder="専攻名(正式名称)"><br> -->
+                学科
+                <select id="department" name="department_id">
+                    <option value="">選択してください</option>
+                    @foreach ($departments as $department)
+                        <option value="{{ $department->id }}">{{ $department->name }}</option>
+                    @endforeach
+                </select><br>
+                専攻<br>
+                <select id="major_id" name="major_id" disabled>
+                    <option value="">学科を選択してください</option>
+                </select><br>
                 メールアドレス<br>
                 <input type="email" id="email" name="email" value="{{ auth()->user()?->email }}" readonly><br>
                 <br>

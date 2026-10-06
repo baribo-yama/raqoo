@@ -18,7 +18,7 @@ class SignupController extends Controller
             'family_name' => 'required|string|max:255',
             'first_name' => 'required|string|max:255',
             'student_id' => 'required|string|max:255|unique:users,student_id',
-            // 'major_id' => 'required',
+            'major_id' => 'required|exists:majors,id',
             // 'email' => 'required|string|max:255',
         ]);
 
@@ -37,7 +37,7 @@ class SignupController extends Controller
             'family_name' => $request->family_name,
             'first_name' => $request->first_name,
             'student_id' => $request->student_id,
-            // 'major_id' => $request -> major_id,
+            'major_id' => $request -> major_id,
             // 'email' => $request->email,
             // 'password' => Hash::make($request->password),
 

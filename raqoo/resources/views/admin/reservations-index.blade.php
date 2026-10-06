@@ -37,7 +37,7 @@
                             <td class="px-6 py-4">
                                 {{ $reservation->user->family_name }}{{ $reservation->user->first_name }}<br>
                                 <span class="text-sm text-gray-500">
-                                    {{ $reservation->user->major }}<br>
+                                    {{ $reservation->user->major?->name }}<br>
                                     {{ $reservation->user->student_id }}
                                 </span>
                             </td>
