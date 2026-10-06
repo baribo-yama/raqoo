@@ -27,11 +27,11 @@
             <form method="POST" action="/signup">
                 @csrf
                 名字<br>
-                <input type="text" id="family_name" name="family_name" placeholder="姓"><br>
+                <input type="text" id="family_name" name="family_name" placeholder="姓" value="{{ old('family_name') }}"><br>
                 名前<br>
-                <input type="text" id="first_name" name="first_name" placeholder="名"><br>
+                <input type="text" id="first_name" name="first_name" placeholder="名" value="{{ old('first_name') }}"><br>
                 学籍番号
-                <input type="text" id="student_id" name="student_id" placeholder="学籍番号"><br>
+                <input type="text" id="student_id" name="student_id" placeholder="学籍番号" value="{{ old('student_id') }}"><br>
                 学科
                 <select id="department" name="department_id">
                     <option value="">選択してください</option>
