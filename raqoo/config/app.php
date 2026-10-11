@@ -127,4 +127,5 @@ return [
     httpsを強制するかどうかのフラグ
     */
     'force_https' => env('force_https, false'),
+    'time_guard_enabled' => env('TIME_GUARD_ENABLED', true),
 ];
