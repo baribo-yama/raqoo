@@ -18,7 +18,7 @@ class SignupController extends Controller
             'family_name' => 'required|string|max:255',
             'first_name' => 'required|string|max:255',
             'student_id' => 'required|string|max:255|unique:users,student_id',
-            'major_id' => 'required|exists:majors,id',
+            'major_id' => 'nullable|exists:majors,id',
             // 'email' => 'required|string|max:255',
         ]);
 

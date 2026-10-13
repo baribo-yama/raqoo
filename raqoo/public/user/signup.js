@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const majorSelect = document.querySelector("#major_id");
 
   if (!departmentSelect || !majorSelect) return;
+  let oldMajorId = majorSelect.dataset.old;
 
   departmentSelect.addEventListener("change", () => {
     const departmentId = departmentSelect.value;
@@ -16,8 +17,14 @@ document.addEventListener("DOMContentLoaded", () => {
     majorSelect.disabled = true;
     majorSelect.innerHTML = '<option value="">読み込み中...</option>';
 
-    fetch(`/majors?department_id=${encodeURIComponent(departmentId)}`, { cache: "no-store" })
-      .then((res) => res.json())
+    fetch(`/majors?department_id=${encodeURIComponent(departmentId)}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    })
+      .then((res) => {
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((majors) => {
         majorSelect.innerHTML = "";
 
@@ -33,6 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
           majorSelect.appendChild(option);
         });
 
+        if(oldMajorId){
+          majorSelect.value = oldMajorId;
+          oldMajorId = "";
+        }
+
         majorSelect.disabled = false;
       })
       .catch((error) => {
@@ -40,4 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
         majorSelect.innerHTML = '<option value="">取得に失敗しました</option>';
       });
   });
+  if (departmentSelect.value) {
+    departmentSelect.dispatchEvent(new Event("change"));
+  }
+
 });

@@ -6,7 +6,7 @@
     <title>Signup</title>
     <link rel="stylesheet" href="{{ asset('user/login_sign.css') }}">
 </head>
-<script src="{{ asset('user/signup.js') }}"></script>
+
 <body>
     <div class="main">
         <p align="center">
@@ -36,11 +36,11 @@
                 <select id="department" name="department_id">
                     <option value="">選択してください</option>
                     @foreach ($departments as $department)
-                        <option value="{{ $department->id }}">{{ $department->name }}</option>
+                        <option value="{{ $department->id }}" @selected(old('department_id') == $department->id)>{{ $department->name }}</option>
                     @endforeach
                 </select><br>
                 専攻<br>
-                <select id="major_id" name="major_id" disabled>
+                <select id="major_id" name="major_id" disabled data-old="{{ old('major_id') }}">
                     <option value="">学科を選択してください</option>
                 </select><br>
                 メールアドレス<br>
@@ -52,6 +52,7 @@
             <a href="{{ url('/login') }}">ログイン画面に戻る</a>
         </div>
     </div>
+<script src="{{ asset('user/signup.js') }}"></script>
 </body>
 
 </html>
