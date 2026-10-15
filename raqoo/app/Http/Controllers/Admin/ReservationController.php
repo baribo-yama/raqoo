@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ReservationApproved;
+use App\Mail\ReservationRejected;
 use App\Models\Reservation;
 use App\Models\RoomStatus;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Mail\TestMail;
+use Illuminate\Support\Facades\Mail;
+
 
 class ReservationController extends Controller
 {
@@ -44,7 +49,7 @@ class ReservationController extends Controller
             'ids' => 'required|string',
         ]);
         $ids = explode(',', $validated['ids']);
-        
+
         // 'pending' 状態のものだけを対象にする
         $reservations = Reservation::with('room')
             ->whereIn('id', $ids)
@@ -71,11 +76,11 @@ class ReservationController extends Controller
 
             $first = $reservations->first();
             $last = $reservations->last();
-            
-            $periodDisplay = ($first->period == $last->period) 
-                ? "{$first->period}" 
+
+            $periodDisplay = ($first->period == $last->period)
+                ? "{$first->period}"
                 : "{$first->period}〜{$last->period}";
-            
+
             $dateDisplay = $this->formatDate($first->date);
 
             Notification::create([
@@ -96,7 +101,7 @@ class ReservationController extends Controller
             'ids' => 'required|string',
         ]);
         $ids = explode(',', $validated['ids']);
-        
+
         // 'pending' のみ対象
         $reservations = Reservation::with('room')
             ->whereIn('id', $ids)
@@ -115,11 +120,11 @@ class ReservationController extends Controller
 
             $first = $reservations->first();
             $last = $reservations->last();
-            
-            $periodDisplay = ($first->period == $last->period) 
-                ? "{$first->period}" 
+
+            $periodDisplay = ($first->period == $last->period)
+                ? "{$first->period}"
                 : "{$first->period}〜{$last->period}";
-            
+
             $dateDisplay = $this->formatDate($first->date);
 
             Notification::create([
@@ -136,7 +141,7 @@ class ReservationController extends Controller
     public function approve(Reservation $reservation)
     {
         if ($reservation->status !== 'pending') {
-             return redirect()->back()->with('error', 'この予約は承認待ちではありません。');
+            return redirect()->back()->with('error', 'この予約は承認待ちではありません。');
         }
 
         $reservation->update(['status' => 'reserved']);
@@ -144,14 +149,18 @@ class ReservationController extends Controller
             ['room_id' => $reservation->room_id, 'date' => $reservation->date, 'period' => $reservation->period],
             ['status' => 'reserved']
         );
-        
+
         $dateDisplay = $this->formatDate($reservation->date);
-        
+
         Notification::create([
             'user_id' => $reservation->user_id,
             'message' => "予約が承認されました。{$reservation->room->name} - {$dateDisplay} {$reservation->period}限",
             'is_read' => false
         ]);
+
+        // 予約承認メール送信
+        Mail::to($reservation->user->email)->send(new ReservationApproved($reservation));
+
         return redirect()->back()->with('success', '予約を承認しました。');
     }
 
@@ -162,9 +171,9 @@ class ReservationController extends Controller
         if ($reservation->status !== 'pending') {
             return redirect()->back()->with('error', 'この予約は承認待ちではありません。');
         }
-        
+
         $reservation->update(['status' => 'cancelled']);
-        
+
         $dateDisplay = $this->formatDate($reservation->date);
 
         Notification::create([
@@ -172,6 +181,10 @@ class ReservationController extends Controller
             'message' => "予約が却下されました。{$reservation->room->name} - {$dateDisplay} {$reservation->period}限",
             'is_read' => false,
         ]);
+
+        // 予約却下メール送信
+        Mail::to($reservation->user->email)->send(new ReservationRejected($reservation));
+
         return redirect()->back()->with('success', '予約を却下しました。');
     }
 

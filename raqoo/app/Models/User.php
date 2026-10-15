@@ -18,6 +18,8 @@ class User extends Authenticatable // implements MustVerifyEmail
      *
      * @var list<string>
      */
+    // 一括代入を許可する許可リスト（以下で設定したものだけを入れる）
+    // $fillableに追加されていないカラムは一括代入の対象から自動的に除外
     protected $fillable = [
         'family_name',
         'first_name',
@@ -33,6 +35,7 @@ class User extends Authenticatable // implements MustVerifyEmail
      *
      * @var list<string>
      */
+    // json化、配列化時に除外する秘匿カラム（パスワード・認証トークン）
     protected $hidden = [
         'password',
         'remember_token',

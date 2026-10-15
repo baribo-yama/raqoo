@@ -16,9 +16,12 @@ class TimeGuardMiddleware
 
     public function handle(Request $request, Closure $next)
     {
-        // $now = now(); // 現在時刻・曜日を取得する
-        // .envにAPP_FAKE_NOW="2026-5-14 08:00:00"のように、テストしたい時刻を設定してテストする
-        $now = env('APP_FAKE_NOW') ? \Carbon\Carbon::parse(env('APP_FAKE_NOW')) : now();
+        if (!config('app.time_guard_enabled')) {
+            return $next($request);
+        }
+        // .envにAPP_FAKE_NOW="2026-5-14 08:00:00"を設定すると、
+        // AppServiceProviderのCarbon::setTestNow()によりnow()がその時刻を返す
+        $now = now(); // 現在時刻・曜日を取得する
         $time = $now->format('H:i'); // 現在時刻を24時間で表示する
 
 

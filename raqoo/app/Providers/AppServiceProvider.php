@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Carbon\Carbon;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -22,6 +23,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // .envにAPP_FAKE_NOW="2026-5-14 08:00:00"のように設定すると、
+        // アプリ全体のnow()/today()などがこの時刻を返すようになる（動作確認・テスト用）
+        // 本番環境では絶対に設定しないこと
+        if (!$this->app->environment('production') && env('APP_FAKE_NOW')) {
+            Carbon::setTestNow(Carbon::parse(env('APP_FAKE_NOW')));
+        }
+
         // 本番 or FORCE_HTTPS=true のときは無条件に HTTPS を強制
         if ($this->app->environment('production') || config('app.force_https')) {
             URL::forceScheme('https');
