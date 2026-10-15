@@ -43,8 +43,8 @@
                 <select id="major_id" name="major_id" disabled data-old="{{ old('major_id') }}">
                     <option value="">学科を選択してください</option>
                 </select><br>
-                メールアドレス<br>
-                <input type="email" id="email" name="email" value="{{ auth()->user()?->email }}" readonly><br>
+                メールアドレス(確認用)<br>
+                <input type="email" id="email" name="email" value="{{ auth()->user()?->email }}" realonly><br>
                 <br>
 
                 <button type="submit">登録</button>
