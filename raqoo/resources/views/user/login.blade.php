@@ -33,7 +33,7 @@
     @endif
 
     <div class="forms">
-      <form method="POST" action="{{ route('login') }}">
+      <!-- <form method="POST" action="{{ route('login') }}">
         @csrf
 
         <label for='email'>Email</label><br>
@@ -44,7 +44,7 @@
 
                 <br>
                 <button type="submit" class="login-btn">ログイン</button>
-      </form><br>
+      </form><br> -->
       <a href="/auth/google/redirect" class="login-btn google-login-link">Googleでログイン</a>
       <font size="-1">Googleログインは学校のアカウントで行ってください</font>
       <!-- <div id="up" class="mt-2">

@@ -18,6 +18,8 @@ use App\Http\Controllers\SignupController;
 use App\Http\Controllers\User\UnavailableController;
 // use Illuminate\Auth\Events\Verified;
 use App\Http\Controllers\User\GoogleLoginController;
+use App\Http\Controllers\MajorController;
+use App\Models\Department;
 
 require __DIR__ . '/auth.php';
 
@@ -29,7 +31,9 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // ユーザー新規登録
 Route::get('/signup', function () {
-    return view('user.signup');
+    return view('user.signup', [
+        'departments' => Department::orderBy('id')->get(),
+    ]);
 });
 Route::post('/signup', [SignupController::class, 'up']);
 
@@ -157,3 +161,5 @@ Route::middleware('auth')->group(function () {
 // Googleログイン用
 Route::get('/auth/google/redirect', [GoogleLoginController::class, 'redirect']);
 Route::get('/auth/google/callback', [GoogleLoginController::class, 'callback']);
+
+Route::get('/majors', [MajorController::class, 'byDepartment']);

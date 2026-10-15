@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Major;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -18,30 +19,27 @@ class UserSeeder extends Seeder
         User::create([
             'family_name' => 'ばやし',
             'email' => 'bayashi@example.com',
-            'email_verified_at' => now(),
             'password' => Hash::make('123456'),
             'student_id' => 'ST001',
-            // 'major' => 'エンジニア専攻',
+            'major_id' => Major::where('name', 'AIエンジニア専攻')->firstOrFail()->id,
         ]);
 
         User::create([
             'family_name' => '佐藤',
             'first_name' => '花子',
             'email' => 'sato@example.com',
-            'email_verified_at' => now(),
             'password' => Hash::make('password123'),
             'student_id' => 'ST002',
-            // 'major' => 'クリエーター専攻',
+            'major_id' => Major::where('name', 'CG・アニメーション専攻')->firstOrFail()->id,
         ]);
 
         User::create([
             'family_name' => '山田',
             'first_name' => '次郎',
             'email' => 'yamada@example.com',
-            'email_verified_at' => now(),
             'password' => Hash::make('password123'),
             'student_id' => 'ST003',
-            // 'major' => 'ハッカー専攻',
+            'major_id' => Major::where('name', 'ホワイトハッカー専攻')->firstOrFail()->id,
         ]);
 
         // より多くのテストユーザーを作成したい場合はFactoryを使用
