@@ -18,6 +18,10 @@ class DepartmentSeeder extends Seeder
             'AI&テクノロジー科',
             'デジタルテクノロジー科',
             'クリエイティブデザイン科',
+            '音楽ビジネス科',
+            '音楽テクノロジー科',
+            'スーパーｅエンターテイメント科',
+            '総合音楽科（高等課程）',
         ];
 
         foreach ($departments as $name){

@@ -1,9 +1,9 @@
 ## Signup画面への遷移の仕方
 サインアップにはドメインが
-@edu.sba.ac.jp
-@edu.ssm.ac.jp
-@sba.ac.jp
-@aam.ac.jp
+- @edu.sba.ac.jp
+- @edu.ssm.ac.jp
+- @sba.ac.jp
+- @aam.ac.jp
 ではないと弾く仕組みになっている
 また、ログインやサインアップには「Googleでログイン」を行わないといけないようにする
 
