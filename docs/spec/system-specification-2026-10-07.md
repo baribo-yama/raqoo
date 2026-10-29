@@ -4,8 +4,8 @@
 
 > 本書は 2026-10-07 時点の `feature/mail-notification` ブランチのソースコードから読み取れる機能・仕様・要件をまとめたものです。
 > 「〜とする」は実装されている挙動、「⚠️」は実装上の不整合・未実装・注意点を示します。
-> 導入手順・テストアカウントは [README.md](README.md)、DB の初期構築は [database-setup.md](database-setup.md)、
-> ステータス表示・セルモーダルの設計意図は [shiyousho.md](shiyousho.md) を参照してください。
+> 導入手順・テストアカウントは [README.md](../README.md)、DB の初期構築は [database-setup.md](../database-setup.md)、
+> ステータス表示・セルモーダルの設計意図は [status-display.md](status-display.md) を参照してください。
 
 ---
 
@@ -30,7 +30,7 @@
 
 ## 2. 基本マスタ・定数
 
-### 2.1 時限（[config/period.php](../raqoo/config/period.php)）
+### 2.1 時限（[config/period.php](../../raqoo/config/period.php)）
 
 | 時限 | 開始 | 終了 |
 | --- | --- | --- |
@@ -43,7 +43,7 @@
 
 ⚠️ 同じ時間割が `Admin/DashBoardController` と `public/user/home.js` にもハードコードされている。
 
-### 2.2 教室（初期データ: [RoomSeeder](../raqoo/database/seeders/RoomSeeder.php)）
+### 2.2 教室（初期データ: [RoomSeeder](../../raqoo/database/seeders/RoomSeeder.php)）
 
 - 1〜5階に各2部屋、計10教室（`101教室`〜`502教室`）
 - `x01`: 定員30名・プロジェクター, ホワイトボード / `x02`: 定員25名・ホワイトボード
@@ -87,7 +87,7 @@
 
 ## 4. 利用可能時間（予約申請受付時間）
 
-[TimeGuardMiddleware](../raqoo/app/Http/Middleware/TimeGuardMiddleware.php)（`time.guard`）により、以下の時間外は `/unavailable`（予約申請不可画面）へリダイレクトする。
+[TimeGuardMiddleware](../../raqoo/app/Http/Middleware/TimeGuardMiddleware.php)（`time.guard`）により、以下の時間外は `/unavailable`（予約申請不可画面）へリダイレクトする。
 
 | 曜日 | 受付時間 |
 | --- | --- |
@@ -96,7 +96,7 @@
 
 - 対象ルート: `/home`、`/reservations/create`、`/reservations/check`、`POST /reservations`
 - 予約一覧・履歴・お知らせ等は時間外でも閲覧可能
-- 境界値は [TimeGuardMiddlewareTest](../raqoo/tests/Feature/TimeGuardMiddlewareTest.php) でテスト済み
+- 境界値は [TimeGuardMiddlewareTest](../../raqoo/tests/Feature/TimeGuardMiddlewareTest.php) でテスト済み
 - ⚠️ 画面文言にある「長期休暇期間は 10:50〜17:50」は未実装（祝日・休暇の判定なし）
 
 **開発用**: `.env` の `APP_FAKE_NOW="2026-05-14 08:00:00"` で、production 以外では `now()` / `today()` を固定できる（`AppServiceProvider`）。
@@ -276,7 +276,7 @@ cancelled ◀────────────┘
 
 ### 7.2 ユーザー画面の枠ステータス（`GET /user/room-status`）
 
-上から順に判定し、最初に該当したものを返す（[Room::getStatusForUser](../raqoo/app/Models/Room.php)）。
+上から順に判定し、最初に該当したものを返す（[Room::getStatusForUser](../../raqoo/app/Models/Room.php)）。
 
 1. 授業あり → `unavailable`（`lesson_title` に授業名、画面は授業名を表示）
 2. 自分の有効予約 → その予約のステータス（`pending` / `reserved` / `in_use`）
@@ -373,7 +373,7 @@ cancelled ◀────────────┘
 | リアルタイム性 | 管理者の承認待ちバッジは30秒ポーリング。ユーザー画面は日付切替・画面表示時に取得（自動更新なし） |
 | テスト | `TimeGuardMiddlewareTest`（受付時間の境界値）、他は Breeze 標準テストのみ |
 
-既知のセキュリティ課題は [security-vulnerabilities.md](security-vulnerabilities.md) を参照。
+既知のセキュリティ課題は [security-vulnerabilities.md](../security-vulnerabilities.md) を参照。
 
 ---
 
